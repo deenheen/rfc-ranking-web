@@ -179,12 +179,13 @@
         // ============================================================
         const firebaseConfig = {
             apiKey: "AIzaSyDlj68ex-fM0ExRdD-tvCy-UyIneVoPmGk",
-            authDomain: "rfk-ranking.firebaseapp.com",
-            projectId: "rfk-ranking",
-            storageBucket: "rfk-ranking.firebasestorage.app",
-            messagingSenderId: "675366165774",
-            appId: "1:675366165774:web:795d34c56eab630b4dcb5f",
-            measurementId: "G-CXPDZQ8GTL"
+  authDomain: "rfk-ranking.firebaseapp.com",
+  projectId: "rfk-ranking",
+  storageBucket: "rfk-ranking.firebasestorage.app",
+  messagingSenderId: "675366165774",
+  appId: "1:675366165774:web:795d34c56eab630b4dcb5f",
+  measurementId: "G-CXPDZQ8GTL"
+
         };
         // ============================================================
 
@@ -202,7 +203,7 @@
         let tournamentData = { active: false, rounds: [] };
         let currentSeasonBestMatch = "";
         
-        let currentProfileId = null; // 현재 열린 프로필 ID 저장용
+        let currentProfileId = null;
 
         const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'rankings', 'main');
         onSnapshot(docRef, (docSnapshot) => {
@@ -231,7 +232,6 @@
                 renderHallOfFame();
                 renderTournament();
                 
-                // 프로필이 열려있다면 내용 갱신
                 if (currentProfileId && !document.getElementById('profileModal').classList.contains('hidden')) {
                     const filter = document.getElementById('profileSeasonFilter').value;
                     renderProfileMatches(currentProfileId, filter);
@@ -263,29 +263,24 @@
                 const wName = match.winner;
                 const lName = match.loser;
                 
-                // 무승부 처리
                 if(match.type === 'draw') {
                     const p1Stat = getStat(wName);
                     const p2Stat = getStat(lName);
-                    
                     const matchWithSnapshot = {
                         ...match,
                         winnerSnapshot: { wins: p1Stat.wins, losses: p1Stat.losses, last6: p1Stat.history.slice(-6) },
                         loserSnapshot: { wins: p2Stat.wins, losses: p2Stat.losses, last6: p2Stat.history.slice(-6) }
                     };
-                    p1Stat.history.push(3); 
-                    p2Stat.history.push(3);
+                    p1Stat.history.push(3); p2Stat.history.push(3);
                     return matchWithSnapshot;
                 } else {
                     const wStat = getStat(wName);
                     const lStat = getStat(lName);
-
                     const matchWithSnapshot = {
                         ...match,
                         winnerSnapshot: { wins: wStat.wins, losses: wStat.losses, last6: wStat.history.slice(-6) },
                         loserSnapshot: { wins: lStat.wins, losses: lStat.losses, last6: lStat.history.slice(-6) }
                     };
-
                     wStat.wins++; wStat.history.push(1);
                     lStat.losses++; lStat.history.push(2);
                     return matchWithSnapshot;
@@ -298,18 +293,21 @@
             const listContainer = document.getElementById('rankingList');
             listContainer.innerHTML = '';
             
+            // [수정됨] 현재 시즌 기록만으로 Last 6 계산
             let liveStats = {};
-            [...matchHistoryData].reverse().forEach(match => {
-                if(!liveStats[match.winner]) liveStats[match.winner] = [];
-                if(!liveStats[match.loser]) liveStats[match.loser] = [];
-                if(match.type === 'draw') {
-                    liveStats[match.winner].push(3);
-                    liveStats[match.loser].push(3);
-                } else {
-                    liveStats[match.winner].push(1);
-                    liveStats[match.loser].push(2);
-                }
-            });
+            [...matchHistoryData].reverse()
+                .filter(m => (m.season || "시즌 1") === activeSeason) // 시즌 필터링
+                .forEach(match => {
+                    if(!liveStats[match.winner]) liveStats[match.winner] = [];
+                    if(!liveStats[match.loser]) liveStats[match.loser] = [];
+                    if(match.type === 'draw') {
+                        liveStats[match.winner].push(3);
+                        liveStats[match.loser].push(3);
+                    } else {
+                        liveStats[match.winner].push(1);
+                        liveStats[match.loser].push(2);
+                    }
+                });
 
             rankingsData.forEach((item, index) => {
                 const currentRank = index + 1;
@@ -340,7 +338,7 @@
                     let dotClass = 'none'; 
                     if (res === 1) dotClass = 'win';
                     if (res === 2) dotClass = 'loss';
-                    if (res === 3) dotClass = 'none'; // draw is grey
+                    if (res === 3) dotClass = 'none'; 
                     dotsHtml += `<div class="dot ${dotClass}"></div>`;
                 });
                 dotsHtml += '</div>';
@@ -385,12 +383,11 @@
             if(tab === 'tournament') renderTournament();
         };
 
-        // --- [수정됨] 시즌 중복 제거 로직 ---
         function updateSeasonSelector() {
             const selector = document.getElementById('seasonSelector');
             selector.innerHTML = '';
             
-            // 아카이브에서 현재 활성 시즌과 이름이 같은 것은 제외하고 필터링
+            // [수정됨] 아카이브에서 현재 활성 시즌 중복 제거
             const archives = Object.keys(seasonArchives)
                 .filter(s => s !== activeSeason)
                 .sort();
@@ -402,7 +399,6 @@
                 selector.appendChild(opt);
             });
 
-            // 현재 시즌 추가
             const activeOpt = document.createElement('option');
             activeOpt.value = activeSeason;
             activeOpt.textContent = activeSeason + " (진행)";
@@ -416,7 +412,6 @@
             };
         }
 
-        // --- [수정됨] 프로필 오픈 및 필터 기능 ---
         window.openProfile = function(id) {
             currentProfileId = id;
             const player = rankingsData.find(p => p.id === id);
@@ -425,7 +420,6 @@
             const modal = document.getElementById('profileModal');
             const rank = rankingsData.indexOf(player) + 1;
             
-            // 기본 정보 채우기
             document.getElementById('profileName').textContent = player.name;
             document.getElementById('profileRank').textContent = '#' + rank;
             document.getElementById('profileWins').textContent = player.wins || 0;
@@ -450,14 +444,10 @@
             const tagContainer = document.getElementById('profileTags');
             tagContainer.innerHTML = (player.tags || []).map(t => `<span class="tag-badge">#${t}</span>`).join('');
             
-            // 필터 초기화 (전체 보기)
             const filterEl = document.getElementById('profileSeasonFilter');
             filterEl.value = 'all';
-            
-            // 렌더링 호출
             renderProfileMatches(id, 'all');
 
-            // 필터 변경 이벤트 리스너 (기존 것 제거 후 새로 등록)
             const newFilterEl = filterEl.cloneNode(true);
             filterEl.parentNode.replaceChild(newFilterEl, filterEl);
             newFilterEl.addEventListener('change', (e) => {
@@ -467,7 +457,6 @@
             modal.classList.remove('hidden');
         }
 
-        // --- [추가됨] 프로필 매치 리스트 렌더링 함수 (필터 적용) ---
         function renderProfileMatches(playerId, filterMode) {
             const player = rankingsData.find(p => p.id === playerId);
             const matchListContainer = document.getElementById('profileMatchList');
@@ -475,7 +464,6 @@
 
             let myMatches = enrichedMatchHistory.filter(m => m.winner === player.name || m.loser === player.name);
 
-            // 필터링
             if (filterMode === 'current') {
                 myMatches = myMatches.filter(m => (m.season || "시즌 1") === activeSeason);
             }
@@ -506,7 +494,6 @@
                     badgeText = isWin ? 'W' : 'L';
                 }
                 
-                // 당시 상대방 정보
                 const oppSnapshot = (isWin || (isDraw && match.winner === player.name)) ? match.loserSnapshot : match.winnerSnapshot;
                 const oppRecordStr = `<span class="text-green-600">${oppSnapshot.wins}</span>-<span class="text-red-600">${oppSnapshot.losses}</span>-0`;
                 
