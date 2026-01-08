@@ -217,11 +217,8 @@
                 baseline.sort((a, b) => a.previousRank - b.previousRank);
                 previousRankingsData = baseline;
 
-                // [수정됨] 날짜 표시 (KST 한국 시간 기준)
-                const today = new Date();
-                const options = { year: 'numeric', month: '2-digit', day: '2-digit', timeZone: 'Asia/Seoul' };
-                const kstDate = today.toLocaleDateString('ko-KR', options).replace(/\. /g, '-').replace('.', '');
-                document.getElementById('dateDisplay').textContent = data.date || kstDate;
+                // [수정 완료] 날짜를 강제로 KST(한국 표준시) 오늘 날짜로 계산하여 표시
+                updateKSTDate();
 
                 calculateHistoricalRecords();
 
@@ -233,7 +230,25 @@
             }
         });
 
+        // 🟢 날짜 KST 강제 변환 함수
+        function updateKSTDate() {
+            const now = new Date();
+            // UTC 시간 계산
+            const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+            // KST는 UTC+9
+            const kstGap = 9 * 60 * 60 * 1000;
+            const todayKST = new Date(utc + kstGap);
+
+            const year = todayKST.getFullYear();
+            const month = String(todayKST.getMonth() + 1).padStart(2, '0');
+            const day = String(todayKST.getDate()).padStart(2, '0');
+            
+            document.getElementById('dateDisplay').textContent = `${year}-${month}-${day}`;
+        }
+
+        // 🟢 과거 전적 계산기
         function calculateHistoricalRecords() {
+            // 과거 -> 최신 순 정렬
             let chronologicalMatches = [...matchHistoryData].reverse();
             let statsMap = {}; 
 
@@ -259,32 +274,27 @@
 
                 return matchWithSnapshot;
             });
+            
+            // 최신순으로 다시 뒤집기 (표시용)
             enrichedMatchHistory.reverse();
         }
 
-        window.switchTab = function(tab) {
-            const sections = ['rankingSection', 'matchHistorySection', 'hallOfFameSection', 'tournamentSection'];
-            const tabs = ['tabRanking', 'tabMatchHistory', 'tabHallOfFame', 'tabTournament'];
-            
-            sections.forEach(id => document.getElementById(id)?.classList.add('hidden'));
-            tabs.forEach(id => {
-                const el = document.getElementById(id);
-                el.className = "tab-btn flex-1 py-3 px-1 text-sm font-medium text-gray-400 border-b-2 border-transparent hover:text-gray-600";
-            });
-
-            document.getElementById(tab + 'Section').classList.remove('hidden');
-            document.getElementById('tab' + tab.charAt(0).toUpperCase() + tab.slice(1)).className = 
-                "tab-btn active flex-1 py-3 px-1 text-sm font-bold text-blue-600 border-b-2 border-blue-500";
-            
-            if(tab === 'matchHistory') renderMatchHistory();
-            if(tab === 'hallOfFame') renderHallOfFame();
-            if(tab === 'tournament') renderTournament();
-        };
-
+        // 🟢 [수정됨] 랭킹 리스트 렌더링 (Last 6를 DB값이 아닌 실제 기록으로 계산)
         function renderRankings() {
             const listContainer = document.getElementById('rankingList');
             listContainer.innerHTML = '';
             
+            // 1. 현재 계산된 전적 맵 생성 (calculateHistoricalRecords 로직과 동일하게 전체 재계산)
+            // 이유: DB에 저장된 recentMatchResults가 꼬여있을 수 있으므로 실시간 계산이 정확함
+            let liveStats = {};
+            // 최신->과거 순인 matchHistoryData를 뒤집어서(과거->최신) 계산
+            [...matchHistoryData].reverse().forEach(match => {
+                if(!liveStats[match.winner]) liveStats[match.winner] = [];
+                if(!liveStats[match.loser]) liveStats[match.loser] = [];
+                liveStats[match.winner].push(1); // 승
+                liveStats[match.loser].push(2);  // 패
+            });
+
             rankingsData.forEach((item, index) => {
                 const currentRank = index + 1;
                 let rowBg = 'bg-white';
@@ -305,8 +315,9 @@
                     rankColor = 'text-teal-600';
                 }
 
-                const recentResults = item.recentMatchResults || [0,0,0,0,0,0];
-                const last6 = recentResults.slice(-6); 
+                // [중요] 실시간 기록에서 Last 6 가져오기
+                const history = liveStats[item.name] || [];
+                const last6 = history.slice(-6); 
                 while(last6.length < 6) last6.unshift(0);
 
                 let dotsHtml = '<div class="flex space-x-1 justify-center">';
@@ -338,6 +349,25 @@
                 listContainer.appendChild(div);
             });
         }
+
+        window.switchTab = function(tab) {
+            const sections = ['rankingSection', 'matchHistorySection', 'hallOfFameSection', 'tournamentSection'];
+            const tabs = ['tabRanking', 'tabMatchHistory', 'tabHallOfFame', 'tabTournament'];
+            
+            sections.forEach(id => document.getElementById(id)?.classList.add('hidden'));
+            tabs.forEach(id => {
+                const el = document.getElementById(id);
+                el.className = "tab-btn flex-1 py-3 px-1 text-sm font-medium text-gray-400 border-b-2 border-transparent hover:text-gray-600";
+            });
+
+            document.getElementById(tab + 'Section').classList.remove('hidden');
+            document.getElementById('tab' + tab.charAt(0).toUpperCase() + tab.slice(1)).className = 
+                "tab-btn active flex-1 py-3 px-1 text-sm font-bold text-blue-600 border-b-2 border-blue-500";
+            
+            if(tab === 'matchHistory') renderMatchHistory();
+            if(tab === 'hallOfFame') renderHallOfFame();
+            if(tab === 'tournament') renderTournament();
+        };
 
         window.openProfile = function(id) {
             const player = rankingsData.find(p => p.id === id);
