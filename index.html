@@ -35,7 +35,7 @@
         .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
 
-        /* 프로필 이미지 스타일 (BoxRec 느낌) */
+        /* 프로필 이미지 스타일 */
         .profile-image-container { width: 100%; height: 320px; background-color: #e5e7eb; position: relative; overflow: hidden; }
         .profile-image-container img { width: 100%; height: 100%; object-fit: cover; object-position: top center; }
         .profile-stat-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f3f4f6; font-size: 14px; }
@@ -46,9 +46,9 @@
         
         /* 최근 전적 점 스타일 */
         .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 2px; }
-        .dot.win { background-color: #22c55e; } /* Green */
-        .dot.loss { background-color: #ef4444; } /* Red */
-        .dot.none { background-color: #e5e7eb; } /* Gray */
+        .dot.win { background-color: #22c55e; } 
+        .dot.loss { background-color: #ef4444; } 
+        .dot.none { background-color: #e5e7eb; } 
 
         /* BoxRec 스타일 Bouts 테이블 */
         .bout-table { width: 100%; border-collapse: collapse; font-size: 13px; }
@@ -65,7 +65,6 @@
         .res-w { background-color: #22c55e; }
         .res-l { background-color: #ef4444; }
         .res-d { background-color: #9ca3af; }
-        .star-rating { color: #fbbf24; font-size: 10px; letter-spacing: -1px; }
     </style>
 </head>
 <body class="p-2 sm:p-4 bg-gray-50">
@@ -83,8 +82,7 @@
         <div id="tabContainer" class="flex border-b border-gray-200 mb-4 sticky top-0 z-50 bg-gray-50 pt-2">
             <button id="tabRanking" onclick="switchTab('ranking')" class="tab-btn active flex-1 py-3 px-1 text-sm font-bold text-blue-600 border-b-2 border-blue-500">🔥 랭킹</button>
             <button id="tabMatchHistory" onclick="switchTab('matchHistory')" class="tab-btn flex-1 py-3 px-1 text-sm font-medium text-gray-400 border-b-2 border-transparent hover:text-gray-600">⚔️ 기록</button>
-            <button id="tabHeadToHead" onclick="switchTab('headToHead')" class="tab-btn flex-1 py-3 px-1 text-sm font-medium text-gray-400 border-b-2 border-transparent hover:text-gray-600">🆚 전적</button>
-            <button id="tabHallOfFame" onclick="switchTab('hallOfFame')" class="tab-btn flex-1 py-3 px-1 text-sm font-medium text-gray-400 border-b-2 border-transparent hover:text-gray-600">📊 현황</button>
+            <button id="tabHallOfFame" onclick="switchTab('hallOfFame')" class="tab-btn flex-1 py-3 px-1 text-sm font-medium text-gray-400 border-b-2 border-transparent hover:text-gray-600">🏛️ 명예의 전당</button>
             <button id="tabTournament" onclick="switchTab('tournament')" class="tab-btn flex-1 py-3 px-1 text-sm font-medium text-gray-400 border-b-2 border-transparent hover:text-gray-600">🏆 대진</button>
         </div>
 
@@ -106,16 +104,6 @@
                 <select id="seasonSelector" class="text-sm font-bold text-gray-700 border border-gray-300 rounded-lg p-1.5 bg-white"></select>
             </div>
             <div id="matchHistoryList"></div>
-        </div>
-        
-        <div id="headToHeadSection" class="hidden p-4 bg-gray-50 rounded-lg shadow-inner">
-            <h3 class="text-lg font-bold text-gray-700 mb-4 text-center">🆚 상대전적 분석</h3>
-            <div class="flex gap-2 mb-4 justify-center items-center">
-                <select id="h2hPlayerA" class="border rounded shadow-sm w-1/2 bg-white p-2 text-sm"><option value="">선수 A</option></select> 
-                <span class="font-bold text-gray-400">VS</span> 
-                <select id="h2hPlayerB" class="border rounded shadow-sm w-1/2 bg-white p-2 text-sm"><option value="">선수 B</option></select>
-            </div>
-            <div id="h2hResult" class="text-center"> <div class="text-gray-400 italic py-10">두 선수를 선택하세요.</div> </div>
         </div>
         
         <div id="hallOfFameSection" class="hidden p-4 bg-gray-50 rounded-lg shadow-inner">
@@ -152,33 +140,14 @@
                 <div class="w-full sm:w-1/2 h-64 sm:h-auto bg-gray-200 relative overflow-hidden">
                     <img id="profileImage" src="" alt="Profile" class="w-full h-full object-cover object-top">
                 </div>
-                
                 <div class="w-full sm:w-1/2 p-5 bg-white">
                     <div class="space-y-1">
-                        <div class="profile-stat-row">
-                            <span class="profile-stat-label">Ranking</span>
-                            <span class="profile-stat-value" id="profileRank">#1</span>
-                        </div>
-                        <div class="profile-stat-row">
-                            <span class="profile-stat-label">Age</span>
-                            <span class="profile-stat-value" id="profileAge">-</span>
-                        </div>
-                        <div class="profile-stat-row">
-                            <span class="profile-stat-label">Stance</span>
-                            <span class="profile-stat-value" id="profileStance">Orthodox</span>
-                        </div>
-                        <div class="profile-stat-row">
-                            <span class="profile-stat-label">Height</span>
-                            <span class="profile-stat-value" id="profileHeight">-</span>
-                        </div>
-                        <div class="profile-stat-row">
-                            <span class="profile-stat-label">Reach</span>
-                            <span class="profile-stat-value" id="profileReach">-</span>
-                        </div>
-                        <div class="mt-4">
-                            <span class="profile-stat-label block mb-2">Style Tags</span>
-                            <div id="profileTags" class="flex flex-wrap gap-1"></div>
-                        </div>
+                        <div class="profile-stat-row"><span class="profile-stat-label">Ranking</span><span class="profile-stat-value" id="profileRank">#1</span></div>
+                        <div class="profile-stat-row"><span class="profile-stat-label">Age</span><span class="profile-stat-value" id="profileAge">-</span></div>
+                        <div class="profile-stat-row"><span class="profile-stat-label">Stance</span><span class="profile-stat-value" id="profileStance">Orthodox</span></div>
+                        <div class="profile-stat-row"><span class="profile-stat-label">Height</span><span class="profile-stat-value" id="profileHeight">-</span></div>
+                        <div class="profile-stat-row"><span class="profile-stat-label">Reach</span><span class="profile-stat-value" id="profileReach">-</span></div>
+                        <div class="mt-4"><span class="profile-stat-label block mb-2">Style Tags</span><div id="profileTags" class="flex flex-wrap gap-1"></div></div>
                     </div>
                 </div>
             </div>
@@ -188,8 +157,7 @@
                     <span>Box-pro Bouts</span>
                     <span class="text-xs font-normal text-gray-500">* 당시 전적 기준</span>
                 </div>
-                <div id="profileMatchList" class="p-2 space-y-1">
-                    </div>
+                <div id="profileMatchList" class="p-2 space-y-1"></div>
             </div>
 
             <div class="bg-gray-50 p-4 border-t border-gray-200 flex justify-between text-xs text-gray-500">
@@ -204,16 +172,16 @@
         import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         // ============================================================
-        // [중요] 여기에 본인의 firebaseConfig를 붙여넣으세요!
+        // [자동 입력] Firebase 설정
         // ============================================================
         const firebaseConfig = {
             apiKey: "AIzaSyDlj68ex-fM0ExRdD-tvCy-UyIneVoPmGk",
-  authDomain: "rfk-ranking.firebaseapp.com",
-  projectId: "rfk-ranking",
-  storageBucket: "rfk-ranking.firebasestorage.app",
-  messagingSenderId: "675366165774",
-  appId: "1:675366165774:web:795d34c56eab630b4dcb5f",
-  measurementId: "G-CXPDZQ8GTL"
+            authDomain: "rfk-ranking.firebaseapp.com",
+            projectId: "rfk-ranking",
+            storageBucket: "rfk-ranking.firebasestorage.app",
+            messagingSenderId: "675366165774",
+            appId: "1:675366165774:web:795d34c56eab630b4dcb5f",
+            measurementId: "G-CXPDZQ8GTL"
         };
         // ============================================================
 
@@ -221,10 +189,9 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // 전역 변수
         let rankingsData = [];
         let matchHistoryData = [];
-        let enrichedMatchHistory = []; // 당시 전적이 포함된 기록
+        let enrichedMatchHistory = []; 
         let previousRankingsData = [];
         let activeSeason = "시즌 1";
         let viewSeason = "시즌 1";
@@ -232,7 +199,6 @@
         let tournamentData = { active: false, rounds: [] };
         let currentSeasonBestMatch = "";
 
-        // 데이터 로드
         const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'rankings', 'main');
         onSnapshot(docRef, (docSnapshot) => {
             document.getElementById('loading').style.display = 'none';
@@ -251,32 +217,25 @@
                 baseline.sort((a, b) => a.previousRank - b.previousRank);
                 previousRankingsData = baseline;
 
-                document.getElementById('dateDisplay').textContent = data.date || "날짜 미정";
+                // [수정됨] 날짜 표시 (KST 한국 시간 기준)
+                const today = new Date();
+                const options = { year: 'numeric', month: '2-digit', day: '2-digit', timeZone: 'Asia/Seoul' };
+                const kstDate = today.toLocaleDateString('ko-KR', options).replace(/\. /g, '-').replace('.', '');
+                document.getElementById('dateDisplay').textContent = data.date || kstDate;
 
-                // 경기 기록에 "당시 전적" 계산하여 추가
                 calculateHistoricalRecords();
 
                 renderRankings();
                 updateSeasonSelector();
                 renderMatchHistory();
-                populateH2HSelectors();
                 renderHallOfFame();
                 renderTournament();
-                
-                if(!document.getElementById('headToHeadSection').classList.contains('hidden')) {
-                    renderHeadToHeadAnalysis();
-                }
             }
         });
 
-        // 🟢 핵심 함수: 과거 전적 계산기
         function calculateHistoricalRecords() {
-            // 1. 시간순 정렬 (과거 -> 최신)
-            // 보통 matchHistoryData는 최신순(unshift)이므로 뒤집어야 함
             let chronologicalMatches = [...matchHistoryData].reverse();
-            
-            // 2. 선수별 승패 추적 맵
-            let statsMap = {}; // { "이름": { wins: 0, losses: 0, history: [] } }
+            let statsMap = {}; 
 
             const getStat = (name) => {
                 if (!statsMap[name]) statsMap[name] = { wins: 0, losses: 0, history: [] };
@@ -286,42 +245,26 @@
             enrichedMatchHistory = chronologicalMatches.map(match => {
                 const wName = match.winner;
                 const lName = match.loser;
-                
                 const wStat = getStat(wName);
                 const lStat = getStat(lName);
 
-                // 현재 시점(경기 직전)의 스냅샷 저장
                 const matchWithSnapshot = {
                     ...match,
-                    winnerSnapshot: { 
-                        wins: wStat.wins, 
-                        losses: wStat.losses, 
-                        last6: wStat.history.slice(-6) 
-                    },
-                    loserSnapshot: { 
-                        wins: lStat.wins, 
-                        losses: lStat.losses, 
-                        last6: lStat.history.slice(-6) 
-                    }
+                    winnerSnapshot: { wins: wStat.wins, losses: wStat.losses, last6: wStat.history.slice(-6) },
+                    loserSnapshot: { wins: lStat.wins, losses: lStat.losses, last6: lStat.history.slice(-6) }
                 };
 
-                // 경기 결과 반영 (다음 경기를 위해)
-                wStat.wins++;
-                wStat.history.push(1); // 1: 승
-                lStat.losses++;
-                lStat.history.push(2); // 2: 패
+                wStat.wins++; wStat.history.push(1);
+                lStat.losses++; lStat.history.push(2);
 
                 return matchWithSnapshot;
             });
-
-            // 다시 최신순으로 뒤집기
             enrichedMatchHistory.reverse();
         }
 
-        // 탭 전환
         window.switchTab = function(tab) {
-            const sections = ['rankingSection', 'matchHistorySection', 'headToHeadSection', 'hallOfFameSection', 'tournamentSection'];
-            const tabs = ['tabRanking', 'tabMatchHistory', 'tabHeadToHead', 'tabHallOfFame', 'tabTournament'];
+            const sections = ['rankingSection', 'matchHistorySection', 'hallOfFameSection', 'tournamentSection'];
+            const tabs = ['tabRanking', 'tabMatchHistory', 'tabHallOfFame', 'tabTournament'];
             
             sections.forEach(id => document.getElementById(id)?.classList.add('hidden'));
             tabs.forEach(id => {
@@ -336,10 +279,8 @@
             if(tab === 'matchHistory') renderMatchHistory();
             if(tab === 'hallOfFame') renderHallOfFame();
             if(tab === 'tournament') renderTournament();
-            if(tab === 'headToHead') populateH2HSelectors();
         };
 
-        // 1. 랭킹 렌더링 (체급 제거)
         function renderRankings() {
             const listContainer = document.getElementById('rankingList');
             listContainer.innerHTML = '';
@@ -377,9 +318,6 @@
                 });
                 dotsHtml += '</div>';
 
-                const total = (item.wins || 0) + (item.losses || 0);
-                const rate = total > 0 ? Math.round((item.wins / total) * 100) : 0;
-
                 const div = document.createElement('div');
                 div.className = `rank-item flex items-center p-3 rounded-xl shadow-sm ${rowBg} ${borderClass}`;
                 div.innerHTML = `
@@ -401,7 +339,6 @@
             });
         }
 
-        // 2. 프로필 보기 (Bouts 테이블 - 당시 전적 표시)
         window.openProfile = function(id) {
             const player = rankingsData.find(p => p.id === id);
             if (!player) return;
@@ -433,7 +370,6 @@
             const tagContainer = document.getElementById('profileTags');
             tagContainer.innerHTML = (player.tags || []).map(t => `<span class="tag-badge">#${t}</span>`).join('');
             
-            // --- 경기 기록 (Bouts) 생성 ---
             const matchListContainer = document.getElementById('profileMatchList');
             matchListContainer.innerHTML = '';
 
@@ -448,14 +384,9 @@
                 myMatches.forEach(match => {
                     const isWin = match.winner === player.name;
                     const opponentName = isWin ? match.loser : match.winner;
-                    
-                    // 당시 상대방의 스냅샷 가져오기
                     const oppSnapshot = isWin ? match.loserSnapshot : match.winnerSnapshot;
-                    
-                    // 당시 전적 텍스트 (예: 14-1-0)
                     const oppRecordStr = `<span class="text-green-600">${oppSnapshot.wins}</span>-<span class="text-red-600">${oppSnapshot.losses}</span>-0`;
                     
-                    // 당시 최근 6경기 폼 (Last 6)
                     let oppDots = "";
                     const oppLast6 = oppSnapshot.last6 || [];
                     while(oppLast6.length < 6) oppLast6.unshift(0);
@@ -485,7 +416,6 @@
             modal.classList.remove('hidden');
         }
 
-        // 시즌 선택기 업데이트
         function updateSeasonSelector() {
             const selector = document.getElementById('seasonSelector');
             selector.innerHTML = '';
@@ -506,17 +436,14 @@
             };
         }
 
-        // 경기 기록 렌더링 (전체 탭)
         function renderMatchHistory() {
             const container = document.getElementById('matchHistoryList');
             container.innerHTML = '';
-            
             const filtered = matchHistoryData.filter(m => (m.season || "시즌 1") === viewSeason);
             if(filtered.length === 0) {
                 container.innerHTML = '<div class="text-center text-gray-400 italic py-4">기록이 없습니다.</div>';
                 return;
             }
-
             filtered.forEach(match => {
                 const card = document.createElement('div');
                 let typeClass = 'border-gray-300';
@@ -540,7 +467,6 @@
             });
         }
 
-        // 명예의 전당
         function renderHallOfFame() {
             const container = document.getElementById('hofContent');
             let displayData = { champion: '-', rank2: '-', rank3: '-', defenseKing: '-', defenseCount: 0, bestMatch: '-' };
@@ -580,67 +506,6 @@
             `;
         }
 
-        // 전적 분석용 선택기
-        function populateH2HSelectors() {
-            const selA = document.getElementById('h2hPlayerA');
-            const selB = document.getElementById('h2hPlayerB');
-            const valA = selA.value;
-            const valB = selB.value;
-            selA.innerHTML = '<option value="">선수 A</option>';
-            selB.innerHTML = '<option value="">선수 B</option>';
-            rankingsData.forEach((item, idx) => {
-                const txt = `${idx+1}위 ${item.name}`;
-                selA.add(new Option(txt, item.name));
-                selB.add(new Option(txt, item.name));
-            });
-            selA.value = valA;
-            selB.value = valB;
-            const updateAnalysis = () => renderHeadToHeadAnalysis();
-            selA.onchange = updateAnalysis;
-            selB.onchange = updateAnalysis;
-        }
-
-        // 전적 분석 결과
-        function renderHeadToHeadAnalysis() {
-            const pA = document.getElementById('h2hPlayerA').value;
-            const pB = document.getElementById('h2hPlayerB').value;
-            const container = document.getElementById('h2hResult');
-            
-            if(!pA || !pB) return;
-            
-            let wins = 0, losses = 0;
-            const matches = matchHistoryData.filter(m => {
-                if((m.season || "시즌 1") !== viewSeason) return false;
-                if(m.winner === pA && m.loser === pB) { wins++; return true; }
-                if(m.winner === pB && m.loser === pA) { losses++; return true; }
-                return false;
-            });
-            
-            container.innerHTML = `
-                <div class="bg-white p-4 rounded-xl border mb-4">
-                    <div class="flex justify-center items-center space-x-4 text-xl font-black">
-                        <span class="text-gray-800">${pA}</span>
-                        <span class="text-red-500">${wins}</span>
-                        <span class="text-gray-300">:</span>
-                        <span class="text-blue-500">${losses}</span>
-                        <span class="text-gray-800">${pB}</span>
-                    </div>
-                </div>
-                <div class="space-y-2 text-left">
-                    ${matches.map(m => `
-                        <div class="bg-white p-2 rounded border text-xs flex justify-between">
-                            <span class="text-gray-400">${m.date}</span>
-                            <span class="${m.winner===pA ? 'text-red-500 font-bold' : 'text-blue-500 font-bold'}">
-                                ${m.winner===pA ? '승리' : '패배'}
-                            </span>
-                        </div>
-                    `).join('')}
-                    ${matches.length === 0 ? '<div class="text-center text-gray-400 text-xs">기록 없음</div>' : ''}
-                </div>
-            `;
-        }
-
-        // 토너먼트 렌더링
         function renderTournament() {
             const container = document.getElementById('bracketContainer');
             if (!tournamentData.active) {
@@ -654,7 +519,6 @@
                     const p1 = match.p1 ? match.p1.name : '-';
                     const p2 = match.p2 ? match.p2.name : '-';
                     const w = match.winner ? match.winner.id : null;
-                    
                     html += `
                         <div class="bracket-match mb-4">
                             <div class="bracket-team ${w===match.p1?.id ? 'winner' : ''}">${p1}</div>
@@ -667,7 +531,6 @@
             });
             container.innerHTML = html;
         }
-
     </script>
 </body>
 </html>
