@@ -46,7 +46,7 @@
         <div class="flex border-b border-gray-300 mb-4 bg-white rounded-t-lg">
             <button onclick="switchTab('ranking')" id="tabRanking" class="tab-btn active flex-1 py-3 text-sm">🔥 랭킹/선수 관리</button>
             <button onclick="switchTab('match')" id="tabMatch" class="tab-btn flex-1 py-3 text-sm">⚔️ 경기 입력</button>
-            <button onclick="switchTab('tools')" id="tabTools" class="tab-btn flex-1 py-3 text-sm">🛠️ 도구</button>
+            <button onclick="switchTab('tools')" id="tabTools" class="tab-btn flex-1 py-3 text-sm">🛠️ 시즌/도구</button>
         </div>
 
         <div id="rankingSection">
@@ -57,7 +57,9 @@
         </div>
 
         <div id="matchSection" class="hidden p-6 bg-white rounded-lg shadow">
-            <h3 class="text-lg font-bold text-gray-700 mb-6 text-center">경기 결과 입력</h3>
+            <h3 class="text-lg font-bold text-gray-700 mb-2 text-center">경기 결과 입력</h3>
+            <p class="text-center text-xs text-gray-500 mb-6">현재 시즌: <span id="currentSeasonDisplay" class="font-bold text-blue-600">Loading...</span></p>
+            
             <div class="flex flex-col md:flex-row gap-4 items-center justify-center mb-6">
                 <div class="w-full md:w-1/3 bg-blue-50 p-4 rounded border border-blue-200">
                     <label class="block text-sm font-bold text-blue-600 mb-2">청코너 (Blue)</label>
@@ -83,11 +85,38 @@
             </div>
         </div>
 
-        <div id="toolsSection" class="hidden p-4 bg-white rounded-lg shadow space-y-4">
-            <h3 class="font-bold text-gray-700">데이터 초기화</h3>
-            <div class="grid grid-cols-2 gap-3">
-                <button onclick="resetStats()" class="bg-red-100 text-red-700 py-3 rounded hover:bg-red-200">📊 전적(승패) 초기화</button>
-                <button onclick="resetHistory()" class="bg-red-100 text-red-700 py-3 rounded hover:bg-red-200">📜 경기 기록 삭제</button>
+        <div id="toolsSection" class="hidden p-4 bg-white rounded-lg shadow space-y-6">
+            
+            <div class="border-b pb-4">
+                <h3 class="font-bold text-gray-800 mb-3 text-lg">📅 시즌 관리</h3>
+                
+                <div class="flex gap-4 items-end mb-4">
+                    <div class="flex-grow">
+                        <label class="block text-xs text-gray-500 mb-1">현재 시즌 이름 수정</label>
+                        <input type="text" id="seasonNameInput" class="w-full border p-2 rounded" placeholder="예: 시즌 1">
+                    </div>
+                    <button onclick="updateSeasonName()" class="bg-blue-500 text-white font-bold py-2 px-4 rounded text-sm h-10">이름 변경</button>
+                </div>
+
+                <div class="bg-gray-50 p-4 rounded border border-gray-200">
+                    <h4 class="font-bold text-sm text-gray-700 mb-2">🚀 새 시즌 시작 (Season Reset)</h4>
+                    <p class="text-xs text-gray-500 mb-3">현재 랭킹과 기록을 '명예의 전당'에 저장하고, 새로운 시즌을 시작합니다.</p>
+                    
+                    <div class="flex items-center gap-2 mb-3">
+                        <input type="checkbox" id="resetStatsCheck" class="w-4 h-4" checked>
+                        <label for="resetStatsCheck" class="text-sm">선수들의 승/패 전적 초기화</label>
+                    </div>
+                    
+                    <button onclick="startNewSeason()" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded w-full">새 시즌 시작하기</button>
+                </div>
+            </div>
+
+            <div>
+                <h3 class="font-bold text-gray-800 mb-3">🛠️ 데이터 초기화 (주의)</h3>
+                <div class="grid grid-cols-2 gap-3">
+                    <button onclick="resetStats()" class="bg-red-100 text-red-700 py-3 rounded hover:bg-red-200 font-bold text-sm">📊 전적(승패)만 0으로</button>
+                    <button onclick="resetHistory()" class="bg-red-100 text-red-700 py-3 rounded hover:bg-red-200 font-bold text-sm">📜 경기 기록 삭제</button>
+                </div>
             </div>
         </div>
     </div>
@@ -150,16 +179,17 @@
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
         // ============================================================
-        // [자동 입력] Firebase 설정
+        // [중요] 여기에 본인의 firebaseConfig를 붙여넣으세요!
         // ============================================================
         const firebaseConfig = {
-            apiKey: "AIzaSyDlj68ex-fM0ExRdD-tvCy-UyIneVoPmGk",
-            authDomain: "rfk-ranking.firebaseapp.com",
-            projectId: "rfk-ranking",
-            storageBucket: "rfk-ranking.firebasestorage.app",
-            messagingSenderId: "675366165774",
-            appId: "1:675366165774:web:795d34c56eab630b4dcb5f",
-            measurementId: "G-CXPDZQ8GTL"
+           const firebaseConfig = {
+  apiKey: "AIzaSyDlj68ex-fM0ExRdD-tvCy-UyIneVoPmGk",
+  authDomain: "rfk-ranking.firebaseapp.com",
+  projectId: "rfk-ranking",
+  storageBucket: "rfk-ranking.firebasestorage.app",
+  messagingSenderId: "675366165774",
+  appId: "1:675366165774:web:795d34c56eab630b4dcb5f",
+  measurementId: "G-CXPDZQ8GTL"
         };
         // ============================================================
 
@@ -200,6 +230,10 @@
                     matchHistoryData = data.matchHistory || [];
                     seasonArchives = data.seasonArchives || {};
                     activeSeason = data.activeSeason || "시즌 1";
+                    
+                    document.getElementById('currentSeasonDisplay').textContent = activeSeason;
+                    document.getElementById('seasonNameInput').value = activeSeason;
+
                     renderRankings();
                     populateMatchSelectors();
                 }
@@ -212,12 +246,19 @@
             const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'rankings', 'main');
             
             try {
+                // KST 날짜 저장
+                const now = new Date();
+                const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+                const kstGap = 9 * 60 * 60 * 1000;
+                const todayKST = new Date(utc + kstGap);
+                const dateStr = todayKST.toISOString().split('T')[0];
+
                 await setDoc(docRef, {
                     rankings: rankingsData,
                     matchHistory: matchHistoryData,
                     seasonArchives: seasonArchives,
                     activeSeason: activeSeason,
-                    date: new Date().toLocaleDateString('ko-KR', {timeZone: 'Asia/Seoul'})
+                    date: dateStr
                 }, { merge: true });
                 statusEl.textContent = "완료";
                 setTimeout(() => statusEl.textContent = "", 1500);
@@ -256,6 +297,49 @@
                 list.appendChild(div);
             });
         }
+
+        // --- 시즌 관리 로직 ---
+        window.updateSeasonName = () => {
+            const newName = document.getElementById('seasonNameInput').value.trim();
+            if(!newName) return alert("시즌 이름을 입력하세요.");
+            activeSeason = newName;
+            saveRankings();
+            alert("시즌 이름이 변경되었습니다.");
+        };
+
+        window.startNewSeason = () => {
+            if(!confirm(`정말 [${activeSeason}]을 종료하고 새 시즌을 시작하시겠습니까?`)) return;
+            
+            const nextSeasonNum = parseInt(activeSeason.replace(/[^0-9]/g, '')) + 1 || 2;
+            const newSeasonName = `시즌 ${nextSeasonNum}`;
+            
+            // 1. 현재 시즌 아카이빙
+            const champion = rankingsData[0] ? rankingsData[0].name : "-";
+            const rank2 = rankingsData[1] ? rankingsData[1].name : "-";
+            const rank3 = rankingsData[2] ? rankingsData[2].name : "-";
+            
+            seasonArchives[activeSeason] = {
+                champion: champion,
+                rank2: rank2,
+                rank3: rank3,
+                bestMatch: "선정 중"
+            };
+
+            // 2. 시즌 변경
+            activeSeason = newSeasonName;
+
+            // 3. 전적 초기화 (옵션)
+            if(document.getElementById('resetStatsCheck').checked) {
+                rankingsData.forEach(p => { 
+                    p.wins = 0; p.losses = 0; 
+                    p.recentMatchResults = [0,0,0,0,0,0]; 
+                });
+            }
+
+            saveRankings();
+            alert(`[${newSeasonName}]가 시작되었습니다!`);
+            document.getElementById('seasonNameInput').value = activeSeason;
+        };
 
         // --- 상세 편집 모달 로직 ---
         window.openEditModal = (idx) => {
@@ -328,16 +412,13 @@
             winner.wins = (winner.wins || 0) + 1;
             loser.losses = (loser.losses || 0) + 1;
 
-            // 최근 6경기 (Last 6) 업데이트 - 1:승, 2:패
-            if(!winner.recentMatchResults) winner.recentMatchResults = [0,0,0,0,0,0];
-            winner.recentMatchResults.push(1);
-            
-            if(!loser.recentMatchResults) loser.recentMatchResults = [0,0,0,0,0,0];
-            loser.recentMatchResults.push(2);
-
             // 매치 히스토리 저장
+            const now = new Date();
+            const kstDate = new Date(now.getTime() + (9 * 60 * 60 * 1000));
+            const dateStr = kstDate.toISOString().split('T')[0];
+
             matchHistoryData.unshift({
-                date: new Date().toLocaleDateString('ko-KR', {timeZone: 'Asia/Seoul'}).replace(/\. /g, '-').replace('.', ''),
+                date: dateStr,
                 winner: winner.name,
                 loser: loser.name,
                 type: type,
