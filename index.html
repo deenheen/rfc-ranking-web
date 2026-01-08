@@ -155,7 +155,10 @@
             <div class="bg-white border-t border-gray-200">
                 <div class="p-3 bg-gray-50 border-b border-gray-100 font-bold text-gray-800 text-sm flex justify-between items-center">
                     <span>Box-pro Bouts</span>
-                    <span class="text-xs font-normal text-gray-500">* 당시 전적 기준</span>
+                    <select id="profileSeasonFilter" class="text-xs border rounded p-1 text-gray-600 focus:outline-none">
+                        <option value="all">전체 기록 (All Time)</option>
+                        <option value="current">현재 시즌 (Current)</option>
+                    </select>
                 </div>
                 <div id="profileMatchList" class="p-2 space-y-1"></div>
             </div>
@@ -198,6 +201,8 @@
         let seasonArchives = {};
         let tournamentData = { active: false, rounds: [] };
         let currentSeasonBestMatch = "";
+        
+        let currentProfileId = null; // 현재 열린 프로필 ID 저장용
 
         const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'rankings', 'main');
         onSnapshot(docRef, (docSnapshot) => {
@@ -211,10 +216,7 @@
                 tournamentData = data.tournamentData || { active: false, rounds: [] };
                 currentSeasonBestMatch = data.seasonBestMatch || "";
                 
-                // [수정됨] 시즌 선택 로직 개선 (최초 로드 시 현재 시즌으로 설정)
-                if (viewSeason === "시즌 1" && activeSeason !== "시즌 1") {
-                    viewSeason = activeSeason;
-                }
+                if (viewSeason === "시즌 1" && activeSeason !== "시즌 1") viewSeason = activeSeason;
 
                 let baseline = rankingsData.map(item => ({...item}));
                 baseline.sort((a, b) => a.previousRank - b.previousRank);
@@ -228,6 +230,12 @@
                 renderMatchHistory();
                 renderHallOfFame();
                 renderTournament();
+                
+                // 프로필이 열려있다면 내용 갱신
+                if (currentProfileId && !document.getElementById('profileModal').classList.contains('hidden')) {
+                    const filter = document.getElementById('profileSeasonFilter').value;
+                    renderProfileMatches(currentProfileId, filter);
+                }
             }
         });
 
@@ -254,19 +262,34 @@
             enrichedMatchHistory = chronologicalMatches.map(match => {
                 const wName = match.winner;
                 const lName = match.loser;
-                const wStat = getStat(wName);
-                const lStat = getStat(lName);
+                
+                // 무승부 처리
+                if(match.type === 'draw') {
+                    const p1Stat = getStat(wName);
+                    const p2Stat = getStat(lName);
+                    
+                    const matchWithSnapshot = {
+                        ...match,
+                        winnerSnapshot: { wins: p1Stat.wins, losses: p1Stat.losses, last6: p1Stat.history.slice(-6) },
+                        loserSnapshot: { wins: p2Stat.wins, losses: p2Stat.losses, last6: p2Stat.history.slice(-6) }
+                    };
+                    p1Stat.history.push(3); 
+                    p2Stat.history.push(3);
+                    return matchWithSnapshot;
+                } else {
+                    const wStat = getStat(wName);
+                    const lStat = getStat(lName);
 
-                const matchWithSnapshot = {
-                    ...match,
-                    winnerSnapshot: { wins: wStat.wins, losses: wStat.losses, last6: wStat.history.slice(-6) },
-                    loserSnapshot: { wins: lStat.wins, losses: lStat.losses, last6: lStat.history.slice(-6) }
-                };
+                    const matchWithSnapshot = {
+                        ...match,
+                        winnerSnapshot: { wins: wStat.wins, losses: wStat.losses, last6: wStat.history.slice(-6) },
+                        loserSnapshot: { wins: lStat.wins, losses: lStat.losses, last6: lStat.history.slice(-6) }
+                    };
 
-                wStat.wins++; wStat.history.push(1);
-                lStat.losses++; lStat.history.push(2);
-
-                return matchWithSnapshot;
+                    wStat.wins++; wStat.history.push(1);
+                    lStat.losses++; lStat.history.push(2);
+                    return matchWithSnapshot;
+                }
             });
             enrichedMatchHistory.reverse();
         }
@@ -279,8 +302,13 @@
             [...matchHistoryData].reverse().forEach(match => {
                 if(!liveStats[match.winner]) liveStats[match.winner] = [];
                 if(!liveStats[match.loser]) liveStats[match.loser] = [];
-                liveStats[match.winner].push(1);
-                liveStats[match.loser].push(2);
+                if(match.type === 'draw') {
+                    liveStats[match.winner].push(3);
+                    liveStats[match.loser].push(3);
+                } else {
+                    liveStats[match.winner].push(1);
+                    liveStats[match.loser].push(2);
+                }
             });
 
             rankingsData.forEach((item, index) => {
@@ -312,6 +340,7 @@
                     let dotClass = 'none'; 
                     if (res === 1) dotClass = 'win';
                     if (res === 2) dotClass = 'loss';
+                    if (res === 3) dotClass = 'none'; // draw is grey
                     dotsHtml += `<div class="dot ${dotClass}"></div>`;
                 });
                 dotsHtml += '</div>';
@@ -327,7 +356,7 @@
                         </div>
                     </div>
                     <div class="w-20 text-center flex-col justify-center hidden sm:flex">
-                        <span class="text-sm font-bold text-gray-800 text-green-600">${item.wins}<span class="text-gray-400 font-normal"> - </span><span class="text-red-600">${item.losses}</span></span>
+                        <span class="text-sm font-bold text-gray-800 text-green-600">${item.wins}<span class="text-gray-400 font-normal"> - </span><span class="text-red-600">${item.losses}</span><span class="text-blue-400 font-normal"> - </span><span class="text-blue-600">${item.draws||0}</span></span>
                     </div>
                     <div class="w-24 text-center">
                         ${dotsHtml}
@@ -356,13 +385,47 @@
             if(tab === 'tournament') renderTournament();
         };
 
+        // --- [수정됨] 시즌 중복 제거 로직 ---
+        function updateSeasonSelector() {
+            const selector = document.getElementById('seasonSelector');
+            selector.innerHTML = '';
+            
+            // 아카이브에서 현재 활성 시즌과 이름이 같은 것은 제외하고 필터링
+            const archives = Object.keys(seasonArchives)
+                .filter(s => s !== activeSeason)
+                .sort();
+
+            archives.forEach(s => {
+                const opt = document.createElement('option');
+                opt.value = s; 
+                opt.textContent = s + " (종료)";
+                selector.appendChild(opt);
+            });
+
+            // 현재 시즌 추가
+            const activeOpt = document.createElement('option');
+            activeOpt.value = activeSeason;
+            activeOpt.textContent = activeSeason + " (진행)";
+            selector.appendChild(activeOpt);
+
+            selector.value = viewSeason;
+            
+            selector.onchange = (e) => {
+                viewSeason = e.target.value;
+                renderMatchHistory();
+            };
+        }
+
+        // --- [수정됨] 프로필 오픈 및 필터 기능 ---
         window.openProfile = function(id) {
+            currentProfileId = id;
             const player = rankingsData.find(p => p.id === id);
             if (!player) return;
             
             const modal = document.getElementById('profileModal');
             const rank = rankingsData.indexOf(player) + 1;
             
+            // 기본 정보 채우기
             document.getElementById('profileName').textContent = player.name;
             document.getElementById('profileRank').textContent = '#' + rank;
             document.getElementById('profileWins').textContent = player.wins || 0;
@@ -387,81 +450,90 @@
             const tagContainer = document.getElementById('profileTags');
             tagContainer.innerHTML = (player.tags || []).map(t => `<span class="tag-badge">#${t}</span>`).join('');
             
-            const matchListContainer = document.getElementById('profileMatchList');
-            matchListContainer.innerHTML = '';
-
-            const myMatches = enrichedMatchHistory.filter(m => m.winner === player.name || m.loser === player.name);
+            // 필터 초기화 (전체 보기)
+            const filterEl = document.getElementById('profileSeasonFilter');
+            filterEl.value = 'all';
             
-            if (myMatches.length === 0) {
-                matchListContainer.innerHTML = '<div class="text-center text-xs text-gray-400 py-4">기록된 경기가 없습니다.</div>';
-            } else {
-                const table = document.createElement('table');
-                table.className = 'bout-table';
-                
-                myMatches.forEach(match => {
-                    const isWin = match.winner === player.name;
-                    const opponentName = isWin ? match.loser : match.winner;
-                    const oppSnapshot = isWin ? match.loserSnapshot : match.winnerSnapshot;
-                    const oppRecordStr = `<span class="text-green-600">${oppSnapshot.wins}</span>-<span class="text-red-600">${oppSnapshot.losses}</span>-0`;
-                    
-                    let oppDots = "";
-                    const oppLast6 = oppSnapshot.last6 || [];
-                    while(oppLast6.length < 6) oppLast6.unshift(0);
-                    oppLast6.forEach(r => {
-                        let c = 'bg-gray-200';
-                        if(r===1) c='bg-green-500'; if(r===2) c='bg-red-500';
-                        oppDots += `<div style="width:6px;height:6px;border-radius:50%;display:inline-block;margin-right:1px;" class="${c}"></div>`;
-                    });
+            // 렌더링 호출
+            renderProfileMatches(id, 'all');
 
-                    const tr = document.createElement('tr');
-                    tr.className = 'bout-row';
-                    tr.innerHTML = `
-                        <td class="bout-cell bout-date">${match.date}</td>
-                        <td class="bout-cell bout-opponent">
-                            <span class="opp-name">${opponentName}</span>
-                            <div class="opp-record">${oppRecordStr} <div style="display:inline-block;margin-left:4px;">${oppDots}</div></div>
-                        </td>
-                        <td class="bout-cell bout-result">
-                            <span class="result-badge ${isWin ? 'res-w' : 'res-l'}">${isWin ? 'W' : 'L'}</span>
-                        </td>
-                    `;
-                    table.appendChild(tr);
-                });
-                matchListContainer.appendChild(table);
-            }
+            // 필터 변경 이벤트 리스너 (기존 것 제거 후 새로 등록)
+            const newFilterEl = filterEl.cloneNode(true);
+            filterEl.parentNode.replaceChild(newFilterEl, filterEl);
+            newFilterEl.addEventListener('change', (e) => {
+                renderProfileMatches(id, e.target.value);
+            });
 
             modal.classList.remove('hidden');
         }
 
-        function updateSeasonSelector() {
-            const selector = document.getElementById('seasonSelector');
-            selector.innerHTML = '';
+        // --- [추가됨] 프로필 매치 리스트 렌더링 함수 (필터 적용) ---
+        function renderProfileMatches(playerId, filterMode) {
+            const player = rankingsData.find(p => p.id === playerId);
+            const matchListContainer = document.getElementById('profileMatchList');
+            matchListContainer.innerHTML = '';
+
+            let myMatches = enrichedMatchHistory.filter(m => m.winner === player.name || m.loser === player.name);
+
+            // 필터링
+            if (filterMode === 'current') {
+                myMatches = myMatches.filter(m => (m.season || "시즌 1") === activeSeason);
+            }
+
+            if (myMatches.length === 0) {
+                matchListContainer.innerHTML = '<div class="text-center text-xs text-gray-400 py-4">기록된 경기가 없습니다.</div>';
+                return;
+            }
+
+            const table = document.createElement('table');
+            table.className = 'bout-table';
             
-            // 1. 종료된 시즌 목록 (오름차순 또는 내림차순 정렬)
-            const archives = Object.keys(seasonArchives).sort();
-            archives.forEach(s => {
-                const opt = document.createElement('option');
-                opt.value = s; 
-                opt.textContent = s + " (종료)";
-                selector.appendChild(opt);
+            myMatches.forEach(match => {
+                let isWin = false;
+                let isDraw = match.type === 'draw';
+                let opponentName = "";
+                let badgeClass = "";
+                let badgeText = "";
+
+                if (isDraw) {
+                    opponentName = (match.winner === player.name) ? match.loser : match.winner;
+                    badgeClass = 'res-d';
+                    badgeText = 'D';
+                } else {
+                    isWin = match.winner === player.name;
+                    opponentName = isWin ? match.loser : match.winner;
+                    badgeClass = isWin ? 'res-w' : 'res-l';
+                    badgeText = isWin ? 'W' : 'L';
+                }
+                
+                // 당시 상대방 정보
+                const oppSnapshot = (isWin || (isDraw && match.winner === player.name)) ? match.loserSnapshot : match.winnerSnapshot;
+                const oppRecordStr = `<span class="text-green-600">${oppSnapshot.wins}</span>-<span class="text-red-600">${oppSnapshot.losses}</span>-0`;
+                
+                let oppDots = "";
+                const oppLast6 = oppSnapshot.last6 || [];
+                while(oppLast6.length < 6) oppLast6.unshift(0);
+                oppLast6.forEach(r => {
+                    let c = 'bg-gray-200';
+                    if(r===1) c='bg-green-500'; if(r===2) c='bg-red-500'; if(r===3) c='bg-gray-400';
+                    oppDots += `<div style="width:6px;height:6px;border-radius:50%;display:inline-block;margin-right:1px;" class="${c}"></div>`;
+                });
+
+                const tr = document.createElement('tr');
+                tr.className = 'bout-row';
+                tr.innerHTML = `
+                    <td class="bout-cell bout-date">${match.date}</td>
+                    <td class="bout-cell bout-opponent">
+                        <span class="opp-name">${opponentName}</span>
+                        <div class="opp-record">${oppRecordStr} <div style="display:inline-block;margin-left:4px;">${oppDots}</div></div>
+                    </td>
+                    <td class="bout-cell bout-result">
+                        <span class="result-badge ${badgeClass}">${badgeText}</span>
+                    </td>
+                `;
+                table.appendChild(tr);
             });
-
-            // 2. 현재 진행 중인 시즌
-            const activeOpt = document.createElement('option');
-            activeOpt.value = activeSeason;
-            activeOpt.textContent = activeSeason + " (진행)";
-            
-            // [중요] 최신 시즌을 맨 위로 또는 맨 아래로? 여기선 맨 아래에 추가
-            selector.appendChild(activeOpt);
-
-            // [중요] 선택값을 현재 활성화된 시즌으로 강제 설정
-            // (만약 사용자가 다른 걸 골랐다면 viewSeason이 바뀌어 있겠지만, 초기 로드 시에는 activeSeason이 됨)
-            selector.value = viewSeason;
-            
-            selector.onchange = (e) => {
-                viewSeason = e.target.value;
-                renderMatchHistory();
-            };
+            matchListContainer.appendChild(table);
         }
 
         function renderMatchHistory() {
@@ -477,7 +549,8 @@
                 let typeClass = 'border-gray-300';
                 let resultBadge = '';
                 
-                if (match.type === 'defense') { typeClass = 'match-card defense-success'; resultBadge = '🛡️ 방어'; }
+                if (match.type === 'draw') { typeClass = 'match-card'; resultBadge = '무승부'; }
+                else if (match.type === 'defense') { typeClass = 'match-card defense-success'; resultBadge = '🛡️ 방어'; }
                 else if (match.type === 'challenge_success') { typeClass = 'match-card challenge-success'; resultBadge = '🚀 성공'; }
                 else { typeClass = 'match-card'; resultBadge = '경기'; }
 
