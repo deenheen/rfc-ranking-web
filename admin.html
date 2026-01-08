@@ -9,10 +9,8 @@
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap');
         body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
         
-        /* 로그인 오버레이 */
         #loginOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: #111827; z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; }
         
-        /* 드래그 앤 드롭 스타일 */
         .rank-item { cursor: grab; transition: all 0.2s; }
         .rank-item:active { cursor: grabbing; }
         .rank-item.dragging { opacity: 0.5; border: 2px dashed #3b82f6; background-color: #eff6ff; }
@@ -69,7 +67,15 @@
                         <span class="ml-2 text-sm font-bold">승리 (Win)</span>
                     </label>
                 </div>
-                <div class="font-bold text-gray-400">VS</div>
+
+                <div class="flex flex-col items-center justify-center">
+                    <div class="font-bold text-gray-400 mb-2">VS</div>
+                    <label class="flex items-center justify-center p-2 bg-gray-100 rounded border cursor-pointer hover:bg-gray-200 w-24">
+                        <input type="radio" name="winner" value="draw" class="w-4 h-4 text-gray-600">
+                        <span class="ml-2 text-sm font-bold text-gray-700">무승부</span>
+                    </label>
+                </div>
+
                 <div class="w-full md:w-1/3 bg-red-50 p-4 rounded border border-red-200">
                     <label class="block text-sm font-bold text-red-600 mb-2">홍코너 (Red)</label>
                     <select id="p2Select" class="w-full border p-2 rounded mb-2"></select>
@@ -86,10 +92,8 @@
         </div>
 
         <div id="toolsSection" class="hidden p-4 bg-white rounded-lg shadow space-y-6">
-            
             <div class="border-b pb-4">
                 <h3 class="font-bold text-gray-800 mb-3 text-lg">📅 시즌 관리</h3>
-                
                 <div class="flex gap-4 items-end mb-4">
                     <div class="flex-grow">
                         <label class="block text-xs text-gray-500 mb-1">현재 시즌 이름 수정</label>
@@ -97,24 +101,19 @@
                     </div>
                     <button onclick="updateSeasonName()" class="bg-blue-500 text-white font-bold py-2 px-4 rounded text-sm h-10">이름 변경</button>
                 </div>
-
                 <div class="bg-gray-50 p-4 rounded border border-gray-200">
-                    <h4 class="font-bold text-sm text-gray-700 mb-2">🚀 새 시즌 시작 (Season Reset)</h4>
-                    <p class="text-xs text-gray-500 mb-3">현재 랭킹과 기록을 '명예의 전당'에 저장하고, 새로운 시즌을 시작합니다.</p>
-                    
+                    <h4 class="font-bold text-sm text-gray-700 mb-2">🚀 새 시즌 시작</h4>
                     <div class="flex items-center gap-2 mb-3">
                         <input type="checkbox" id="resetStatsCheck" class="w-4 h-4" checked>
-                        <label for="resetStatsCheck" class="text-sm">선수들의 승/패 전적 초기화</label>
+                        <label for="resetStatsCheck" class="text-sm">선수 전적(승/패/무) 초기화</label>
                     </div>
-                    
                     <button onclick="startNewSeason()" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded w-full">새 시즌 시작하기</button>
                 </div>
             </div>
-
             <div>
                 <h3 class="font-bold text-gray-800 mb-3">🛠️ 데이터 초기화 (주의)</h3>
                 <div class="grid grid-cols-2 gap-3">
-                    <button onclick="resetStats()" class="bg-red-100 text-red-700 py-3 rounded hover:bg-red-200 font-bold text-sm">📊 전적(승패)만 0으로</button>
+                    <button onclick="resetStats()" class="bg-red-100 text-red-700 py-3 rounded hover:bg-red-200 font-bold text-sm">📊 전적 초기화</button>
                     <button onclick="resetHistory()" class="bg-red-100 text-red-700 py-3 rounded hover:bg-red-200 font-bold text-sm">📜 경기 기록 삭제</button>
                 </div>
             </div>
@@ -125,47 +124,27 @@
         <div class="bg-white rounded-xl shadow-2xl p-6 w-11/12 max-w-md">
             <h3 class="text-lg font-bold text-gray-800 mb-4 border-b pb-2">✏️ 선수 상세 정보 수정</h3>
             <input type="hidden" id="editPlayerId">
-            
             <div class="grid grid-cols-2 gap-3 mb-3">
-                <div>
-                    <label class="text-xs text-gray-500">이름</label>
-                    <input type="text" id="editName" class="w-full border p-2 rounded text-sm font-bold">
-                </div>
-                <div>
-                    <label class="text-xs text-gray-500">Game ID</label>
-                    <input type="text" id="editGameId" class="w-full border p-2 rounded text-sm">
-                </div>
+                <div><label class="text-xs text-gray-500">이름</label><input type="text" id="editName" class="w-full border p-2 rounded text-sm font-bold"></div>
+                <div><label class="text-xs text-gray-500">Game ID</label><input type="text" id="editGameId" class="w-full border p-2 rounded text-sm"></div>
             </div>
-            
             <div class="grid grid-cols-3 gap-3 mb-3">
-                <div>
-                    <label class="text-xs text-gray-500">키 (cm)</label>
-                    <input type="text" id="editHeight" class="w-full border p-2 rounded text-sm">
-                </div>
-                <div>
-                    <label class="text-xs text-gray-500">리치 (cm)</label>
-                    <input type="text" id="editReach" class="w-full border p-2 rounded text-sm">
-                </div>
-                <div>
-                    <label class="text-xs text-gray-500">나이</label>
-                    <input type="text" id="editAge" class="w-full border p-2 rounded text-sm">
-                </div>
+                <div><label class="text-xs text-gray-500">키 (cm)</label><input type="text" id="editHeight" class="w-full border p-2 rounded text-sm"></div>
+                <div><label class="text-xs text-gray-500">리치 (cm)</label><input type="text" id="editReach" class="w-full border p-2 rounded text-sm"></div>
+                <div><label class="text-xs text-gray-500">나이</label><input type="text" id="editAge" class="w-full border p-2 rounded text-sm"></div>
             </div>
-
             <div class="mb-3">
-                <label class="text-xs text-gray-500">스탠스 (예: Orthodox, Southpaw)</label>
+                <label class="text-xs text-gray-500">스탠스</label>
                 <select id="editStance" class="w-full border p-2 rounded text-sm">
                     <option value="Orthodox">Orthodox (오른손)</option>
                     <option value="Southpaw">Southpaw (왼손)</option>
                     <option value="Switch">Switch (양손)</option>
                 </select>
             </div>
-
             <div class="mb-4">
                 <label class="text-xs text-gray-500">이미지 URL</label>
                 <input type="text" id="editImage" class="w-full border p-2 rounded text-sm" placeholder="https://...">
             </div>
-
             <div class="flex justify-end gap-2">
                 <button onclick="closeEditModal()" class="bg-gray-200 text-gray-700 py-2 px-4 rounded text-sm">취소</button>
                 <button onclick="savePlayerDetails()" class="bg-blue-600 text-white py-2 px-4 rounded text-sm font-bold">저장</button>
@@ -179,17 +158,16 @@
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
         // ============================================================
-        // [중요] 여기에 본인의 firebaseConfig를 붙여넣으세요!
+        // [자동 입력] Firebase 설정
         // ============================================================
         const firebaseConfig = {
-           const firebaseConfig = {
-  apiKey: "AIzaSyDlj68ex-fM0ExRdD-tvCy-UyIneVoPmGk",
-  authDomain: "rfk-ranking.firebaseapp.com",
-  projectId: "rfk-ranking",
-  storageBucket: "rfk-ranking.firebasestorage.app",
-  messagingSenderId: "675366165774",
-  appId: "1:675366165774:web:795d34c56eab630b4dcb5f",
-  measurementId: "G-CXPDZQ8GTL"
+            apiKey: "AIzaSyDlj68ex-fM0ExRdD-tvCy-UyIneVoPmGk",
+            authDomain: "rfk-ranking.firebaseapp.com",
+            projectId: "rfk-ranking",
+            storageBucket: "rfk-ranking.firebasestorage.app",
+            messagingSenderId: "675366165774",
+            appId: "1:675366165774:web:795d34c56eab630b4dcb5f",
+            measurementId: "G-CXPDZQ8GTL"
         };
         // ============================================================
 
@@ -204,7 +182,6 @@
         let activeSeason = "시즌 1";
         let dragSrcEl = null;
 
-        // 로그인 로직
         document.getElementById('btnLogin').addEventListener('click', () => {
             const email = document.getElementById('adminEmail').value;
             const pw = document.getElementById('adminPw').value;
@@ -246,7 +223,6 @@
             const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'rankings', 'main');
             
             try {
-                // KST 날짜 저장
                 const now = new Date();
                 const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
                 const kstGap = 9 * 60 * 60 * 1000;
@@ -279,10 +255,9 @@
                     <div class="flex-grow flex flex-col sm:flex-row sm:items-center gap-2">
                         <div class="font-bold text-gray-800 w-32 truncate">${item.name}</div>
                         <div class="text-xs text-gray-500 flex gap-2">
-                            <span>${item.wins}승</span>
-                            <span>${item.losses}패</span>
-                            <span class="text-gray-300">|</span>
-                            <span>${item.stance || '-'}</span>
+                            <span class="text-green-600">${item.wins}승</span>
+                            <span class="text-red-600">${item.losses}패</span>
+                            <span class="text-blue-600">${item.draws || 0}무</span>
                         </div>
                     </div>
                     <div class="flex gap-2">
@@ -298,50 +273,6 @@
             });
         }
 
-        // --- 시즌 관리 로직 ---
-        window.updateSeasonName = () => {
-            const newName = document.getElementById('seasonNameInput').value.trim();
-            if(!newName) return alert("시즌 이름을 입력하세요.");
-            activeSeason = newName;
-            saveRankings();
-            alert("시즌 이름이 변경되었습니다.");
-        };
-
-        window.startNewSeason = () => {
-            if(!confirm(`정말 [${activeSeason}]을 종료하고 새 시즌을 시작하시겠습니까?`)) return;
-            
-            const nextSeasonNum = parseInt(activeSeason.replace(/[^0-9]/g, '')) + 1 || 2;
-            const newSeasonName = `시즌 ${nextSeasonNum}`;
-            
-            // 1. 현재 시즌 아카이빙
-            const champion = rankingsData[0] ? rankingsData[0].name : "-";
-            const rank2 = rankingsData[1] ? rankingsData[1].name : "-";
-            const rank3 = rankingsData[2] ? rankingsData[2].name : "-";
-            
-            seasonArchives[activeSeason] = {
-                champion: champion,
-                rank2: rank2,
-                rank3: rank3,
-                bestMatch: "선정 중"
-            };
-
-            // 2. 시즌 변경
-            activeSeason = newSeasonName;
-
-            // 3. 전적 초기화 (옵션)
-            if(document.getElementById('resetStatsCheck').checked) {
-                rankingsData.forEach(p => { 
-                    p.wins = 0; p.losses = 0; 
-                    p.recentMatchResults = [0,0,0,0,0,0]; 
-                });
-            }
-
-            saveRankings();
-            alert(`[${newSeasonName}]가 시작되었습니다!`);
-            document.getElementById('seasonNameInput').value = activeSeason;
-        };
-
-        // --- 상세 편집 모달 로직 ---
         window.openEditModal = (idx) => {
             const p = rankingsData[idx];
             document.getElementById('editPlayerId').value = idx;
@@ -367,7 +298,6 @@
             p.age = document.getElementById('editAge').value;
             p.stance = document.getElementById('editStance').value;
             p.imageUrl = document.getElementById('editImage').value;
-            
             saveRankings();
             closeEditModal();
             renderRankings();
@@ -377,7 +307,7 @@
             const name = prompt("새 선수 이름:");
             if(name) {
                 rankingsData.push({ 
-                    id: crypto.randomUUID(), name: name, wins: 0, losses: 0, 
+                    id: crypto.randomUUID(), name: name, wins: 0, losses: 0, draws: 0,
                     isParticipating: true, entryTime: Date.now(),
                     recentMatchResults: [0,0,0,0,0,0] 
                 });
@@ -392,38 +322,61 @@
             }
         };
 
-        // --- 경기 결과 적용 ---
+        // --- 경기 결과 적용 (무승부 로직 포함) ---
         window.applyMatch = (type) => {
             const p1Idx = document.getElementById('p1Select').value;
             const p2Idx = document.getElementById('p2Select').value;
             const winnerVal = document.querySelector('input[name="winner"]:checked')?.value;
 
-            if(!winnerVal || p1Idx==="" || p2Idx==="") return alert("선수와 승자를 모두 선택하세요.");
+            if(!winnerVal || p1Idx==="" || p2Idx==="") return alert("선수와 결과를 모두 선택하세요.");
             if(p1Idx === p2Idx) return alert("서로 다른 선수를 선택하세요.");
 
             const p1 = rankingsData[p1Idx];
             const p2 = rankingsData[p2Idx];
-            let winner, loser;
+            
+            // 전적 및 기록 업데이트 로직
+            if (winnerVal === 'draw') {
+                // 무승부
+                p1.draws = (p1.draws || 0) + 1;
+                p2.draws = (p2.draws || 0) + 1;
+                
+                if(!p1.recentMatchResults) p1.recentMatchResults = [0,0,0,0,0,0];
+                p1.recentMatchResults.push(3); // 3: Draw
+                
+                if(!p2.recentMatchResults) p2.recentMatchResults = [0,0,0,0,0,0];
+                p2.recentMatchResults.push(3); // 3: Draw
 
-            if (winnerVal === 'blue') { winner = p1; loser = p2; }
-            else { winner = p2; loser = p1; }
+                matchHistoryData.unshift({
+                    date: new Date().toLocaleDateString('ko-KR', {timeZone: 'Asia/Seoul'}).replace(/\. /g, '-').replace('.', ''),
+                    winner: p1.name, // 무승부는 winner/loser 개념이 모호하므로
+                    loser: p2.name,  // 데이터 구조상 이렇게 넣고 type이나 별도 로직으로 구분
+                    type: 'draw',    // type을 draw로 저장
+                    season: activeSeason
+                });
 
-            // 전적 업데이트
-            winner.wins = (winner.wins || 0) + 1;
-            loser.losses = (loser.losses || 0) + 1;
+            } else {
+                // 승패
+                let winner, loser;
+                if (winnerVal === 'blue') { winner = p1; loser = p2; }
+                else { winner = p2; loser = p1; }
 
-            // 매치 히스토리 저장
-            const now = new Date();
-            const kstDate = new Date(now.getTime() + (9 * 60 * 60 * 1000));
-            const dateStr = kstDate.toISOString().split('T')[0];
+                winner.wins = (winner.wins || 0) + 1;
+                loser.losses = (loser.losses || 0) + 1;
 
-            matchHistoryData.unshift({
-                date: dateStr,
-                winner: winner.name,
-                loser: loser.name,
-                type: type,
-                season: activeSeason
-            });
+                if(!winner.recentMatchResults) winner.recentMatchResults = [0,0,0,0,0,0];
+                winner.recentMatchResults.push(1); // 1: Win
+                
+                if(!loser.recentMatchResults) loser.recentMatchResults = [0,0,0,0,0,0];
+                loser.recentMatchResults.push(2); // 2: Loss
+
+                matchHistoryData.unshift({
+                    date: new Date().toLocaleDateString('ko-KR', {timeZone: 'Asia/Seoul'}).replace(/\. /g, '-').replace('.', ''),
+                    winner: winner.name,
+                    loser: loser.name,
+                    type: type, // friendly or ranking
+                    season: activeSeason
+                });
+            }
 
             saveRankings();
             alert("경기 결과가 반영되었습니다.");
@@ -437,10 +390,42 @@
             s1.innerHTML = opts; s2.innerHTML = opts;
         }
 
-        // --- 도구 ---
+        window.updateSeasonName = () => {
+            const newName = document.getElementById('seasonNameInput').value.trim();
+            if(!newName) return alert("시즌 이름을 입력하세요.");
+            activeSeason = newName;
+            saveRankings();
+            alert("시즌 이름이 변경되었습니다.");
+        };
+
+        window.startNewSeason = () => {
+            if(!confirm(`정말 [${activeSeason}]을 종료하고 새 시즌을 시작하시겠습니까?`)) return;
+            const nextSeasonNum = parseInt(activeSeason.replace(/[^0-9]/g, '')) + 1 || 2;
+            const newSeasonName = `시즌 ${nextSeasonNum}`;
+            
+            seasonArchives[activeSeason] = {
+                champion: rankingsData[0] ? rankingsData[0].name : "-",
+                rank2: rankingsData[1] ? rankingsData[1].name : "-",
+                rank3: rankingsData[2] ? rankingsData[2].name : "-",
+                bestMatch: "선정 중"
+            };
+
+            activeSeason = newSeasonName;
+
+            if(document.getElementById('resetStatsCheck').checked) {
+                rankingsData.forEach(p => { 
+                    p.wins = 0; p.losses = 0; p.draws = 0;
+                    p.recentMatchResults = [0,0,0,0,0,0]; 
+                });
+            }
+            saveRankings();
+            alert(`[${newSeasonName}]가 시작되었습니다!`);
+            document.getElementById('seasonNameInput').value = activeSeason;
+        };
+
         window.resetStats = () => {
-            if(confirm("모든 선수의 전적(승/패/최근기록)을 0으로 초기화합니까?")) {
-                rankingsData.forEach(p => { p.wins = 0; p.losses = 0; p.recentMatchResults = [0,0,0,0,0,0]; });
+            if(confirm("모든 선수의 전적(승/패/무/최근기록)을 0으로 초기화합니까?")) {
+                rankingsData.forEach(p => { p.wins = 0; p.losses = 0; p.draws = 0; p.recentMatchResults = [0,0,0,0,0,0]; });
                 saveRankings();
             }
         }
@@ -451,7 +436,6 @@
             }
         }
 
-        // --- 드래그 로직 ---
         function handleDragStart(e) { dragSrcEl = this; e.dataTransfer.effectAllowed = 'move'; this.classList.add('dragging'); }
         function handleDragOver(e) { e.preventDefault(); return false; }
         function handleDrop(e) {
