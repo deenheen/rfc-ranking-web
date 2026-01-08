@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>관리자 페이지</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; text-align: center; }
+        input, button { padding: 10px; margin: 5px; font-size: 16px; }
+        #admin-panel { display: none; background: #f0f0f0; padding: 20px; border-radius: 10px; margin-top: 20px;}
+        .control-group { border-bottom: 1px solid #ccc; padding: 10px; }
+    </style>
+</head>
+<body>
+
+    <h1>관리자 전용</h1>
+
+    <div id="login-box">
+        <input type="email" id="email" placeholder="관리자 이메일">
+        <input type="password" id="pw" placeholder="비밀번호">
+        <br>
+        <button id="btn-login">로그인</button>
+    </div>
+
+    <div id="admin-panel">
+        <h2>점수 수정</h2>
+        <p>선수 이름을 정확히 입력하세요</p>
+        <div class="control-group">
+            <input type="text" id="player-name" placeholder="선수 이름 (예: 철수)">
+            <br>
+            <button id="btn-win" style="background:skyblue;">승리 +1</button>
+            <button id="btn-lose" style="background:salmon;">패배 +1</button>
+        </div>
+        
+        <br>
+        <h3>새 선수 등록</h3>
+        <input type="text" id="new-player-name" placeholder="새 이름">
+        <button id="btn-add">등록</button>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, getDocs, query, where, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+        // ---------------------------------------------------------
+        // [중요] 아까 복사한 키 코드를 아래 괄호 안에 덮어씌우세요!
+        // ---------------------------------------------------------
+        
+        // (여기에 firebaseConfig 코드를 붙여넣으세요)
+
+        // ---------------------------------------------------------
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        // 1. 로그인 기능
+        document.getElementById("btn-login").addEventListener("click", () => {
+            const email = document.getElementById("email").value;
+            const pw = document.getElementById("pw").value;
+            signInWithEmailAndPassword(auth, email, pw)
+                .then(() => alert("환영합니다 관리자님!"))
+                .catch((e) => alert("로그인 실패: " + e.message));
+        });
+
+        // 2. 로그인 상태 감지
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                document.getElementById("login-box").style.display = "none";
+                document.getElementById("admin-panel").style.display = "block";
+            }
+        });
+
+        // 3. 점수 수정 함수
+        async function updateScore(type) {
+            const name = document.getElementById("player-name").value;
+            if(!name) return alert("이름을 입력하세요");
+
+            const q = query(collection(db, "players"), where("name", "==", name));
+            const querySnapshot = await getDocs(q);
+
+            if (querySnapshot.empty) {
+                alert("그런 선수는 없는데요? 이름을 확인하세요.");
+                return;
+            }
+
+            querySnapshot.forEach(async (doc) => {
+                await updateDoc(doc.ref, {
+                    [type]: increment(1)
+                });
+            });
+        }
+
+        document.getElementById("btn-win").addEventListener("click", () => updateScore("win"));
+        document.getElementById("btn-lose").addEventListener("click", () => updateScore("lose"));
+
+        // 4. 새 선수 등록
+        document.getElementById("btn-add").addEventListener("click", async () => {
+            const newName = document.getElementById("new-player-name").value;
+            if(!newName) return;
+            
+            await addDoc(collection(db, "players"), {
+                name: newName, win: 0, lose: 0
+            });
+            alert(newName + " 선수 등록 완료!");
+            document.getElementById("new-player-name").value = "";
+        });
+
+    </script>
+</body>
+</html>
