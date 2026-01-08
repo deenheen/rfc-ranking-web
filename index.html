@@ -100,7 +100,7 @@
 
         <div id="matchHistorySection" class="hidden p-4 bg-gray-50 rounded-lg shadow-inner">
             <div class="flex justify-between items-center mb-4">
-                <h3 class="text-lg font-bold text-gray-700">⚔️ 최근 경기 기록</h3>
+                <h3 class="text-lg font-bold text-gray-700">⚔️ 시즌별 경기 기록</h3>
                 <select id="seasonSelector" class="text-sm font-bold text-gray-700 border border-gray-300 rounded-lg p-1.5 bg-white"></select>
             </div>
             <div id="matchHistoryList"></div>
@@ -211,15 +211,16 @@
                 tournamentData = data.tournamentData || { active: false, rounds: [] };
                 currentSeasonBestMatch = data.seasonBestMatch || "";
                 
-                if (viewSeason === "시즌 1" && activeSeason !== "시즌 1") viewSeason = activeSeason;
+                // [수정됨] 시즌 선택 로직 개선 (최초 로드 시 현재 시즌으로 설정)
+                if (viewSeason === "시즌 1" && activeSeason !== "시즌 1") {
+                    viewSeason = activeSeason;
+                }
 
                 let baseline = rankingsData.map(item => ({...item}));
                 baseline.sort((a, b) => a.previousRank - b.previousRank);
                 previousRankingsData = baseline;
 
-                // [수정 완료] 날짜를 강제로 KST(한국 표준시) 오늘 날짜로 계산하여 표시
                 updateKSTDate();
-
                 calculateHistoricalRecords();
 
                 renderRankings();
@@ -230,25 +231,18 @@
             }
         });
 
-        // 🟢 날짜 KST 강제 변환 함수
         function updateKSTDate() {
             const now = new Date();
-            // UTC 시간 계산
             const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
-            // KST는 UTC+9
             const kstGap = 9 * 60 * 60 * 1000;
             const todayKST = new Date(utc + kstGap);
-
             const year = todayKST.getFullYear();
             const month = String(todayKST.getMonth() + 1).padStart(2, '0');
             const day = String(todayKST.getDate()).padStart(2, '0');
-            
             document.getElementById('dateDisplay').textContent = `${year}-${month}-${day}`;
         }
 
-        // 🟢 과거 전적 계산기
         function calculateHistoricalRecords() {
-            // 과거 -> 최신 순 정렬
             let chronologicalMatches = [...matchHistoryData].reverse();
             let statsMap = {}; 
 
@@ -274,25 +268,19 @@
 
                 return matchWithSnapshot;
             });
-            
-            // 최신순으로 다시 뒤집기 (표시용)
             enrichedMatchHistory.reverse();
         }
 
-        // 🟢 [수정됨] 랭킹 리스트 렌더링 (Last 6를 DB값이 아닌 실제 기록으로 계산)
         function renderRankings() {
             const listContainer = document.getElementById('rankingList');
             listContainer.innerHTML = '';
             
-            // 1. 현재 계산된 전적 맵 생성 (calculateHistoricalRecords 로직과 동일하게 전체 재계산)
-            // 이유: DB에 저장된 recentMatchResults가 꼬여있을 수 있으므로 실시간 계산이 정확함
             let liveStats = {};
-            // 최신->과거 순인 matchHistoryData를 뒤집어서(과거->최신) 계산
             [...matchHistoryData].reverse().forEach(match => {
                 if(!liveStats[match.winner]) liveStats[match.winner] = [];
                 if(!liveStats[match.loser]) liveStats[match.loser] = [];
-                liveStats[match.winner].push(1); // 승
-                liveStats[match.loser].push(2);  // 패
+                liveStats[match.winner].push(1);
+                liveStats[match.loser].push(2);
             });
 
             rankingsData.forEach((item, index) => {
@@ -315,7 +303,6 @@
                     rankColor = 'text-teal-600';
                 }
 
-                // [중요] 실시간 기록에서 Last 6 가져오기
                 const history = liveStats[item.name] || [];
                 const last6 = history.slice(-6); 
                 while(last6.length < 6) last6.unshift(0);
@@ -449,15 +436,26 @@
         function updateSeasonSelector() {
             const selector = document.getElementById('seasonSelector');
             selector.innerHTML = '';
-            Object.keys(seasonArchives).sort().forEach(s => {
+            
+            // 1. 종료된 시즌 목록 (오름차순 또는 내림차순 정렬)
+            const archives = Object.keys(seasonArchives).sort();
+            archives.forEach(s => {
                 const opt = document.createElement('option');
-                opt.value = s; opt.textContent = s + " (종료)";
+                opt.value = s; 
+                opt.textContent = s + " (종료)";
                 selector.appendChild(opt);
             });
+
+            // 2. 현재 진행 중인 시즌
             const activeOpt = document.createElement('option');
             activeOpt.value = activeSeason;
             activeOpt.textContent = activeSeason + " (진행)";
+            
+            // [중요] 최신 시즌을 맨 위로 또는 맨 아래로? 여기선 맨 아래에 추가
             selector.appendChild(activeOpt);
+
+            // [중요] 선택값을 현재 활성화된 시즌으로 강제 설정
+            // (만약 사용자가 다른 걸 골랐다면 viewSeason이 바뀌어 있겠지만, 초기 로드 시에는 activeSeason이 됨)
             selector.value = viewSeason;
             
             selector.onchange = (e) => {
