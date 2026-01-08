@@ -126,8 +126,10 @@
             
             <div class="p-5 pb-0">
                 <div class="flex items-baseline mb-1">
-                    <span class="text-2xl mr-1" id="profileCrown"></span> <h2 id="profileName" class="text-2xl font-black text-gray-900 tracking-tight mr-2">NickName</h2>
-                    <span id="profileHeaderGameId" class="text-sm text-gray-500 font-bold"></span> </div>
+                    <span class="text-2xl mr-1" id="profileCrown"></span>
+                    <h2 id="profileName" class="text-2xl font-black text-gray-900 tracking-tight mr-2">NickName</h2>
+                    <span id="profileHeaderGameId" class="text-sm text-gray-500 font-bold"></span>
+                </div>
                 <div class="flex items-center space-x-1 mb-4">
                     <div class="bg-green-600 text-white px-3 py-1 rounded font-bold text-lg"><span id="profileWins">0</span></div>
                     <div class="bg-red-600 text-white px-3 py-1 rounded font-bold text-lg"><span id="profileLosses">0</span></div>
@@ -174,16 +176,14 @@
         import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         // ============================================================
-        // [자동 입력] Firebase 설정
-        // ============================================================
         const firebaseConfig = {
             apiKey: "AIzaSyDlj68ex-fM0ExRdD-tvCy-UyIneVoPmGk",
-  authDomain: "rfk-ranking.firebaseapp.com",
-  projectId: "rfk-ranking",
-  storageBucket: "rfk-ranking.firebasestorage.app",
-  messagingSenderId: "675366165774",
-  appId: "1:675366165774:web:795d34c56eab630b4dcb5f",
-  measurementId: "G-CXPDZQ8GTL"
+            authDomain: "rfk-ranking.firebaseapp.com",
+            projectId: "rfk-ranking",
+            storageBucket: "rfk-ranking.firebasestorage.app",
+            messagingSenderId: "675366165774",
+            appId: "1:675366165774:web:795d34c56eab630b4dcb5f",
+            measurementId: "G-CXPDZQ8GTL"
         };
         // ============================================================
 
@@ -214,6 +214,10 @@
                 tournamentData = data.tournamentData || { active: false, rounds: [] };
                 
                 if (viewSeason === "시즌 1" && activeSeason !== "시즌 1") viewSeason = activeSeason;
+
+                let baseline = rankingsData.map(item => ({...item}));
+                baseline.sort((a, b) => a.previousRank - b.previousRank);
+                previousRankingsData = baseline;
 
                 updateKSTDate();
                 calculateHistoricalRecords();
@@ -308,10 +312,20 @@
                 });
                 dotsHtml += '</div>';
 
+                // [수정됨] 순위 변동 계산 (DB에 저장된 previousRank 활용)
+                const prevRank = item.previousRank || currentRank;
+                const diff = prevRank - currentRank;
+                let changeHtml = '<span class="text-xs text-gray-300">-</span>';
+                if (diff > 0) changeHtml = `<span class="text-xs text-red-500 font-bold">▲${diff}</span>`;
+                else if (diff < 0) changeHtml = `<span class="text-xs text-blue-500 font-bold">▼${Math.abs(diff)}</span>`;
+
                 const div = document.createElement('div');
                 div.className = `rank-item flex items-center p-3 rounded-xl shadow-sm ${rowBg} ${borderClass}`;
                 div.innerHTML = `
-                    <div class="w-8 sm:w-12 text-center text-xl sm:text-2xl ${rankColor} font-black" onclick="openProfile('${item.id}')">${currentRank}</div>
+                    <div class="w-8 sm:w-12 text-center flex flex-col items-center justify-center cursor-pointer" onclick="openProfile('${item.id}')">
+                        <span class="text-xl sm:text-2xl ${rankColor} font-black leading-none">${currentRank}</span>
+                        <div class="mt-1">${changeHtml}</div>
+                    </div>
                     <div class="flex-grow pl-2 overflow-hidden">
                         <div class="flex items-center">
                             <span class="text-lg ${nameClass} read-only-text cursor-pointer hover:text-blue-600" onclick="openProfile('${item.id}')">${item.name}</span>
@@ -362,9 +376,7 @@
             const rank = rankingsData.indexOf(player) + 1;
             
             document.getElementById('profileName').textContent = player.name;
-            // 이름 옆 게임 아이디 표시 (추가됨)
             document.getElementById('profileHeaderGameId').textContent = player.gameId ? `(${player.gameId})` : '';
-            // 1위일때만 왕관 표시
             document.getElementById('profileCrown').textContent = (rank === 1) ? '👑' : '';
 
             document.getElementById('profileRank').textContent = '#' + rank;
@@ -456,7 +468,17 @@
                 if (rankingsData.length > 0) displayData.champion = rankingsData[0].name;
                 if (rankingsData.length > 1) displayData.rank2 = rankingsData[1].name;
                 if (rankingsData.length > 2) displayData.rank3 = rankingsData[2].name;
-            } else if (seasonArchives[viewSeason]) { displayData = seasonArchives[viewSeason]; }
+                
+                const maxDef = Math.max(...rankingsData.map(i => i.defenseCount || 0), 0);
+                if (maxDef > 0) {
+                    displayData.defenseCount = maxDef;
+                    displayData.defenseKing = rankingsData.filter(i => (i.defenseCount||0) === maxDef).map(i => i.name).join(', ');
+                }
+                displayData.bestMatch = currentSeasonBestMatch || "선정 중";
+            } else if (seasonArchives[viewSeason]) {
+                displayData = seasonArchives[viewSeason];
+            }
+
             container.innerHTML = `<h3 class="text-center text-lg font-bold text-gray-700 mb-4">${viewSeason} 명예의 전당</h3><div class="grid grid-cols-3 gap-2 text-center items-end mb-6"><div class="hof-card hof-silver order-1"><div class="text-xl">🥈</div><div class="font-bold truncate">${displayData.rank2}</div></div><div class="hof-card hof-champion order-2 transform scale-110"><div class="text-3xl">👑</div><div class="font-black text-lg truncate">${displayData.champion}</div></div><div class="hof-card hof-bronze order-3"><div class="text-xl">🥉</div><div class="font-bold truncate">${displayData.rank3}</div></div></div>`;
         }
 
