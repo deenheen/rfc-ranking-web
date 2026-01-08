@@ -125,10 +125,9 @@
             </button>
             
             <div class="p-5 pb-0">
-                <div class="flex items-center space-x-2 mb-1">
-                    <span class="text-2xl">👑</span>
-                    <h2 id="profileName" class="text-2xl font-black text-gray-900 tracking-tight">NickName</h2>
-                </div>
+                <div class="flex items-baseline mb-1">
+                    <span class="text-2xl mr-1" id="profileCrown"></span> <h2 id="profileName" class="text-2xl font-black text-gray-900 tracking-tight mr-2">NickName</h2>
+                    <span id="profileHeaderGameId" class="text-sm text-gray-500 font-bold"></span> </div>
                 <div class="flex items-center space-x-1 mb-4">
                     <div class="bg-green-600 text-white px-3 py-1 rounded font-bold text-lg"><span id="profileWins">0</span></div>
                     <div class="bg-red-600 text-white px-3 py-1 rounded font-bold text-lg"><span id="profileLosses">0</span></div>
@@ -185,7 +184,6 @@
   messagingSenderId: "675366165774",
   appId: "1:675366165774:web:795d34c56eab630b4dcb5f",
   measurementId: "G-CXPDZQ8GTL"
-
         };
         // ============================================================
 
@@ -364,9 +362,12 @@
             const rank = rankingsData.indexOf(player) + 1;
             
             document.getElementById('profileName').textContent = player.name;
+            // 이름 옆 게임 아이디 표시 (추가됨)
+            document.getElementById('profileHeaderGameId').textContent = player.gameId ? `(${player.gameId})` : '';
+            // 1위일때만 왕관 표시
+            document.getElementById('profileCrown').textContent = (rank === 1) ? '👑' : '';
+
             document.getElementById('profileRank').textContent = '#' + rank;
-            // 여기서 Wins/Losses는 아래 renderProfileMatches에서 동적으로 덮어씌워짐
-            
             document.getElementById('profileGameId').textContent = player.gameId || '-';
             document.getElementById('profileHighRank').textContent = (player.careerHighRank || rank) + '위';
             document.getElementById('profileHeight').textContent = player.height ? player.height + 'cm' : '-';
@@ -390,7 +391,6 @@
             modal.classList.remove('hidden');
         }
 
-        // [중요] 필터에 따라 상단 전적(헤더)도 같이 변경하는 로직 추가
         function renderProfileMatches(playerId, filterMode) {
             const player = rankingsData.find(p => p.id === playerId);
             const matchListContainer = document.getElementById('profileMatchList');
@@ -399,7 +399,7 @@
             let myMatches = enrichedMatchHistory.filter(m => m.winner === player.name || m.loser === player.name);
             if (filterMode === 'current') myMatches = myMatches.filter(m => (m.season || "시즌 1") === activeSeason);
 
-            // [동적 헤더 업데이트] 필터된 기록 기반으로 승/패/무 계산
+            // [동적 헤더 업데이트]
             let w = 0, l = 0, d = 0;
             myMatches.forEach(m => {
                 if(m.type === 'draw') d++;
@@ -456,17 +456,7 @@
                 if (rankingsData.length > 0) displayData.champion = rankingsData[0].name;
                 if (rankingsData.length > 1) displayData.rank2 = rankingsData[1].name;
                 if (rankingsData.length > 2) displayData.rank3 = rankingsData[2].name;
-                
-                const maxDef = Math.max(...rankingsData.map(i => i.defenseCount || 0), 0);
-                if (maxDef > 0) {
-                    displayData.defenseCount = maxDef;
-                    displayData.defenseKing = rankingsData.filter(i => (i.defenseCount||0) === maxDef).map(i => i.name).join(', ');
-                }
-                displayData.bestMatch = currentSeasonBestMatch || "선정 중";
-            } else if (seasonArchives[viewSeason]) {
-                displayData = seasonArchives[viewSeason];
-            }
-
+            } else if (seasonArchives[viewSeason]) { displayData = seasonArchives[viewSeason]; }
             container.innerHTML = `<h3 class="text-center text-lg font-bold text-gray-700 mb-4">${viewSeason} 명예의 전당</h3><div class="grid grid-cols-3 gap-2 text-center items-end mb-6"><div class="hof-card hof-silver order-1"><div class="text-xl">🥈</div><div class="font-bold truncate">${displayData.rank2}</div></div><div class="hof-card hof-champion order-2 transform scale-110"><div class="text-3xl">👑</div><div class="font-black text-lg truncate">${displayData.champion}</div></div><div class="hof-card hof-bronze order-3"><div class="text-xl">🥉</div><div class="font-bold truncate">${displayData.rank3}</div></div></div>`;
         }
 
