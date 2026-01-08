@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RFC 관리자 (Final)</title>
+    <title>RFC 관리자 (Final+)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap');
@@ -46,7 +46,7 @@
 
         <div id="rankingSection">
             <div class="flex justify-between items-center mb-2">
-                <button onclick="sortRankingsByElo()" class="bg-purple-100 text-purple-700 text-xs font-bold py-2 px-3 rounded hover:bg-purple-200">📉 ELO순 자동 정렬</button>
+                <div class="text-xs text-gray-500">* 드래그하여 순위를 변경해도 '기준점 갱신' 전까지 변동폭(▲▼)은 유지됩니다.</div>
                 <button onclick="addNewPlayer()" class="bg-green-600 text-white text-xs font-bold py-2 px-3 rounded">+ 새 선수 추가</button>
             </div>
             <div id="rankingList" class="space-y-2"></div>
@@ -89,6 +89,16 @@
         </div>
 
         <div id="toolsSection" class="hidden p-4 bg-white rounded-lg shadow space-y-6">
+            
+            <div class="border-b pb-4">
+                <h3 class="font-bold text-gray-800 mb-3 text-lg">📊 순위 변동 관리</h3>
+                <div class="bg-blue-50 p-4 rounded border border-blue-200">
+                    <h4 class="font-bold text-sm text-blue-700 mb-1">🔄 순위 변동 기준점 갱신 (마감 처리)</h4>
+                    <p class="text-xs text-gray-500 mb-3">현재 순위를 '어제의 순위'로 저장합니다. <br>사용자 화면의 변동폭(▲/▼)이 모두 0(-)으로 초기화됩니다.</p>
+                    <button onclick="updateRankBaseline()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded w-full">기준점 갱신하기</button>
+                </div>
+            </div>
+
             <div class="border-b pb-4">
                 <h3 class="font-bold text-gray-800 mb-3 text-lg">📅 시즌 관리</h3>
                 <div class="flex gap-4 items-end mb-4">
@@ -127,11 +137,21 @@
         <div class="bg-white rounded-xl shadow-2xl p-6 w-11/12 max-w-md max-h-[90vh] overflow-y-auto">
             <h3 class="text-lg font-bold text-gray-800 mb-4 border-b pb-2">✏️ 선수 정보 수정</h3>
             <input type="hidden" id="editPlayerId">
-            <input type="hidden" id="editOriginalName"> <div class="grid grid-cols-2 gap-3 mb-3">
+            <input type="hidden" id="editOriginalName">
+            
+            <div class="grid grid-cols-2 gap-3 mb-3">
                 <div><label class="text-xs text-gray-500">이름</label><input type="text" id="editName" class="w-full border p-2 rounded text-sm font-bold"></div>
                 <div><label class="text-xs text-gray-500">ELO 점수</label><input type="number" id="editElo" class="w-full border p-2 rounded text-sm bg-yellow-50 font-bold text-yellow-700"></div>
             </div>
             
+            <div class="mb-3 bg-gray-50 p-2 rounded border">
+                <label class="text-xs text-gray-500 font-bold">기준 순위 (Previous Rank)</label>
+                <div class="flex items-center gap-2">
+                    <input type="number" id="editPrevRank" class="w-full border p-2 rounded text-sm">
+                    <span class="text-xs text-gray-400 whitespace-nowrap">*변동폭 계산용</span>
+                </div>
+            </div>
+
             <div class="grid grid-cols-2 gap-3 mb-3">
                 <div><label class="text-xs text-gray-500">키 (cm)</label><input type="text" id="editHeight" class="w-full border p-2 rounded text-sm"></div>
                 <div><label class="text-xs text-gray-500">리치 (cm)</label><input type="text" id="editReach" class="w-full border p-2 rounded text-sm"></div>
@@ -155,7 +175,7 @@
             </div>
 
             <div class="mb-6 p-3 bg-gray-50 rounded border border-gray-200">
-                <label class="block text-xs font-bold text-gray-600 mb-2">🥊 파이팅 스타일 (중복 가능)</label>
+                <label class="block text-xs font-bold text-gray-600 mb-2">🥊 파이팅 스타일</label>
                 <div id="styleTagsContainer" class="flex flex-wrap gap-2"></div>
             </div>
 
@@ -172,7 +192,7 @@
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
         // ============================================================
-        // [중요] 여기에 본인의 firebaseConfig를 붙여넣으세요!
+        // [중요] 본인의 Firebase 키를 넣어주세요
         // ============================================================
         const firebaseConfig = {
             apiKey: "AIzaSyDlj68ex-fM0ExRdD-tvCy-UyIneVoPmGk",
@@ -182,7 +202,6 @@
   messagingSenderId: "675366165774",
   appId: "1:675366165774:web:795d34c56eab630b4dcb5f",
   measurementId: "G-CXPDZQ8GTL"
-
         };
         // ============================================================
 
@@ -228,7 +247,11 @@
                     document.getElementById('currentSeasonDisplay').textContent = activeSeason;
                     document.getElementById('seasonNameInput').value = activeSeason;
 
-                    rankingsData.forEach(p => { if(p.elo === undefined) p.elo = 1000; });
+                    // 데이터 무결성 보정
+                    rankingsData.forEach((p, i) => { 
+                        if(p.elo === undefined) p.elo = 1000; 
+                        if(p.previousRank === undefined) p.previousRank = i + 1; // 기준 순위가 없으면 현재 순위로
+                    });
 
                     renderRankings();
                     populateMatchSelectors();
@@ -242,19 +265,11 @@
             statusEl.textContent = "저장 중...";
             const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'rankings', 'main');
             try {
-                // 저장 시 현재 순위를 previousRank에 백업 (순위 변동 계산용)
-                // 단, 단순 저장이 아니라 '하루가 지났을 때' 갱신하는 것이 정석이지만
-                // 여기서는 일단 실시간 변동을 위해 현재 index를 저장.
-                // *주의: 드래그할 때마다 저장되면 변동폭이 0이 될 수 있음.
-                // 변동폭을 '어제 대비'로 보려면 별도 스냅샷 로직이 필요하지만
-                // 사용자가 요청한 '순위 변동 표시'를 위해 일단 current index 저장.
-                rankingsData.forEach((p, i) => {
-                    // p.previousRank가 없으면 초기화
-                    if (p.previousRank === undefined) p.previousRank = i + 1;
-                });
-
                 const now = new Date();
                 const kstDate = new Date(now.getTime() + (9 * 60 * 60 * 1000)).toISOString().split('T')[0];
+                
+                // [중요] 여기서는 previousRank를 자동 갱신하지 않습니다. (드래그 시 변동폭 유지 위해)
+                
                 await setDoc(docRef, {
                     rankings: rankingsData,
                     matchHistory: matchHistoryData,
@@ -265,6 +280,16 @@
                 statusEl.textContent = "완료";
                 setTimeout(() => statusEl.textContent = "", 1500);
             } catch (e) { alert("저장 오류: " + e.message); }
+        }
+
+        // --- [신규 기능] 순위 변동 기준점 갱신 ---
+        window.updateRankBaseline = () => {
+            if(!confirm("현재 순위를 '기준 순위'로 설정하여 변동폭을 0으로 만드시겠습니까?\n(일일 마감 또는 순위 재정렬 후 사용)")) return;
+            rankingsData.forEach((p, i) => {
+                p.previousRank = i + 1; // 현재 위치를 기준점으로 저장
+            });
+            saveRankings();
+            alert("기준점이 갱신되었습니다.");
         }
 
         function calculateNewElo(ratingA, ratingB, actualScoreA) {
@@ -293,13 +318,8 @@
                 p2.recentMatchResults = [...(p2.recentMatchResults||[]), 3];
                 p1Score = 0.5; p2Score = 0.5;
             } else {
-                let winner, loser;
-                if (winnerVal === 'blue') { winner = p1; loser = p2; p1Score = 1; p2Score = 0; } 
-                else { winner = p2; loser = p1; p1Score = 0; p2Score = 1; }
-                winner.wins = (winner.wins || 0) + 1;
-                loser.losses = (loser.losses || 0) + 1;
-                winner.recentMatchResults = [...(winner.recentMatchResults||[]), 1];
-                loser.recentMatchResults = [...(loser.recentMatchResults||[]), 2];
+                if (winnerVal === 'blue') { p1.wins++; p2.losses++; p1Score = 1; p2Score = 0; p1.recentMatchResults.push(1); p2.recentMatchResults.push(2); } 
+                else { p2.wins++; p1.losses++; p1Score = 0; p2Score = 1; p1.recentMatchResults.push(2); p2.recentMatchResults.push(1); }
             }
 
             const oldElo1 = p1.elo || 1000;
@@ -332,10 +352,20 @@
                 div.dataset.index = index;
                 
                 const tagsText = (item.tags && item.tags.length > 0) ? `[${item.tags.join(', ')}]` : '';
+                
+                // [순위 변동 표시]
+                const prevRank = item.previousRank || (index + 1);
+                const diff = prevRank - (index + 1);
+                let changeHtml = '<span class="text-gray-300">-</span>';
+                if (diff > 0) changeHtml = `<span class="text-red-500 font-bold">▲${diff}</span>`;
+                else if (diff < 0) changeHtml = `<span class="text-blue-500 font-bold">▼${Math.abs(diff)}</span>`;
 
                 div.innerHTML = `
-                    <div class="text-gray-400 font-bold w-8 cursor-grab">≡ ${index + 1}</div>
-                    <div class="flex-grow flex flex-col sm:flex-row sm:items-center gap-2">
+                    <div class="text-gray-400 font-bold w-12 cursor-grab text-center">
+                        <div>≡ ${index + 1}</div>
+                        <div class="text-[10px]">${changeHtml}</div>
+                    </div>
+                    <div class="flex-grow flex flex-col sm:flex-row sm:items-center gap-2 pl-2">
                         <div class="font-bold text-gray-800 w-32 truncate">${item.name}</div>
                         <div class="text-xs text-gray-500 flex gap-2 items-center">
                             <span class="bg-yellow-100 text-yellow-800 px-1.5 py-0.5 rounded font-bold">⚡${item.elo || 1000}</span>
@@ -357,11 +387,10 @@
             });
         }
 
-        // --- 상세 편집 모달 (이름 변경 시 기록 수정 기능 추가) ---
         window.openEditModal = (idx) => {
             const p = rankingsData[idx];
             document.getElementById('editPlayerId').value = idx;
-            document.getElementById('editOriginalName').value = p.name; // 기존 이름 백업
+            document.getElementById('editOriginalName').value = p.name;
             document.getElementById('editName').value = p.name;
             document.getElementById('editGameId').value = p.gameId || '';
             document.getElementById('editHeight').value = p.height || '';
@@ -369,6 +398,9 @@
             document.getElementById('editStance').value = p.stance || 'Orthodox';
             document.getElementById('editImage').value = p.imageUrl || '';
             document.getElementById('editElo').value = p.elo || 1000;
+            // [추가] 기준 순위 수동 조작
+            document.getElementById('editPrevRank').value = p.previousRank || (idx + 1);
+            
             renderStyleTags(p.tags || []);
             document.getElementById('editModal').classList.remove('hidden');
         };
@@ -393,13 +425,13 @@
 
         window.closeEditModal = () => document.getElementById('editModal').classList.add('hidden');
         
-        // [중요] 이름 변경 시 과거 기록 수정 로직 (자동 수행)
+        // [중요] 이름 동기화 (묻지 않고 강제 실행)
         window.savePlayerDetails = () => {
             const idx = document.getElementById('editPlayerId').value;
-            const originalName = document.getElementById('editOriginalName').value; // 원래 이름
-            const newName = document.getElementById('editName').value; // 새 이름
-            
+            const originalName = document.getElementById('editOriginalName').value; 
+            const newName = document.getElementById('editName').value;
             const p = rankingsData[idx];
+            
             p.name = newName;
             p.gameId = document.getElementById('editGameId').value;
             p.height = document.getElementById('editHeight').value;
@@ -407,30 +439,22 @@
             p.stance = document.getElementById('editStance').value;
             p.imageUrl = document.getElementById('editImage').value;
             p.elo = parseInt(document.getElementById('editElo').value) || 1000;
+            // 기준 순위 수동 수정 반영
+            p.previousRank = parseInt(document.getElementById('editPrevRank').value) || (idx + 1);
             
             const checkedTags = document.querySelectorAll('.style-checkbox:checked');
             p.tags = Array.from(checkedTags).map(cb => cb.value);
 
-            // 이름이 바뀌었다면 기록도 수정 (묻지 않고 자동 실행)
+            // 이름 변경 시 과거 기록 강제 수정
             if (originalName && originalName !== newName) {
-                let updateCount = 0;
                 matchHistoryData.forEach(match => {
-                    if(match.winner === originalName) { match.winner = newName; updateCount++; }
-                    if(match.loser === originalName) { match.loser = newName; updateCount++; }
+                    if(match.winner === originalName) match.winner = newName;
+                    if(match.loser === originalName) match.loser = newName;
                 });
-                console.log(`Updated ${updateCount} history records for name change.`);
             }
 
             saveRankings();
             closeEditModal();
-            renderRankings();
-        };
-
-        // --- 순위 자동 정렬 ---
-        window.sortRankingsByElo = () => {
-            if(!confirm("ELO 점수 순으로 순위를 재정렬하시겠습니까?\n(주의: 기존 수동 순서가 바뀝니다.)")) return;
-            rankingsData.sort((a, b) => (b.elo || 1000) - (a.elo || 1000));
-            saveRankings();
             renderRankings();
         };
 
@@ -448,17 +472,16 @@
         window.resetStats = () => { if(confirm("전적 0으로?")) { rankingsData.forEach(p => { p.wins=0; p.losses=0; p.draws=0; p.recentMatchResults=[]; }); saveRankings(); } };
         window.resetHistory = () => { if(confirm("기록 삭제?")) { matchHistoryData=[]; saveRankings(); } };
         window.updateSeasonName = () => { activeSeason = document.getElementById('seasonNameInput').value; saveRankings(); };
+        
         window.startNewSeason = () => { 
             if(!confirm(`[${activeSeason}] 종료 & 새 시즌?`)) return; 
             const nextNum = parseInt(activeSeason.replace(/[^0-9]/g, '')) + 1 || 2; 
             seasonArchives[activeSeason] = { champion: rankingsData[0]?.name||"-", bestMatch: "-" }; 
             activeSeason = `시즌 ${nextNum}`; 
-            // 새 시즌 시작 시 previousRank 초기화
+            // 새 시즌 시작 시 변동폭 초기화
             rankingsData.forEach((p, i) => {
-                p.previousRank = i + 1; // 현재 순위로 리셋
-                if(document.getElementById('resetStatsCheck').checked) { 
-                    p.wins=0; p.losses=0; p.draws=0; p.recentMatchResults=[]; 
-                }
+                p.previousRank = i + 1; 
+                if(document.getElementById('resetStatsCheck').checked) { p.wins=0; p.losses=0; p.draws=0; p.recentMatchResults=[]; }
             });
             saveRankings(); 
             alert(`[${activeSeason}] 시작!`); 
@@ -470,7 +493,19 @@
 
         function handleDragStart(e) { dragSrcEl = this; e.dataTransfer.effectAllowed = 'move'; this.classList.add('dragging'); }
         function handleDragOver(e) { e.preventDefault(); return false; }
-        function handleDrop(e) { e.stopPropagation(); if (dragSrcEl !== this) { const srcIdx = parseInt(dragSrcEl.dataset.index); const targetIdx = parseInt(this.dataset.index); const [moved] = rankingsData.splice(srcIdx, 1); rankingsData.splice(targetIdx, 0, moved); saveRankings(); } this.classList.remove('dragging'); return false; }
+        function handleDrop(e) { 
+            e.stopPropagation(); 
+            if (dragSrcEl !== this) { 
+                const srcIdx = parseInt(dragSrcEl.dataset.index); 
+                const targetIdx = parseInt(this.dataset.index); 
+                const [moved] = rankingsData.splice(srcIdx, 1); 
+                rankingsData.splice(targetIdx, 0, moved); 
+                // [중요] 드래그해도 previousRank는 그대로 두어 변동폭 유지
+                saveRankings(); 
+            } 
+            this.classList.remove('dragging'); 
+            return false; 
+        }
         
         window.switchTab = (tab) => {
             ['ranking', 'match', 'tools'].forEach(t => { document.getElementById(t+'Section').classList.add('hidden'); document.getElementById('tab'+t.charAt(0).toUpperCase()+t.slice(1)).classList.remove('active'); });
