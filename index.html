@@ -3,46 +3,80 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RFC 랭킹전 (BoxRec + ELO)</title>
+    <title>RFC 랭킹전 (BoxRec Style)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Nanum+Gothic+Coding:wght@400;700&display=swap');
+        
         body { font-family: 'Inter', sans-serif; background-color: #f7f9fb; }
         .rank-item { transition: background-color 0.2s; }
         .rank-number { font-weight: 800; width: 3.5rem; text-align: center; cursor: pointer; transition: color 0.2s; } 
+        .rank-number:hover { color: #3b82f6 !important; text-decoration: underline; }
+
         .read-only-text { text-overflow: ellipsis; overflow: hidden; white-space: nowrap; }
         .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); display: flex; justify-content: center; align-items: center; z-index: 1000; }
+        
+        /* 탭 및 카드 스타일 */
         .tab-btn { border-bottom: 2px solid transparent; transition: all 0.2s; }
+        .hof-card { background: white; border-radius: 12px; padding: 1.5rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); text-align: center; border: 1px solid #e5e7eb; }
+        .hof-champion { background: linear-gradient(135deg, #fffbeb 0%, #fff 100%); border: 2px solid #fbbf24; }
+        .hof-silver { background: linear-gradient(135deg, #f8fafc 0%, #fff 100%); border: 2px solid #94a3b8; }
+        .hof-bronze { background: linear-gradient(135deg, #fff7ed 0%, #fff 100%); border: 2px solid #fdba74; }
+        .hof-defense { background: linear-gradient(135deg, #eff6ff 0%, #fff 100%); border: 2px solid #60a5fa; }
+        
         .match-card { background: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); padding: 12px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid #9ca3af; }
         .match-card.defense-success { border-left-color: #3b82f6; background-color: #eff6ff; } 
         .match-card.challenge-success { border-left-color: #ef4444; background-color: #fef2f2; } 
+        
+        /* 토너먼트 및 스크롤바 */
         .bracket-container { display: flex; flex-direction: row; justify-content: flex-start; overflow-x: auto; padding: 20px 0; min-height: 500px; }
         .custom-scrollbar::-webkit-scrollbar { width: 6px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+
+        /* 프로필 이미지 스타일 */
         .profile-image-container { width: 100%; height: 320px; background-color: #e5e7eb; position: relative; overflow: hidden; }
         .profile-image-container img { width: 100%; height: 100%; object-fit: cover; object-position: top center; }
         .profile-stat-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f3f4f6; font-size: 14px; }
         .profile-stat-label { font-weight: 600; color: #6b7280; }
         .profile-stat-value { font-weight: 700; color: #111827; }
+
         .tag-badge { display: inline-block; padding: 2px 8px; margin: 2px; border-radius: 9999px; font-size: 12px; font-weight: 600; background-color: #f3f4f6; color: #4b5563; border: 1px solid #d1d5db; }
+        
+        /* 최근 전적 점 스타일 */
         .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 2px; }
         .dot.win { background-color: #22c55e; } 
         .dot.loss { background-color: #ef4444; } 
         .dot.none { background-color: #e5e7eb; } 
+
+        /* BoxRec 스타일 Bouts 테이블 */
         .bout-table { width: 100%; border-collapse: collapse; font-size: 13px; }
         .bout-row { border-bottom: 1px solid #f3f4f6; }
+        .bout-row:last-child { border-bottom: none; }
         .bout-cell { padding: 8px 4px; vertical-align: middle; }
+        .bout-date { color: #6b7280; font-weight: 500; width: 80px; font-size: 11px; }
+        .bout-opponent { text-align: left; }
+        .opp-name { font-weight: 700; color: #1f2937; display: block; }
+        .opp-record { font-size: 11px; color: #6b7280; margin-top: 2px; }
+        .opp-record span { font-weight: bold; }
+        .bout-result { text-align: right; width: 50px; }
         .result-badge { display: inline-block; width: 30px; padding: 4px 0; text-align: center; color: white; font-weight: 900; font-size: 12px; border-radius: 4px; }
-        .res-w { background-color: #22c55e; } .res-l { background-color: #ef4444; } .res-d { background-color: #9ca3af; }
+        .res-w { background-color: #22c55e; }
+        .res-l { background-color: #ef4444; }
+        .res-d { background-color: #9ca3af; }
     </style>
 </head>
 <body class="p-2 sm:p-4 bg-gray-50">
 
     <div class="max-w-3xl mx-auto">
         <div class="flex flex-col sm:flex-row items-center justify-between mb-4 relative">
-            <h1 class="text-xl font-bold text-gray-800 flex items-center justify-center mb-2 sm:mb-0">🏆 RFC 랭킹전</h1>
-            <div class="text-sm font-bold text-gray-600 bg-white px-3 py-1 rounded shadow-sm border" id="dateDisplay">-</div>
+            <h1 class="text-xl font-bold text-gray-800 flex items-center justify-center mb-2 sm:mb-0">
+                🏆 RFC 랭킹전
+            </h1>
+            <div class="text-sm font-bold text-gray-600 bg-white px-3 py-1 rounded shadow-sm border" id="dateDisplay">
+                -
+            </div>
         </div>
 
         <div id="tabContainer" class="flex border-b border-gray-200 mb-4 sticky top-0 z-50 bg-gray-50 pt-2">
@@ -54,6 +88,7 @@
 
         <div id="rankingSection">
             <div id="loading" class="text-center p-4 text-blue-500 font-medium">데이터를 불러오는 중...</div>
+            
             <div class="flex items-end p-2 text-xs sm:text-sm font-bold text-gray-500 border-b border-gray-300 mb-2">
                 <div class="w-8 sm:w-12 text-center mr-1 pb-1">순위</div> 
                 <div class="flex-grow text-left pl-2 pb-1">이름</div> 
@@ -71,7 +106,9 @@
             <div id="matchHistoryList"></div>
         </div>
         
-        <div id="hallOfFameSection" class="hidden p-4 bg-gray-50 rounded-lg shadow-inner"><div id="hofContent"></div></div>
+        <div id="hallOfFameSection" class="hidden p-4 bg-gray-50 rounded-lg shadow-inner">
+            <div id="hofContent"></div>
+        </div>
         
         <div id="tournamentSection" class="hidden p-4 bg-gray-50 rounded-lg shadow-inner overflow-x-auto">
             <h3 class="text-lg font-bold text-gray-700 text-center mb-4">🏆 토너먼트 대진표</h3>
@@ -83,7 +120,10 @@
 
     <div id="profileModal" class="modal hidden overflow-y-auto" onclick="if(event.target===this)this.classList.add('hidden')">
         <div class="bg-white rounded-xl shadow-2xl w-11/12 max-w-md overflow-hidden relative flex flex-col my-auto mx-auto border-t-8 border-blue-600">
-            <button onclick="document.getElementById('profileModal').classList.add('hidden')" class="absolute top-3 right-3 text-white bg-black/40 hover:bg-black/60 rounded-full p-1.5 z-50"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
+            <button onclick="document.getElementById('profileModal').classList.add('hidden')" class="absolute top-3 right-3 text-white bg-black/40 hover:bg-black/60 rounded-full p-1.5 z-50">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+            </button>
+            
             <div class="p-5 pb-0">
                 <div class="flex items-center space-x-2 mb-1">
                     <span class="text-2xl">👑</span>
@@ -95,13 +135,15 @@
                     <div class="bg-blue-500 text-white px-3 py-1 rounded font-bold text-lg"><span id="profileDraws">0</span></div>
                 </div>
             </div>
+
             <div class="flex flex-col sm:flex-row border-t border-gray-200">
-                <div class="w-full sm:w-1/2 h-64 sm:h-auto bg-gray-200 relative overflow-hidden"><img id="profileImage" src="" alt="Profile" class="w-full h-full object-cover object-top"></div>
+                <div class="w-full sm:w-1/2 h-64 sm:h-auto bg-gray-200 relative overflow-hidden">
+                    <img id="profileImage" src="" alt="Profile" class="w-full h-full object-cover object-top">
+                </div>
                 <div class="w-full sm:w-1/2 p-5 bg-white">
                     <div class="space-y-1">
                         <div class="profile-stat-row"><span class="profile-stat-label">ELO</span><span class="profile-stat-value text-amber-600" id="profileElo">1000</span></div>
                         <div class="profile-stat-row"><span class="profile-stat-label">Ranking</span><span class="profile-stat-value" id="profileRank">#1</span></div>
-                        <div class="profile-stat-row"><span class="profile-stat-label">Age</span><span class="profile-stat-value" id="profileAge">-</span></div>
                         <div class="profile-stat-row"><span class="profile-stat-label">Stance</span><span class="profile-stat-value" id="profileStance">Orthodox</span></div>
                         <div class="profile-stat-row"><span class="profile-stat-label">Height</span><span class="profile-stat-value" id="profileHeight">-</span></div>
                         <div class="profile-stat-row"><span class="profile-stat-label">Reach</span><span class="profile-stat-value" id="profileReach">-</span></div>
@@ -109,13 +151,18 @@
                     </div>
                 </div>
             </div>
+            
             <div class="bg-white border-t border-gray-200">
                 <div class="p-3 bg-gray-50 border-b border-gray-100 font-bold text-gray-800 text-sm flex justify-between items-center">
                     <span>Box-pro Bouts</span>
-                    <select id="profileSeasonFilter" class="text-xs border rounded p-1 text-gray-600 focus:outline-none"><option value="all">전체 기록 (All Time)</option><option value="current">현재 시즌 (Current)</option></select>
+                    <select id="profileSeasonFilter" class="text-xs border rounded p-1 text-gray-600 focus:outline-none">
+                        <option value="all">전체 기록 (All Time)</option>
+                        <option value="current">현재 시즌 (Current)</option>
+                    </select>
                 </div>
                 <div id="profileMatchList" class="p-2 space-y-1"></div>
             </div>
+
             <div class="bg-gray-50 p-4 border-t border-gray-200 flex justify-between text-xs text-gray-500">
                 <div>Game ID: <span id="profileGameId" class="font-bold text-gray-700"></span></div>
                 <div>Career High: <span id="profileHighRank" class="font-bold text-amber-600"></span></div>
@@ -128,15 +175,16 @@
         import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         // ============================================================
+        // [자동 입력] Firebase 설정
+        // ============================================================
         const firebaseConfig = {
             apiKey: "AIzaSyDlj68ex-fM0ExRdD-tvCy-UyIneVoPmGk",
-  authDomain: "rfk-ranking.firebaseapp.com",
-  projectId: "rfk-ranking",
-  storageBucket: "rfk-ranking.firebasestorage.app",
-  messagingSenderId: "675366165774",
-  appId: "1:675366165774:web:795d34c56eab630b4dcb5f",
-  measurementId: "G-CXPDZQ8GTL"
-
+            authDomain: "rfk-ranking.firebaseapp.com",
+            projectId: "rfk-ranking",
+            storageBucket: "rfk-ranking.firebasestorage.app",
+            messagingSenderId: "675366165774",
+            appId: "1:675366165774:web:795d34c56eab630b4dcb5f",
+            measurementId: "G-CXPDZQ8GTL"
         };
         // ============================================================
 
@@ -232,8 +280,13 @@
                 .forEach(match => {
                     if(!liveStats[match.winner]) liveStats[match.winner] = [];
                     if(!liveStats[match.loser]) liveStats[match.loser] = [];
-                    if(match.type === 'draw') { liveStats[match.winner].push(3); liveStats[match.loser].push(3); }
-                    else { liveStats[match.winner].push(1); liveStats[match.loser].push(2); }
+                    if(match.type === 'draw') {
+                        liveStats[match.winner].push(3);
+                        liveStats[match.loser].push(3);
+                    } else {
+                        liveStats[match.winner].push(1);
+                        liveStats[match.loser].push(2);
+                    }
                 });
 
             rankingsData.forEach((item, index) => {
@@ -277,15 +330,19 @@
         }
 
         window.switchTab = function(tab) {
-            ['ranking', 'matchHistory', 'hallOfFame', 'tournament'].forEach(t => {
-                document.getElementById(t+'Section').classList.add('hidden');
-                document.getElementById('tab'+t.charAt(0).toUpperCase()+t.slice(1)).classList.remove('active');
-                document.getElementById('tab'+t.charAt(0).toUpperCase()+t.slice(1)).classList.add('text-gray-400');
+            const tabs = ['ranking', 'matchHistory', 'hallOfFame', 'tournament'];
+            tabs.forEach(t => {
+                document.getElementById(t + 'Section').classList.add('hidden');
+                const btn = document.getElementById('tab' + t.charAt(0).toUpperCase() + t.slice(1));
+                btn.className = "tab-btn flex-1 py-3 px-1 text-sm font-medium text-gray-400 border-b-2 border-transparent hover:text-gray-600";
             });
-            document.getElementById(tab+'Section').classList.remove('hidden');
-            const activeTab = document.getElementById('tab'+tab.charAt(0).toUpperCase()+tab.slice(1));
-            activeTab.classList.add('active');
-            activeTab.classList.remove('text-gray-400');
+            document.getElementById(tab + 'Section').classList.remove('hidden');
+            const activeBtn = document.getElementById('tab' + tab.charAt(0).toUpperCase() + tab.slice(1));
+            activeBtn.className = "tab-btn active flex-1 py-3 px-1 text-sm font-bold text-blue-600 border-b-2 border-blue-500";
+
+            if(tab === 'matchHistory') renderMatchHistory();
+            if(tab === 'hallOfFame') renderHallOfFame();
+            if(tab === 'tournament') renderTournament();
         };
 
         function updateSeasonSelector() {
@@ -307,15 +364,13 @@
             
             document.getElementById('profileName').textContent = player.name;
             document.getElementById('profileRank').textContent = '#' + rank;
-            document.getElementById('profileWins').textContent = player.wins || 0;
-            document.getElementById('profileLosses').textContent = player.losses || 0;
-            document.getElementById('profileDraws').textContent = player.draws || 0; 
+            // 여기서 Wins/Losses는 아래 renderProfileMatches에서 동적으로 덮어씌워짐
+            
             document.getElementById('profileGameId').textContent = player.gameId || '-';
             document.getElementById('profileHighRank').textContent = (player.careerHighRank || rank) + '위';
             document.getElementById('profileHeight').textContent = player.height ? player.height + 'cm' : '-';
             document.getElementById('profileReach').textContent = player.reach ? player.reach + 'cm' : '-';
             document.getElementById('profileStance').textContent = player.stance || 'Orthodox';
-            document.getElementById('profileAge').textContent = player.age || '-'; 
             document.getElementById('profileElo').textContent = player.elo || 1000;
 
             const imgEl = document.getElementById('profileImage');
@@ -334,12 +389,26 @@
             modal.classList.remove('hidden');
         }
 
+        // [중요] 필터에 따라 상단 전적(헤더)도 같이 변경하는 로직 추가
         function renderProfileMatches(playerId, filterMode) {
             const player = rankingsData.find(p => p.id === playerId);
             const matchListContainer = document.getElementById('profileMatchList');
             matchListContainer.innerHTML = '';
+            
             let myMatches = enrichedMatchHistory.filter(m => m.winner === player.name || m.loser === player.name);
             if (filterMode === 'current') myMatches = myMatches.filter(m => (m.season || "시즌 1") === activeSeason);
+
+            // [동적 헤더 업데이트] 필터된 기록 기반으로 승/패/무 계산
+            let w = 0, l = 0, d = 0;
+            myMatches.forEach(m => {
+                if(m.type === 'draw') d++;
+                else if(m.winner === player.name) w++;
+                else l++;
+            });
+            document.getElementById('profileWins').textContent = w;
+            document.getElementById('profileLosses').textContent = l;
+            document.getElementById('profileDraws').textContent = d;
+
             if (myMatches.length === 0) { matchListContainer.innerHTML = '<div class="text-center text-xs text-gray-400 py-4">기록된 경기가 없습니다.</div>'; return; }
 
             const table = document.createElement('table'); table.className = 'bout-table';
@@ -363,12 +432,15 @@
         }
 
         function renderMatchHistory() {
-            const container = document.getElementById('matchHistoryList'); container.innerHTML = '';
+            const container = document.getElementById('matchHistoryList');
+            container.innerHTML = '';
             const filtered = matchHistoryData.filter(m => (m.season || "시즌 1") === viewSeason);
             if(filtered.length === 0) { container.innerHTML = '<div class="text-center text-gray-400 italic py-4">기록이 없습니다.</div>'; return; }
             filtered.forEach(match => {
                 const card = document.createElement('div'); let typeClass = 'border-gray-300'; let resultBadge = '';
                 if (match.type === 'draw') { typeClass = 'match-card'; resultBadge = '무승부'; }
+                else if (match.type === 'defense') { typeClass = 'match-card defense-success'; resultBadge = '🛡️ 방어'; }
+                else if (match.type === 'challenge_success') { typeClass = 'match-card challenge-success'; resultBadge = '🚀 성공'; }
                 else { typeClass = 'match-card'; resultBadge = '경기'; }
                 card.className = typeClass;
                 card.innerHTML = `<div class="text-xs text-gray-400 font-bold w-12 text-center">${match.date}</div><div class="flex-grow flex items-center justify-center text-sm"><span class="font-bold w-[40%] text-right truncate ${match.winner===match.blue ? 'text-blue-600' : 'text-red-600'}">${match.winner}</span><span class="text-xs text-gray-300 mx-2">VS</span><span class="text-gray-500 w-[40%] text-left truncate">${match.loser}</span></div><div class="w-16 text-right text-xs font-bold text-gray-500">${resultBadge}</div>`;
@@ -378,12 +450,22 @@
 
         function renderHallOfFame() {
             const container = document.getElementById('hofContent');
-            let displayData = { champion: '-', rank2: '-', rank3: '-' };
+            let displayData = { champion: '-', rank2: '-', rank3: '-', defenseKing: '-', defenseCount: 0, bestMatch: '-' };
             if (viewSeason === activeSeason) {
                 if (rankingsData.length > 0) displayData.champion = rankingsData[0].name;
                 if (rankingsData.length > 1) displayData.rank2 = rankingsData[1].name;
                 if (rankingsData.length > 2) displayData.rank3 = rankingsData[2].name;
-            } else if (seasonArchives[viewSeason]) { displayData = seasonArchives[viewSeason]; }
+                
+                const maxDef = Math.max(...rankingsData.map(i => i.defenseCount || 0), 0);
+                if (maxDef > 0) {
+                    displayData.defenseCount = maxDef;
+                    displayData.defenseKing = rankingsData.filter(i => (i.defenseCount||0) === maxDef).map(i => i.name).join(', ');
+                }
+                displayData.bestMatch = currentSeasonBestMatch || "선정 중";
+            } else if (seasonArchives[viewSeason]) {
+                displayData = seasonArchives[viewSeason];
+            }
+
             container.innerHTML = `<h3 class="text-center text-lg font-bold text-gray-700 mb-4">${viewSeason} 명예의 전당</h3><div class="grid grid-cols-3 gap-2 text-center items-end mb-6"><div class="hof-card hof-silver order-1"><div class="text-xl">🥈</div><div class="font-bold truncate">${displayData.rank2}</div></div><div class="hof-card hof-champion order-2 transform scale-110"><div class="text-3xl">👑</div><div class="font-black text-lg truncate">${displayData.champion}</div></div><div class="hof-card hof-bronze order-3"><div class="text-xl">🥉</div><div class="font-bold truncate">${displayData.rank3}</div></div></div>`;
         }
 
