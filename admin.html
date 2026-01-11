@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RFC 랭킹 매니저 (v3.2 Final)</title>
+    <title>RFC 랭킹 매니저 (v3.4 Memo)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
@@ -23,7 +23,7 @@
     <div id="loginOverlay" class="fixed inset-0 bg-slate-900/95 z-50 flex items-center justify-center backdrop-blur-sm">
         <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-sm text-center border border-slate-200">
             <div class="text-4xl mb-2">🥊</div>
-            <h2 class="text-2xl font-black text-slate-800 mb-6">RFC Admin v3.2</h2>
+            <h2 class="text-2xl font-black text-slate-800 mb-6">RFC Admin v3.4</h2>
             <input type="email" id="adminEmail" placeholder="admin@rfc.com" class="w-full p-3 border border-slate-300 rounded-lg mb-3 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50 transition">
             <input type="password" id="adminPw" placeholder="Password" class="w-full p-3 border border-slate-300 rounded-lg mb-6 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50 transition">
             <button id="btnLogin" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-lg transition transform active:scale-95 shadow-lg shadow-blue-500/30">시스템 접속</button>
@@ -37,17 +37,19 @@
                 <span id="currentSeasonBadge" class="bg-slate-800 text-white text-xs font-bold px-3 py-1 rounded-full shadow-md">Loading...</span>
                 <span id="saveStatus" class="text-xs font-medium text-emerald-500 transition-opacity opacity-0">✅ 저장됨</span>
             </div>
-            <div class="mt-2 md:mt-0 text-xs text-slate-400 font-medium">Rule v3.2 (Tier+K60)</div>
+            <div class="mt-2 md:mt-0 text-xs text-slate-400 font-medium">Rule Editor & Memo Added</div>
         </header>
 
         <div class="bg-white rounded-t-2xl border-b border-slate-200 px-4 flex gap-6 mb-4 shadow-sm overflow-x-auto">
             <button onclick="switchTab('main')" id="tabMain" class="tab-btn active py-4 whitespace-nowrap">🔥 랭킹/경기</button>
             <button onclick="switchTab('season')" id="tabSeason" class="tab-btn py-4 whitespace-nowrap">📅 시즌 관리</button>
             <button onclick="switchTab('tools')" id="tabTools" class="tab-btn py-4 whitespace-nowrap">🛠️ 데이터/백업</button>
+            <button onclick="switchTab('settings')" id="tabSettings" class="tab-btn py-4 whitespace-nowrap">⚙️ 설정/메모</button>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 flex-grow">
             <div class="lg:col-span-4 space-y-6">
+                
                 <div id="mainSection" class="tab-content">
                     <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden mb-6">
                         <div class="bg-slate-50 p-4 border-b border-slate-100 flex justify-between items-center"><h3 class="font-bold text-slate-700">⚔️ 경기 결과 입력</h3></div>
@@ -69,7 +71,19 @@
                     <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden p-5">
                         <h3 class="font-bold text-slate-700 mb-4 border-b pb-2">👤 선수 관리 도구</h3>
                         <button onclick="addNewPlayer()" class="w-full bg-emerald-50 text-emerald-600 hover:bg-emerald-100 font-bold py-3 rounded-xl border border-emerald-100 mb-3 transition">+ 새 선수 등록</button>
-                        <div class="bg-orange-50 border border-orange-200 rounded-xl p-3 mb-3"><div class="flex justify-between items-center mb-2"><h4 class="text-xs font-bold text-orange-700">⏳ 휴면 점수 차감</h4><span class="text-[10px] text-orange-600">5일 미활동 <span class="font-bold text-red-600">-30점</span></span></div><button onclick="applyDecay()" class="w-full bg-white text-orange-700 hover:bg-orange-100 font-bold py-2 rounded-lg text-xs border border-orange-200 transition">🔻 차감 실행</button></div>
+                        
+                        <div class="bg-orange-50 border border-orange-200 rounded-xl p-3 mb-3">
+                            <div class="flex justify-between items-center mb-2">
+                                <h4 class="text-xs font-bold text-orange-700">💀 패널티 부여 (-30점)</h4>
+                            </div>
+                            <div class="flex gap-2">
+                                <select id="penaltyTargetSelect" class="w-full text-xs border border-orange-200 rounded p-2 focus:outline-none bg-white">
+                                    <option value="">대상 선택...</option>
+                                </select>
+                                <button onclick="applyManualPenalty()" class="bg-white text-orange-700 font-bold px-3 py-2 rounded-lg text-xs border border-orange-200 transition hover:bg-orange-100 whitespace-nowrap">실행</button>
+                            </div>
+                        </div>
+
                         <button onclick="updateRankBaseline()" class="w-full bg-slate-100 text-slate-600 hover:bg-slate-200 font-bold py-3 rounded-xl text-xs transition">📉 순위 변동(▲▼) 리셋</button>
                     </div>
                 </div>
@@ -89,6 +103,34 @@
                         <div class="pt-4 border-t border-slate-100 space-y-2"><h4 class="text-xs font-bold text-red-500">초기화 (주의)</h4><button onclick="resetAllStats()" class="w-full bg-gray-50 text-gray-500 hover:bg-gray-100 font-bold py-2 rounded-lg text-xs border border-gray-200">📊 현재 시즌 전적 초기화</button><button onclick="resetAllElo()" class="w-full bg-gray-50 text-gray-500 hover:bg-gray-100 font-bold py-2 rounded-lg text-xs border border-gray-200">⚡ 현재 시즌 ELO 초기화</button><button onclick="resetEverything()" class="w-full bg-red-50 text-red-600 hover:bg-red-100 font-bold py-3 rounded-lg text-xs border border-red-200 mt-2">🧨 시스템 전체 리셋</button></div>
                     </div>
                 </div>
+
+                <div id="settingsSection" class="tab-content hidden">
+                    <div class="space-y-6">
+                        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden p-5">
+                            <h3 class="font-bold text-slate-700 mb-2">📜 랭킹 규칙 편집</h3>
+                            <p class="text-xs text-slate-400 mb-3">사용자 사이트에 표시될 규칙 내용을 작성하세요. (줄바꿈 반영됨)</p>
+                            <textarea id="ruleTextInput" class="w-full h-40 p-3 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50 resize-none mb-3" placeholder="예: 승리 시 +10점, 5일 미활동 시 차감..."></textarea>
+                            <button onclick="saveRules()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-lg text-xs transition">규칙 저장하기</button>
+                        </div>
+
+                        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden p-5 flex flex-col h-[400px]">
+                            <h3 class="font-bold text-slate-700 mb-3 flex justify-between">
+                                📝 관리자 메모장
+                                <span class="text-[10px] font-normal text-slate-400">관리자간 공유용</span>
+                            </h3>
+                            
+                            <div id="memoListContainer" class="flex-grow overflow-y-auto space-y-2 mb-3 pr-1 bg-slate-50 rounded-lg p-2 border border-slate-100">
+                                <div class="text-center text-xs text-gray-400 py-4">작성된 메모가 없습니다.</div>
+                            </div>
+
+                            <div class="flex gap-2">
+                                <input type="text" id="newMemoInput" class="flex-grow border border-slate-200 rounded-lg p-2.5 text-sm focus:outline-none focus:border-blue-500" placeholder="메세지 남기기..." onkeypress="if(event.key==='Enter') addMemo()">
+                                <button onclick="addMemo()" class="bg-slate-800 hover:bg-slate-900 text-white font-bold px-4 rounded-lg text-xs transition whitespace-nowrap">등록</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
             </div>
 
             <div class="lg:col-span-8 bg-white rounded-2xl shadow-sm border border-slate-100 flex flex-col h-[calc(100vh-140px)]">
@@ -154,7 +196,16 @@
 
         const firebaseConfig = { apiKey: "AIzaSyDlj68ex-fM0ExRdD-tvCy-UyIneVoPmGk", authDomain: "rfk-ranking.firebaseapp.com", projectId: "rfk-ranking", storageBucket: "rfk-ranking.firebasestorage.app", messagingSenderId: "675366165774", appId: "1:675366165774:web:795d34c56eab630b4dcb5f", measurementId: "G-CXPDZQ8GTL" };
         const app = initializeApp(firebaseConfig); const db = getFirestore(app); const auth = getAuth(app); const appId = 'ranking-manager-default';
-        let rankingsData = []; let matchHistoryData = []; let seasonArchives = {}; let activeSeason = "시즌 1";
+        
+        let rankingsData = []; 
+        let matchHistoryData = []; 
+        let seasonArchives = {}; 
+        let activeSeason = "시즌 1";
+        
+        // [New Data Fields]
+        let ruleText = "규칙이 아직 설정되지 않았습니다.";
+        let adminMemos = []; 
+
         const STYLE_OPTIONS = ["인파이터", "아웃복서", "슬러거", "카운터", "스워머", "하드펀처", "테크니션", "맷집왕", "변칙"];
 
         document.getElementById('btnLogin').addEventListener('click', () => { const email = document.getElementById('adminEmail').value; const pw = document.getElementById('adminPw').value; signInWithEmailAndPassword(auth, email, pw).catch((e) => alert("로그인 실패: " + e.message)); });
@@ -164,8 +215,22 @@
             const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'rankings', 'main');
             onSnapshot(docRef, (doc) => {
                 if (doc.exists()) {
-                    const data = doc.data(); rankingsData = data.rankings || []; matchHistoryData = data.matchHistory || []; seasonArchives = data.seasonArchives || {}; activeSeason = data.activeSeason || "시즌 1";
+                    const data = doc.data(); 
+                    rankingsData = data.rankings || []; 
+                    matchHistoryData = data.matchHistory || []; 
+                    seasonArchives = data.seasonArchives || {}; 
+                    activeSeason = data.activeSeason || "시즌 1";
+                    
+                    // [Load New Data]
+                    ruleText = data.ruleText || "";
+                    adminMemos = data.adminMemos || [];
+
                     updateSeasonUI();
+                    
+                    // Init Settings UI
+                    document.getElementById('ruleTextInput').value = ruleText;
+                    renderMemos();
+
                     rankingsData.forEach((p, i) => { if(p.defenseCount === undefined) p.defenseCount = 0; if(p.previousRank === undefined) p.previousRank = i + 1; if(p.careerHighRank === undefined) p.careerHighRank = i + 1; if(p.elo === undefined) p.elo = 1000; if(p.careerHighElo === undefined) p.careerHighElo = p.elo; });
                     rankingsData.sort((a, b) => b.elo - a.elo); renderRankings(); populateMatchSelectors(); 
                     renderSeasonList(); checkSeasonInactive();
@@ -175,7 +240,75 @@
 
         window.saveRankings = async function() {
             const statusEl = document.getElementById('saveStatus'); const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'rankings', 'main');
-            try { const now = new Date(); const kstDate = new Date(now.getTime() + (9 * 60 * 60 * 1000)).toISOString().split('T')[0]; await setDoc(docRef, { rankings: rankingsData, matchHistory: matchHistoryData, seasonArchives: seasonArchives, activeSeason: activeSeason, date: kstDate }, { merge: false }); statusEl.style.opacity = 1; setTimeout(() => statusEl.style.opacity = 0, 2000); } catch (e) { alert("저장 오류: " + e.message); }
+            try { 
+                const now = new Date(); const kstDate = new Date(now.getTime() + (9 * 60 * 60 * 1000)).toISOString().split('T')[0]; 
+                await setDoc(docRef, { 
+                    rankings: rankingsData, 
+                    matchHistory: matchHistoryData, 
+                    seasonArchives: seasonArchives, 
+                    activeSeason: activeSeason, 
+                    date: kstDate,
+                    // [Save New Data]
+                    ruleText: ruleText,
+                    adminMemos: adminMemos
+                }, { merge: false }); 
+                statusEl.style.opacity = 1; setTimeout(() => statusEl.style.opacity = 0, 2000); 
+            } catch (e) { alert("저장 오류: " + e.message); }
+        }
+
+        // -----------------------------------------------------------
+        // [New Features] Rule & Memo Functions
+        // -----------------------------------------------------------
+        
+        // 1. Rule Editor
+        window.saveRules = () => {
+            const txt = document.getElementById('ruleTextInput').value;
+            if(!confirm("규칙 내용을 저장하시겠습니까? (사용자 사이트에 반영됨)")) return;
+            ruleText = txt;
+            saveRankings();
+            alert("규칙이 저장되었습니다.");
+        };
+
+        // 2. Admin Memos
+        window.addMemo = () => {
+            const input = document.getElementById('newMemoInput');
+            const content = input.value.trim();
+            if (!content) return;
+            
+            const today = new Date().toLocaleString('ko-KR', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+            adminMemos.unshift({ id: Date.now(), content: content, date: today });
+            input.value = '';
+            
+            saveRankings();
+            renderMemos();
+        };
+
+        window.deleteMemo = (id) => {
+            if(!confirm("이 메모를 삭제합니까?")) return;
+            adminMemos = adminMemos.filter(m => m.id !== id);
+            saveRankings();
+            renderMemos();
+        };
+
+        function renderMemos() {
+            const container = document.getElementById('memoListContainer');
+            if(adminMemos.length === 0) {
+                container.innerHTML = '<div class="text-center text-xs text-gray-400 py-4">작성된 메모가 없습니다.</div>';
+                return;
+            }
+            container.innerHTML = '';
+            adminMemos.forEach(m => {
+                const el = document.createElement('div');
+                el.className = 'bg-white border border-slate-200 rounded p-2 text-sm shadow-sm flex justify-between items-start group';
+                el.innerHTML = `
+                    <div>
+                        <div class="text-[10px] text-slate-400 font-medium mb-0.5">${m.date}</div>
+                        <div class="text-slate-700 whitespace-pre-wrap">${m.content}</div>
+                    </div>
+                    <button onclick="deleteMemo(${m.id})" class="text-slate-300 hover:text-red-500 text-xs px-1 opacity-0 group-hover:opacity-100 transition">✕</button>
+                `;
+                container.appendChild(el);
+            });
         }
 
         // Image Handling (With Safety Check)
@@ -226,10 +359,10 @@
         window.finishAndStartNewSeason = () => { const n = document.getElementById('newSeasonNameInput').value.trim(); if(!n)return alert("이름 입력"); if(n===activeSeason||seasonArchives[n])return alert("중복 이름"); if(!confirm(`[${activeSeason}] 종료 후 [${n}] 시작?`))return; seasonArchives[activeSeason]={rankings:JSON.parse(JSON.stringify(rankingsData))}; activeSeason=n; rankingsData.forEach(p => { p.previousRank=p.rank||rankingsData.indexOf(p)+1; p.wins=0; p.losses=0; p.draws=0; p.defenseCount=0; p.elo=1000; }); saveRankings(); alert("시작됨"); };
         
         // -----------------------------------------------------------
-        // [RFC v3.2 Final] ELO & Tier System Logic 
+        // [RFC v3.3 Final] Logic Update
         // -----------------------------------------------------------
         
-        // 티어 판정 (판수 기준)
+        // 티어 판정
         function getTierBonus(matchCount) {
             if (matchCount < 5) { // 0~4 (Bronze)
                 return { winMult: 1.0, lossMult: 1.0, tier: '🥉Bronze' };
@@ -240,13 +373,10 @@
             }
         }
 
-        // ELO 계산 로직
+        // ELO 계산 (+10점 참여점수 부활)
         function calculateHybridEloChange(p1Elo, p2Elo, isWin, p1Stats) {
             const matchCount = (p1Stats.wins || 0) + (p1Stats.losses || 0);
-            
-            // [Key Change 1] K값 20 -> 60 상향 (변동폭 확대)
-            const K = 60; 
-            
+            const K = 60; // 변동폭
             const expected = 1 / (1 + Math.pow(10, (p2Elo - p1Elo) / 400));
             const { winMult, lossMult, tier } = getTierBonus(matchCount);
 
@@ -255,13 +385,16 @@
 
             if (isWin) {
                 let baseGain = K * (1 - expected);
-                finalChange = baseGain * winMult;
-                if (finalChange < 10) finalChange = 10; // 최소 10점 보장
-                breakdown = `${tier}승리(x${winMult})`;
+                // [참여점수 +10 추가]
+                finalChange = (baseGain * winMult) + 10;
+                
+                breakdown = `${tier}승(x${winMult}) + 10`;
             } else {
                 let baseLoss = K * (0 - expected); // 음수
-                finalChange = baseLoss * lossMult;
-                breakdown = `${tier}방어(x${lossMult})`;
+                // [참여점수 +10 추가] -> 손실을 줄여줌
+                finalChange = (baseLoss * lossMult) + 10;
+                
+                breakdown = `${tier}패(x${lossMult}) + 10`;
             }
 
             return { change: Math.round(finalChange), msg: breakdown };
@@ -277,24 +410,38 @@
         window.resetEverything = () => { if(!confirm("🚨 전체 리셋?")) return; matchHistoryData = []; seasonArchives = {}; activeSeason = "시즌 1"; rankingsData.forEach(p => { p.wins=0; p.losses=0; p.defenseCount=0; p.elo=1000; p.careerHighElo=1000; }); saveRankings(); location.reload(); };
         window.updateRankBaseline = () => { if(confirm("변동폭 리셋?")) { rankingsData.forEach((p, i) => p.previousRank = i + 1); saveRankings(); renderRankings(); } };
         
-        // [Key Change 2] 휴면 페널티 -5 -> -30 강화
-        window.applyDecay = () => { 
-            if (!confirm("5일 이상 미활동 선수에게 패널티(-30점)를 부과합니까?")) return; 
-            const now = new Date(); let c=0; 
-            rankingsData.forEach(p => { 
-                if(!p.lastMatchDate) return; 
-                if(Math.ceil(Math.abs(now-new Date(p.lastMatchDate))/(86400000))>5) { 
-                    p.elo-=30; c++; // -5에서 -30으로 변경됨
-                } 
-            }); 
-            if(c>0) { rankingsData.sort((a,b)=>b.elo-a.elo); saveRankings(); renderRankings(); alert(`${c}명 차감 완료 (-30점)`); } 
-            else alert("대상 없음"); 
+        // [Key Change] Manual Penalty Implementation
+        window.applyManualPenalty = () => {
+            const idx = document.getElementById('penaltyTargetSelect').value;
+            if (idx === "") return alert("선수를 선택해주세요.");
+            
+            const p = rankingsData[idx];
+            if (!confirm(`[${p.name}] 선수에게 패널티(-30점)를 부여합니까?\n현재 점수: ${p.elo}`)) return;
+            
+            p.elo -= 30;
+            
+            rankingsData.sort((a, b) => b.elo - a.elo);
+            saveRankings();
+            renderRankings();
+            alert(`[${p.name}] -30점 차감 완료.\n현재 점수: ${p.elo}`);
         };
         
         function checkSeasonInactive() { const list = document.getElementById('seasonInactiveList'); list.innerHTML = ''; const m = matchHistoryData.filter(m => m.season === activeSeason); const an = new Set(); m.forEach(m => { an.add(m.winner); an.add(m.loser); }); const inact = rankingsData.filter(p => !an.has(p.name)); document.getElementById('seasonInactiveCount').textContent = inact.length + "명"; inact.forEach(p => { list.innerHTML += `<li>${p.name}</li>`; }); }
         window.toggleInactiveList = () => document.getElementById('seasonInactiveList').classList.toggle('hidden');
         function renderRankings() { const list = document.getElementById('rankingList'); list.innerHTML = ''; rankingsData.forEach((item, index) => { const diff = (item.previousRank || (index + 1)) - (index + 1); let ch = diff > 0 ? `<span class="rank-up">▲${diff}</span>` : (diff < 0 ? `<span class="rank-down">▼${Math.abs(diff)}</span>` : '<span class="rank-keep">-</span>'); list.innerHTML += `<div class="rank-card flex items-center p-3 border rounded-xl mb-2 bg-white hover:shadow-md"><div class="w-10 text-center mr-2"><span class="text-lg font-black text-slate-800">${index+1}</span><div class="text-[10px]">${ch}</div></div><div class="flex-grow"><div class="font-bold text-sm text-slate-800 flex items-center gap-2">${item.name} <span class="bg-amber-100 text-amber-800 text-xs px-1.5 rounded border border-amber-200">⚡${item.elo}</span></div><div class="text-xs text-slate-500 mt-0.5">${item.wins}승 ${item.losses}패</div></div><button onclick="openEditModal(${index})" class="p-2 text-slate-400 hover:text-blue-600">✏️</button></div>`; }); populateMatchSelectors(); }
-        window.populateMatchSelectors = () => { const s1 = document.getElementById('p1Select'); const s2 = document.getElementById('p2Select'); let opts = '<option value="">선수 선택</option>'; rankingsData.forEach((p, i) => opts += `<option value="${i}">${i+1}위 ${p.name} (${p.elo})</option>`); s1.innerHTML = opts; s2.innerHTML = opts; };
+        
+        window.populateMatchSelectors = () => { 
+            const s1 = document.getElementById('p1Select'); const s2 = document.getElementById('p2Select'); 
+            const sPen = document.getElementById('penaltyTargetSelect'); // 패널티 대상 선택 셀렉터
+
+            let opts = '<option value="">선수 선택</option>'; 
+            rankingsData.forEach((p, i) => opts += `<option value="${i}">${i+1}위 ${p.name} (${p.elo})</option>`); 
+            
+            s1.innerHTML = opts; 
+            s2.innerHTML = opts;
+            if(sPen) sPen.innerHTML = opts;
+        };
+        
         window.addNewPlayer = () => { const name = prompt("이름:"); if(name) { rankingsData.push({ id: crypto.randomUUID(), name, wins:0, losses:0, defenseCount:0, previousRank: rankingsData.length+1, careerHighRank: rankingsData.length+1, elo: 1000, careerHighElo: 1000, lastMatchDate: new Date().toISOString().split('T')[0] }); saveRankings(); renderRankings(); } };
         
         // [Safety Checked + Password] openEditModal
