@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RFC 랭킹 매니저 (v3.1 Season)</title>
+    <title>RFC 랭킹 매니저 (v3.2 Unified)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
@@ -34,7 +34,7 @@
     <div id="loginOverlay" class="fixed inset-0 bg-slate-900/95 z-50 flex items-center justify-center backdrop-blur-sm">
         <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-sm text-center border border-slate-200">
             <div class="text-4xl mb-2">🥊</div>
-            <h2 class="text-2xl font-black text-slate-800 mb-6">RFC Admin v3.1</h2>
+            <h2 class="text-2xl font-black text-slate-800 mb-6">RFC Admin v3.2</h2>
             <input type="email" id="adminEmail" placeholder="admin@rfc.com" class="w-full p-3 border border-slate-300 rounded-lg mb-3 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50 transition">
             <input type="password" id="adminPw" placeholder="Password" class="w-full p-3 border border-slate-300 rounded-lg mb-6 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50 transition">
             <button id="btnLogin" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-lg transition transform active:scale-95 shadow-lg shadow-blue-500/30">시스템 접속</button>
@@ -49,14 +49,13 @@
                 <span id="saveStatus" class="text-xs font-medium text-emerald-500 transition-opacity opacity-0">✅ 저장됨</span>
             </div>
             <div class="mt-2 md:mt-0 text-xs text-slate-400 font-medium">
-                v3.1 Season Mgmt
+                v3.2 Unified Tab
             </div>
         </header>
 
         <div class="bg-white rounded-t-2xl border-b border-slate-200 px-4 flex gap-6 mb-4 shadow-sm overflow-x-auto">
-            <button onclick="switchTab('season')" id="tabSeason" class="tab-btn active py-4 whitespace-nowrap">📅 시즌 관리</button>
-            <button onclick="switchTab('ranking')" id="tabRanking" class="tab-btn py-4 whitespace-nowrap">🔥 랭킹/선수</button>
-            <button onclick="switchTab('match')" id="tabMatch" class="tab-btn py-4 whitespace-nowrap">⚔️ 경기 입력</button>
+            <button onclick="switchTab('main')" id="tabMain" class="tab-btn active py-4 whitespace-nowrap">🔥 랭킹/경기</button>
+            <button onclick="switchTab('season')" id="tabSeason" class="tab-btn py-4 whitespace-nowrap">📅 시즌 관리</button>
             <button onclick="switchTab('tools')" id="tabTools" class="tab-btn py-4 whitespace-nowrap">🛠️ 데이터/백업</button>
         </div>
 
@@ -64,55 +63,9 @@
             
             <div class="lg:col-span-4 space-y-6">
                 
-                <div id="seasonSection" class="tab-content">
-                    <div class="space-y-4">
-                        
-                        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden p-5">
-                            <h3 class="font-bold text-slate-700 mb-3 border-b pb-2">📅 시즌 목록</h3>
-                            <div id="seasonListContainer" class="space-y-2 max-h-60 overflow-y-auto mb-2">
-                                </div>
-                            <p class="text-[10px] text-slate-400 mt-2">* 목록에서 시즌을 선택하면 랭킹판에 즉시 반영됩니다.</p>
-                        </div>
-
-                        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden p-5">
-                            <div class="flex justify-between items-center mb-2">
-                                <h3 class="font-bold text-slate-700">😴 미참여 선수</h3>
-                                <span id="seasonInactiveCount" class="bg-slate-100 text-slate-600 text-xs font-bold px-2 py-1 rounded">0명</span>
-                            </div>
-                            <div class="text-xs text-slate-500 mb-3">현재 시즌(<span class="currentSeasonName font-bold"></span>) 경기 기록 없음</div>
-                            <button onclick="toggleInactiveList()" class="text-xs text-blue-500 font-bold underline mb-2">목록 보기/숨기기</button>
-                            <ul id="seasonInactiveList" class="hidden bg-slate-50 p-2 rounded text-xs text-slate-600 space-y-1 mb-3 max-h-40 overflow-y-auto border border-slate-200"></ul>
-                        </div>
-
-                        <div class="bg-purple-50 rounded-2xl shadow-sm border border-purple-100 overflow-hidden p-5">
-                            <h3 class="font-bold text-purple-800 mb-2">🚀 시즌 종료 및 시작</h3>
-                            <p class="text-xs text-purple-600 mb-4">현재 시즌을 마감하고 새 시즌을 시작합니다. (ELO 1000, 전적 0 초기화)</p>
-                            <div class="flex gap-2">
-                                <input type="text" id="newSeasonNameInput" class="flex-grow border border-purple-200 rounded-lg p-2 text-sm focus:outline-none focus:border-purple-400" placeholder="새 시즌 이름">
-                                <button onclick="finishAndStartNewSeason()" class="bg-purple-600 hover:bg-purple-700 text-white font-bold px-4 py-2 rounded-lg text-xs shadow transition whitespace-nowrap">시즌 시작</button>
-                            </div>
-                        </div>
-
-                    </div>
-                </div>
-
-                <div id="rankingSection" class="tab-content hidden">
-                    <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden p-5">
-                        <h3 class="font-bold text-slate-700 mb-4">👤 선수 관리</h3>
-                        <button onclick="addNewPlayer()" class="w-full bg-emerald-50 text-emerald-600 hover:bg-emerald-100 font-bold py-3 rounded-xl border border-emerald-100 mb-3 transition">+ 새 선수 등록</button>
-                        
-                        <div class="bg-orange-50 border border-orange-200 rounded-xl p-3 mb-3">
-                            <h4 class="text-xs font-bold text-orange-700 mb-1">⏳ 휴면 점수 차감 (Decay)</h4>
-                            <p class="text-[10px] text-orange-600 mb-2">5일 이상 미활동 선수 -5점/일</p>
-                            <button onclick="applyDecay()" class="w-full bg-white text-orange-700 hover:bg-orange-100 font-bold py-2 rounded-lg text-xs border border-orange-200 transition">🔻 점수 차감 실행</button>
-                        </div>
-
-                        <button onclick="updateRankBaseline()" class="w-full bg-slate-100 text-slate-600 hover:bg-slate-200 font-bold py-3 rounded-xl text-xs transition">📉 순위 변동(▲▼) 리셋</button>
-                    </div>
-                </div>
-
-                <div id="matchSection" class="tab-content hidden">
-                    <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+                <div id="mainSection" class="tab-content">
+                    
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden mb-6">
                         <div class="bg-slate-50 p-4 border-b border-slate-100 flex justify-between items-center">
                             <h3 class="font-bold text-slate-700">⚔️ 경기 결과 입력</h3>
                         </div>
@@ -144,6 +97,54 @@
                                 <button onclick="applyMatch()" class="w-full bg-gradient-to-r from-slate-800 to-slate-900 hover:from-black text-white font-bold py-3 rounded-xl shadow-lg transition transform active:scale-95">경기 확정</button>
                             </div>
                         </div>
+                    </div>
+
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden p-5">
+                        <h3 class="font-bold text-slate-700 mb-4 border-b pb-2">👤 선수 관리 도구</h3>
+                        <button onclick="addNewPlayer()" class="w-full bg-emerald-50 text-emerald-600 hover:bg-emerald-100 font-bold py-3 rounded-xl border border-emerald-100 mb-3 transition">+ 새 선수 등록</button>
+                        
+                        <div class="bg-orange-50 border border-orange-200 rounded-xl p-3 mb-3">
+                            <div class="flex justify-between items-center mb-2">
+                                <h4 class="text-xs font-bold text-orange-700">⏳ 휴면 점수 차감</h4>
+                                <span class="text-[10px] text-orange-600">5일 미활동 -5점</span>
+                            </div>
+                            <button onclick="applyDecay()" class="w-full bg-white text-orange-700 hover:bg-orange-100 font-bold py-2 rounded-lg text-xs border border-orange-200 transition">🔻 차감 실행</button>
+                        </div>
+
+                        <button onclick="updateRankBaseline()" class="w-full bg-slate-100 text-slate-600 hover:bg-slate-200 font-bold py-3 rounded-xl text-xs transition">📉 순위 변동(▲▼) 리셋</button>
+                    </div>
+
+                </div>
+
+                <div id="seasonSection" class="tab-content hidden">
+                    <div class="space-y-4">
+                        
+                        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden p-5">
+                            <h3 class="font-bold text-slate-700 mb-3 border-b pb-2">📅 시즌 목록</h3>
+                            <div id="seasonListContainer" class="space-y-2 max-h-60 overflow-y-auto mb-2">
+                                </div>
+                            <p class="text-[10px] text-slate-400 mt-2">* 목록에서 시즌을 선택하면 랭킹판에 즉시 반영됩니다.</p>
+                        </div>
+
+                        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden p-5">
+                            <div class="flex justify-between items-center mb-2">
+                                <h3 class="font-bold text-slate-700">😴 미참여 선수</h3>
+                                <span id="seasonInactiveCount" class="bg-slate-100 text-slate-600 text-xs font-bold px-2 py-1 rounded">0명</span>
+                            </div>
+                            <div class="text-xs text-slate-500 mb-3">현재 시즌(<span class="currentSeasonName font-bold"></span>) 경기 기록 없음</div>
+                            <button onclick="toggleInactiveList()" class="text-xs text-blue-500 font-bold underline mb-2">목록 보기/숨기기</button>
+                            <ul id="seasonInactiveList" class="hidden bg-slate-50 p-2 rounded text-xs text-slate-600 space-y-1 mb-3 max-h-40 overflow-y-auto border border-slate-200"></ul>
+                        </div>
+
+                        <div class="bg-purple-50 rounded-2xl shadow-sm border border-purple-100 overflow-hidden p-5">
+                            <h3 class="font-bold text-purple-800 mb-2">🚀 시즌 종료 및 시작</h3>
+                            <p class="text-xs text-purple-600 mb-4">현재 시즌을 마감하고 새 시즌을 시작합니다. (ELO 1000, 전적 0 초기화)</p>
+                            <div class="flex gap-2">
+                                <input type="text" id="newSeasonNameInput" class="flex-grow border border-purple-200 rounded-lg p-2 text-sm focus:outline-none focus:border-purple-400" placeholder="새 시즌 이름">
+                                <button onclick="finishAndStartNewSeason()" class="bg-purple-600 hover:bg-purple-700 text-white font-bold px-4 py-2 rounded-lg text-xs shadow transition whitespace-nowrap">시즌 시작</button>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
 
@@ -334,11 +335,18 @@
             saveRankings();
         };
 
+        // [Fix] 삭제 기능 수정
         window.deleteSeason = (targetName) => {
             if (targetName === activeSeason) return alert("현재 활성화된 시즌은 삭제할 수 없습니다.");
             if (!confirm(`정말 [${targetName}] 기록을 영구 삭제하시겠습니까?`)) return;
+            
             delete seasonArchives[targetName];
-            saveRankings();
+            
+            // [중요] 삭제 후 상태 저장 및 목록 갱신
+            saveRankings().then(() => {
+                renderSeasonList();
+                alert(`[${targetName}] 시즌이 삭제되었습니다.`);
+            });
         };
 
         window.finishAndStartNewSeason = () => {
@@ -362,7 +370,7 @@
             alert(`새 시즌 [${activeSeason}]이 시작되었습니다!`);
         };
 
-        // 미참여 선수 확인 (시즌 탭용)
+        // 미참여 선수 확인
         function checkSeasonInactive() {
             const list = document.getElementById('seasonInactiveList');
             const countSpan = document.getElementById('seasonInactiveCount');
@@ -399,6 +407,7 @@
             const reader = new FileReader(); reader.onload = function(e) { try { const data = JSON.parse(e.target.result); if (data.rankings) { rankingsData = data.rankings; matchHistoryData = data.history || []; seasonArchives = data.archives || {}; activeSeason = data.activeSeason || activeSeason; saveRankings(); renderRankings(); alert("데이터 복원 완료."); } } catch (err) { alert("오류: " + err.message); } }; reader.readAsText(file);
         });
 
+        // 탭 전환
         window.switchTab = (tab) => {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
             document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
