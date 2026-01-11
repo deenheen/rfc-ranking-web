@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RFC 랭킹 매니저 (Hybrid ELO)</title>
+    <title>RFC 랭킹 매니저 (v2.2)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
@@ -29,7 +29,7 @@
     <div id="loginOverlay" class="fixed inset-0 bg-slate-900/95 z-50 flex items-center justify-center backdrop-blur-sm">
         <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-sm text-center border border-slate-200">
             <div class="text-4xl mb-2">🥊</div>
-            <h2 class="text-2xl font-black text-slate-800 mb-6">RFC Hybrid ELO</h2>
+            <h2 class="text-2xl font-black text-slate-800 mb-6">RFC Admin v2.2</h2>
             <input type="email" id="adminEmail" placeholder="admin@rfc.com" class="w-full p-3 border border-slate-300 rounded-lg mb-3 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50 transition">
             <input type="password" id="adminPw" placeholder="Password" class="w-full p-3 border border-slate-300 rounded-lg mb-6 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50 transition">
             <button id="btnLogin" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-lg transition transform active:scale-95 shadow-lg shadow-blue-500/30">시스템 접속</button>
@@ -61,7 +61,7 @@
                 
                 <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
                     <div class="bg-slate-50 p-4 border-b border-slate-100 flex justify-between items-center">
-                        <h3 class="font-bold text-slate-700">⚔️ 경기 결과 입력 (Hybrid ELO)</h3>
+                        <h3 class="font-bold text-slate-700">⚔️ 경기 결과 입력 (승/패)</h3>
                     </div>
                     <div class="p-5">
                         <div class="space-y-4">
@@ -76,20 +76,14 @@
                                 </div>
                             </div>
 
-                            <div class="flex justify-center items-center gap-3 bg-slate-50 p-2 rounded-xl border border-slate-200">
-                                <label class="cursor-pointer flex flex-col items-center gap-1 p-2 rounded hover:bg-blue-100 w-20 transition">
-                                    <input type="radio" name="winner" value="blue" class="w-4 h-4 accent-blue-600">
-                                    <span class="text-xs font-bold text-blue-600">Blue 승</span>
+                            <div class="grid grid-cols-2 gap-3 bg-slate-50 p-2 rounded-xl border border-slate-200">
+                                <label class="cursor-pointer flex flex-col items-center gap-1 p-3 rounded-lg hover:bg-blue-100 transition border border-transparent hover:border-blue-200 has-[:checked]:bg-blue-100 has-[:checked]:border-blue-300">
+                                    <input type="radio" name="winner" value="blue" class="w-5 h-5 accent-blue-600">
+                                    <span class="text-sm font-bold text-blue-600">Blue 승리</span>
                                 </label>
-                                <div class="h-8 w-px bg-slate-300"></div>
-                                <label class="cursor-pointer flex flex-col items-center gap-1 p-2 rounded hover:bg-gray-200 w-20 transition">
-                                    <input type="radio" name="winner" value="draw" class="w-4 h-4 accent-gray-500">
-                                    <span class="text-xs font-bold text-gray-500">무승부</span>
-                                </label>
-                                <div class="h-8 w-px bg-slate-300"></div>
-                                <label class="cursor-pointer flex flex-col items-center gap-1 p-2 rounded hover:bg-red-100 w-20 transition">
-                                    <input type="radio" name="winner" value="red" class="w-4 h-4 accent-red-600">
-                                    <span class="text-xs font-bold text-red-600">Red 승</span>
+                                <label class="cursor-pointer flex flex-col items-center gap-1 p-3 rounded-lg hover:bg-red-100 transition border border-transparent hover:border-red-200 has-[:checked]:bg-red-100 has-[:checked]:border-red-300">
+                                    <input type="radio" name="winner" value="red" class="w-5 h-5 accent-red-600">
+                                    <span class="text-sm font-bold text-red-600">Red 승리</span>
                                 </label>
                             </div>
 
@@ -98,7 +92,7 @@
                                 <div id="previewContent" class="space-y-1"></div>
                             </div>
 
-                            <button onclick="applyMatch()" class="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-bold py-3 rounded-xl shadow-lg shadow-orange-500/30 transition transform active:scale-95">
+                            <button onclick="applyMatch()" class="w-full bg-gradient-to-r from-slate-800 to-slate-900 hover:from-black hover:to-black text-white font-bold py-3 rounded-xl shadow-lg transition transform active:scale-95">
                                 경기 결과 확정
                             </button>
                         </div>
@@ -107,7 +101,7 @@
 
                 <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
                     <div class="bg-slate-50 p-4 border-b border-slate-100">
-                        <h3 class="font-bold text-slate-700">🏆 시즌 및 관리</h3>
+                        <h3 class="font-bold text-slate-700">🏆 시즌 및 데이터 관리</h3>
                     </div>
                     <div class="p-5 space-y-4">
                         <div class="flex gap-2">
@@ -125,22 +119,22 @@
 
                         <div class="border rounded-lg p-3 bg-slate-50">
                             <div class="flex justify-between items-center mb-2 cursor-pointer" onclick="toggleInactiveList()">
-                                <span class="text-xs font-bold text-slate-600">😴 시즌 미참여 선수 (<span id="inactiveCount">0</span>명)</span>
+                                <span class="text-xs font-bold text-slate-600">😴 미참여 선수 (<span id="inactiveCount">0</span>명)</span>
                                 <span class="text-xs text-blue-500">보기 ▼</span>
                             </div>
                             <ul id="inactiveList" class="hidden text-xs text-slate-500 space-y-1 max-h-32 overflow-y-auto mb-2 border-t pt-2 border-slate-200"></ul>
                             <div class="flex items-center gap-2">
                                 <input type="checkbox" id="excludeInactiveCheck" class="w-4 h-4 rounded text-blue-600 focus:ring-blue-500">
-                                <label for="excludeInactiveCheck" class="text-xs text-slate-700 font-semibold select-none">새 시즌 시작 시 미참여 인원 제외</label>
+                                <label for="excludeInactiveCheck" class="text-xs text-slate-700 font-semibold select-none">새 시즌 시 미참여 제외</label>
                             </div>
                         </div>
 
                         <button onclick="startNewSeason()" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-2.5 rounded-lg text-sm shadow-md transition">
-                            🚀 현재 시즌 종료 및 초기화
+                            🚀 시즌 종료 및 초기화
                         </button>
 
                         <div class="grid grid-cols-2 gap-2 mt-4 pt-4 border-t border-slate-100">
-                             <button onclick="updateRankBaseline()" class="bg-blue-50 text-blue-600 hover:bg-blue-100 font-bold py-2 rounded-lg text-xs">📉 변동폭 초기화</button>
+                             <button onclick="resetAllElo()" class="bg-red-50 text-red-600 hover:bg-red-100 font-bold py-2 rounded-lg text-xs">⚡ ELO 초기화</button>
                              <button onclick="addNewPlayer()" class="bg-emerald-50 text-emerald-600 hover:bg-emerald-100 font-bold py-2 rounded-lg text-xs">+ 새 선수 등록</button>
                         </div>
                     </div>
@@ -150,7 +144,7 @@
             <div class="lg:col-span-8 bg-white rounded-2xl shadow-sm border border-slate-100 flex flex-col h-[calc(100vh-140px)]">
                 <div class="bg-slate-50 p-4 border-b border-slate-100 flex justify-between items-center rounded-t-2xl">
                     <h3 class="font-bold text-slate-700">🔥 실시간 랭킹 (ELO순 정렬)</h3>
-                    <div class="text-xs text-slate-400 font-medium">점수에 따라 자동 정렬됩니다</div>
+                    <div class="text-xs text-slate-400 font-medium">점수 변경 시 자동 정렬</div>
                 </div>
                 <div id="rankingList" class="flex-grow overflow-y-auto p-2 space-y-1.5 bg-slate-50/50">
                     </div>
@@ -216,7 +210,7 @@
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
         // ==========================================
-        // Firebase 설정
+        // Firebase Config
         // ==========================================
         const firebaseConfig = {
             apiKey: "AIzaSyDlj68ex-fM0ExRdD-tvCy-UyIneVoPmGk",
@@ -273,9 +267,10 @@
                         if(p.previousRank === undefined) p.previousRank = i + 1;
                         if(p.careerHighRank === undefined) p.careerHighRank = i + 1;
                         if(p.elo === undefined) p.elo = 1000;
+                        if(p.careerHighElo === undefined) p.careerHighElo = p.elo; // 초기화
                     });
                     
-                    // 데이터 로드 시 Elo 기준으로 자동 정렬
+                    // 점수순 정렬
                     rankingsData.sort((a, b) => b.elo - a.elo);
 
                     renderRankings();
@@ -314,57 +309,48 @@
         };
 
         // ==========================================
-        // [핵심] Hybrid ELO 계산 로직 (PDF 반영)
+        // Hybrid ELO Logic (무승부 제거)
         // ==========================================
         
-        // 티어별 보너스 계산 [cite: 23, 25, 26, 27]
         function getTierBonus(matchCount, isWin) {
-            // Bronze: 0-3회 (기본)
             if (matchCount < 4) return { mult: 1.0, reduction: 0, tier: 'Bronze' };
-            // Silver: 4-6회 (승리 시 1.1배)
             if (matchCount < 7) return { mult: 1.1, reduction: 0, tier: 'Silver' };
-            // Gold: 7회 이상 (승리 시 1.2배, 패배 시 10% 감면)
             return { mult: 1.2, reduction: 0.1, tier: 'Gold' };
         }
 
-        // Elo 변화량 계산 함수
-        function calculateHybridEloChange(p1Elo, p2Elo, result, p1Stats) {
-            // result: 1(Win), 0.5(Draw), 0(Loss)
-            const K = 20; // 기본 K값 (참여보너스 10점이 있으므로 다소 낮게 설정)
+        function calculateHybridEloChange(p1Elo, p2Elo, isWin, p1Stats) {
+            // isWin: true(1), false(0)
+            const result = isWin ? 1 : 0;
+            const K = 20; 
             const expected = 1 / (1 + Math.pow(10, (p2Elo - p1Elo) / 400));
             let baseChange = K * (result - expected);
             
-            const matchCount = (p1Stats.wins || 0) + (p1Stats.losses || 0) + (p1Stats.draws || 0);
-            const { mult, reduction, tier } = getTierBonus(matchCount, result === 1);
+            const matchCount = (p1Stats.wins || 0) + (p1Stats.losses || 0); // Draws removed
+            const { mult, reduction, tier } = getTierBonus(matchCount, isWin);
 
             let finalChange = 0;
             let breakdown = "";
 
-            if (result === 1) { // 승리 [cite: 8, 26, 27]
+            if (isWin) { 
                 const boostedChange = baseChange * mult;
-                finalChange = boostedChange + 10; // 참여 보너스 +10
+                finalChange = boostedChange + 10; 
                 breakdown = `기본(+${Math.round(baseChange)}) x ${mult}(${tier}) + 10(참여)`;
-            } else if (result === 0) { // 패배 [cite: 9, 21, 27]
-                let loss = baseChange; // 음수 값
-                if (reduction > 0) loss = loss * (1 - reduction); // Gold 티어 감면
-                finalChange = loss + 10; // 참여 보너스 +10
+            } else { 
+                let loss = baseChange; 
+                if (reduction > 0) loss = loss * (1 - reduction); 
+                finalChange = loss + 10; 
                 
-                // [Max Loss Cap] 하한선 적용 (-20점) [cite: 21]
                 if (finalChange < -20) {
                     finalChange = -20;
                     breakdown = `하한선 적용(-20)`;
                 } else {
                     breakdown = `기본(${Math.round(baseChange)}) ${reduction>0 ? '+방어(10%)' : ''} + 10(참여)`;
                 }
-            } else { // 무승부
-                finalChange = baseChange + 10; // 무승부도 참여 점수 인정
-                breakdown = `무승부(${Math.round(baseChange)}) + 10(참여)`;
             }
 
             return { change: Math.round(finalChange), msg: breakdown };
         }
 
-        // 미리보기 업데이트
         function updateMatchPreview() {
             const p1Val = document.getElementById('p1Select').value;
             const p2Val = document.getElementById('p2Select').value;
@@ -383,13 +369,13 @@
 
             let html = '';
             
-            // Blue 승리 시뮬레이션
-            const blueWin = calculateHybridEloChange(p1.elo, p2.elo, 1, p1);
-            const redLose = calculateHybridEloChange(p2.elo, p1.elo, 0, p2);
+            // Blue 승리 시
+            const blueWin = calculateHybridEloChange(p1.elo, p2.elo, true, p1);
+            const redLose = calculateHybridEloChange(p2.elo, p1.elo, false, p2);
             
-            // Red 승리 시뮬레이션
-            const redWin = calculateHybridEloChange(p2.elo, p1.elo, 1, p2);
-            const blueLose = calculateHybridEloChange(p1.elo, p2.elo, 0, p1);
+            // Red 승리 시
+            const redWin = calculateHybridEloChange(p2.elo, p1.elo, true, p2);
+            const blueLose = calculateHybridEloChange(p1.elo, p2.elo, false, p1);
 
             if (winnerVal === 'blue') {
                 html += `<div class="font-bold text-blue-600">🔵 Blue(${p1.name}): ${blueWin.change > 0 ? '+' : ''}${blueWin.change}점 (${blueWin.msg})</div>`;
@@ -398,7 +384,7 @@
                 html += `<div class="font-bold text-red-600">🔴 Red(${p2.name}): ${redWin.change > 0 ? '+' : ''}${redWin.change}점 (${redWin.msg})</div>`;
                 html += `<div class="text-blue-400">🔵 Blue(${p1.name}): ${blueLose.change > 0 ? '+' : ''}${blueLose.change}점 (${blueLose.msg})</div>`;
             } else {
-                html += `<div class="text-gray-500">⚪ 무승부 예상: Blue +10점 내외 / Red +10점 내외 (ELO차등)</div>`;
+                html += `<div class="text-gray-400">승리자를 선택해주세요.</div>`;
             }
 
             content.innerHTML = html;
@@ -409,70 +395,53 @@
         document.querySelectorAll('input[name="winner"]').forEach(r => r.addEventListener('change', updateMatchPreview));
 
 
-        // 경기 결과 적용 (Hybrid ELO 반영)
+        // 경기 결과 적용 (Career High 업데이트 포함)
         window.applyMatch = () => {
             const p1Idx = parseInt(document.getElementById('p1Select').value);
             const p2Idx = parseInt(document.getElementById('p2Select').value);
             const winnerVal = document.querySelector('input[name="winner"]:checked')?.value;
 
-            if (!winnerVal || isNaN(p1Idx) || isNaN(p2Idx)) return alert("선수와 결과를 선택하세요.");
+            if (!winnerVal || isNaN(p1Idx) || isNaN(p2Idx)) return alert("선수와 승자를 선택하세요.");
             if (p1Idx === p2Idx) return alert("동일 선수입니다.");
 
             const p1 = rankingsData[p1Idx];
             const p2 = rankingsData[p2Idx];
 
-            let p1Change = 0;
-            let p2Change = 0;
+            const isBlueWin = winnerVal === 'blue';
+            const winner = isBlueWin ? p1 : p2;
+            const loser = isBlueWin ? p2 : p1;
             let historyType = 'ranking';
 
-            if (winnerVal === 'draw') {
-                p1Change = calculateHybridEloChange(p1.elo, p2.elo, 0.5, p1).change;
-                p2Change = calculateHybridEloChange(p2.elo, p1.elo, 0.5, p2).change;
-                p1.draws = (p1.draws || 0) + 1;
-                p2.draws = (p2.draws || 0) + 1;
-                historyType = 'draw';
-            } else {
-                const isBlueWin = winnerVal === 'blue';
-                const winner = isBlueWin ? p1 : p2;
-                const loser = isBlueWin ? p2 : p1;
-                
-                // 승자 계산 
-                const winCalc = calculateHybridEloChange(winner.elo, loser.elo, 1, winner);
-                // 패자 계산 [cite: 9, 21]
-                const loseCalc = calculateHybridEloChange(loser.elo, winner.elo, 0, loser);
+            // 승자 계산
+            const winCalc = calculateHybridEloChange(winner.elo, loser.elo, true, winner);
+            // 패자 계산
+            const loseCalc = calculateHybridEloChange(loser.elo, winner.elo, false, loser);
 
-                if (isBlueWin) {
-                    p1Change = winCalc.change;
-                    p2Change = loseCalc.change;
-                } else { // Red Win (Defense)
-                    p2Change = winCalc.change;
-                    p1Change = loseCalc.change;
-                    
-                    // 상위 랭커(Red)가 이겼으므로 방어 성공 처리 [cite: 1]
-                    // (단, ELO 시스템에서는 단순 방어가 아니라 점수 획득이 중요하지만, 기록을 위해 남김)
-                    if(p2.elo > p1.elo) {
-                         p2.defenseCount = (p2.defenseCount || 0) + 1;
-                         historyType = 'defense';
-                    }
+            winner.elo += winCalc.change;
+            loser.elo += loseCalc.change;
+
+            // Career High ELO 갱신
+            if (winner.elo > (winner.careerHighElo || 0)) winner.careerHighElo = winner.elo;
+            if (loser.elo > (loser.careerHighElo || 0)) loser.careerHighElo = loser.elo;
+
+            if (!isBlueWin) { // Red(상위) Win = Defense Success (Logic)
+                if(p2.elo > p1.elo) {
+                     p2.defenseCount = (p2.defenseCount || 0) + 1;
+                     historyType = 'defense';
                 }
-                
-                if (winnerVal === 'blue' && p1.elo < p2.elo) historyType = 'challenge_success';
-
-                winner.wins++;
-                loser.losses++;
+            } else {
+                if (p1.elo < p2.elo) historyType = 'challenge_success';
             }
 
-            // 점수 반영
-            p1.elo += p1Change;
-            p2.elo += p2Change;
+            winner.wins++;
+            loser.losses++;
             
-            // 마지막 경기 날짜 갱신 (휴면 강등용) 
             const today = new Date().toISOString().split('T')[0];
-            p1.lastMatchDate = today;
-            p2.lastMatchDate = today;
+            winner.lastMatchDate = today;
+            loser.lastMatchDate = today;
 
-            // 커리어 하이 갱신 로직
-            rankingsData.sort((a, b) => b.elo - a.elo); // 점수순 정렬
+            // 커리어 하이 랭킹 갱신
+            rankingsData.sort((a, b) => b.elo - a.elo);
             rankingsData.forEach((p, idx) => {
                 const currentRank = idx + 1;
                 if (!p.careerHighRank || currentRank < p.careerHighRank) {
@@ -482,19 +451,33 @@
 
             matchHistoryData.unshift({
                 date: today,
-                winner: winnerVal === 'draw' ? '-' : (winnerVal === 'blue' ? p1.name : p2.name),
-                loser: winnerVal === 'draw' ? '-' : (winnerVal === 'blue' ? p2.name : p1.name),
+                winner: isBlueWin ? p1.name : p2.name,
+                loser: isBlueWin ? p2.name : p1.name,
                 type: historyType,
                 season: activeSeason,
                 blue: p1.name
             });
 
             saveRankings();
-            renderRankings([p1.name, p2.name]); // 변동된 선수 하이라이트
-            alert(`결과 반영 완료!\n${p1.name}: ${p1Change>0?'+':''}${p1Change}\n${p2.name}: ${p2Change>0?'+':''}${p2Change}`);
+            renderRankings([winner.name, loser.name]);
+            alert(`결과 반영 완료!\n${winner.name}: +${winCalc.change}\n${loser.name}: ${loseCalc.change}`);
         };
 
-        // [추가] 휴면 점수 차감 (Decay) [cite: 14, 15]
+        // ELO 초기화 기능
+        window.resetAllElo = () => {
+            if(!confirm("⚠️ 경고: 모든 선수의 ELO 점수를 1000점으로 초기화하시겠습니까?\n(승/패 전적은 유지됩니다.)")) return;
+            rankingsData.forEach(p => {
+                p.elo = 1000;
+                p.careerHighElo = 1000;
+            });
+            saveRankings();
+            renderRankings();
+            alert("초기화 완료");
+        };
+
+        // ... 나머지 공통 함수들은 기존 유지 ...
+
+        // [추가] 휴면 점수 차감 (Decay)
         window.applyDecay = () => {
             if (!confirm("마지막 경기 후 5일이 지난 선수들의 점수를 5점씩 차감하시겠습니까?")) return;
             
@@ -556,7 +539,6 @@
 
                 div.className = `rank-card flex items-center p-3 border rounded-xl mb-2 ${highlightClass}`;
                 
-                // ELO 기반 랭킹이므로 드래그 비활성화 권장 (하지만 관리자 권한으로 수동 수정 가능하게 유지)
                 div.draggable = false; 
                 div.dataset.index = index;
 
@@ -575,7 +557,7 @@
                                 ${item.defenseCount > 0 ? `<span class="bg-yellow-100 text-yellow-700 text-[10px] px-1.5 py-0.5 rounded-full border border-yellow-200">🛡️ ${item.defenseCount}</span>` : ''}
                             </div>
                             <div class="text-xs text-slate-500 mt-0.5 flex gap-2">
-                                <span class="font-medium text-slate-600">${item.wins}승 ${item.losses}패 ${item.draws||0}무</span>
+                                <span class="font-medium text-slate-600">${item.wins}승 ${item.losses}패</span>
                             </div>
                         </div>
                     </div>
@@ -617,8 +599,6 @@
             rankingsData.forEach((p, i) => {
                 p.previousRank = i + 1;
                 p.wins = 0; p.losses = 0; p.draws = 0; p.defenseCount = 0;
-                // ELO는 유지할지 초기화할지 결정해야 하나, 보통 시즌제에서는 소프트 리셋을 합니다.
-                // 여기서는 사용자 요청이 없었으므로 ELO는 유지합니다.
             });
 
             saveRankings();
@@ -651,6 +631,7 @@
                     previousRank: rankingsData.length+1,
                     careerHighRank: rankingsData.length+1,
                     elo: 1000,
+                    careerHighElo: 1000,
                     lastMatchDate: new Date().toISOString().split('T')[0]
                 }); 
                 saveRankings(); renderRankings();
@@ -699,15 +680,4 @@
             const checkedTags = document.querySelectorAll('.style-checkbox:checked');
             p.tags = Array.from(checkedTags).map(cb => cb.value);
             
-            // ELO 수정 시 재정렬 필요할 수 있음
-            rankingsData.sort((a, b) => b.elo - a.elo);
-            
-            saveRankings();
-            document.getElementById('editModal').classList.add('hidden');
-            renderRankings();
-        };
-
-        window.updateSeasonName = () => { activeSeason = document.getElementById('seasonNameInput').value; saveRankings(); };
-    </script>
-</body>
-</html>
+            rankingsData.sort((a, b) => b
