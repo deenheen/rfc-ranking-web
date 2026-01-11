@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RFC 랭킹 매니저 (v2.6 Reset)</title>
+    <title>RFC 랭킹 매니저 (v2.7)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
@@ -29,7 +29,7 @@
     <div id="loginOverlay" class="fixed inset-0 bg-slate-900/95 z-50 flex items-center justify-center backdrop-blur-sm">
         <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-sm text-center border border-slate-200">
             <div class="text-4xl mb-2">🥊</div>
-            <h2 class="text-2xl font-black text-slate-800 mb-6">RFC Admin v2.6</h2>
+            <h2 class="text-2xl font-black text-slate-800 mb-6">RFC Admin v2.7</h2>
             <input type="email" id="adminEmail" placeholder="admin@rfc.com" class="w-full p-3 border border-slate-300 rounded-lg mb-3 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50 transition">
             <input type="password" id="adminPw" placeholder="Password" class="w-full p-3 border border-slate-300 rounded-lg mb-6 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50 transition">
             <button id="btnLogin" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-lg transition transform active:scale-95 shadow-lg shadow-blue-500/30">시스템 접속</button>
@@ -124,12 +124,11 @@
                         <button onclick="startNewSeason()" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-2.5 rounded-lg text-sm shadow-md transition">🚀 시즌 종료 및 초기화</button>
 
                         <div class="grid grid-cols-2 gap-2 mt-4 pt-4 border-t border-slate-100">
+                             <button onclick="updateRankBaseline()" class="bg-blue-50 text-blue-600 hover:bg-blue-100 font-bold py-2 rounded-lg text-xs border border-blue-100">📉 순위 변동(▲▼) 리셋</button>
                              <button onclick="resetAllStats()" class="bg-gray-100 text-gray-600 hover:bg-gray-200 font-bold py-2 rounded-lg text-xs">📊 전적(승패) 초기화</button>
                              <button onclick="resetAllElo()" class="bg-gray-100 text-gray-600 hover:bg-gray-200 font-bold py-2 rounded-lg text-xs">⚡ ELO 초기화</button>
-                             
+                             <button onclick="addNewPlayer()" class="bg-emerald-50 text-emerald-600 hover:bg-emerald-100 font-bold py-2 rounded-lg text-xs">+ 새 선수 등록</button>
                              <button onclick="resetEverything()" class="bg-red-50 text-red-600 hover:bg-red-100 font-bold py-3 rounded-lg text-xs col-span-2 border border-red-200">🧨 시스템 전체 리셋 (기록 삭제)</button>
-                             
-                             <button onclick="addNewPlayer()" class="bg-emerald-50 text-emerald-600 hover:bg-emerald-100 font-bold py-2 rounded-lg text-xs col-span-2 mt-2">+ 새 선수 등록</button>
                         </div>
                     </div>
                 </div>
@@ -276,7 +275,6 @@
         window.resetAllElo = () => { if(!confirm("⚠️ ELO를 1000으로 초기화하시겠습니까?")) return; rankingsData.forEach(p => { p.elo = 1000; p.careerHighElo = 1000; }); saveRankings(); renderRankings(); alert("ELO 초기화 완료"); };
         window.resetAllStats = () => { if(!confirm("⚠️ 전적(승/패)을 0으로 초기화하시겠습니까?")) return; rankingsData.forEach(p => { p.wins = 0; p.losses = 0; }); saveRankings(); renderRankings(); alert("전적 초기화 완료"); };
         
-        // [New] 전체 초기화
         window.resetEverything = () => {
             if(!confirm("🚨 경고: 모든 경기 기록과 아카이브를 삭제하고, 선수들의 상태를 초기화하시겠습니까?\n(선수 명단은 유지됩니다)")) return;
             if(!confirm("❗ 정말 확실합니까? 되돌릴 수 없습니다.")) return;
@@ -302,7 +300,10 @@
         }
 
         window.startNewSeason = () => { if (!confirm("새 시즌 시작?")) return; const maxDef = Math.max(...rankingsData.map(i => i.defenseCount || 0), 0); const defenseKing = rankingsData.filter(i => (i.defenseCount||0) === maxDef && maxDef > 0).map(i => i.name).join(', ') || '-'; seasonArchives[activeSeason] = { champion: rankingsData[0]?.name || "-", rank2: rankingsData[1]?.name || "-", rank3: rankingsData[2]?.name || "-", defenseKing, defenseCount: maxDef, date: new Date().toISOString().split('T')[0] }; const num = parseInt(activeSeason.replace(/[^0-9]/g, '')) || 0; activeSeason = `시즌 ${num + 1}`; if (document.getElementById('excludeInactiveCheck').checked) { const cm = matchHistoryData.filter(m => m.season === document.getElementById('currentSeasonBadge').textContent); const an = new Set(); cm.forEach(m => { an.add(m.winner); an.add(m.loser); }); rankingsData = rankingsData.filter(p => an.has(p.name)); } rankingsData.forEach((p, i) => { p.previousRank = i + 1; p.wins = 0; p.losses = 0; p.draws = 0; p.defenseCount = 0; }); saveRankings(); alert(`[${activeSeason}] 시작!`); };
-        window.updateRankBaseline = () => { if(confirm("현재 순위를 기준점으로 설정?")) { rankingsData.forEach((p, i) => p.previousRank = i + 1); saveRankings(); renderRankings(); } };
+        
+        // [New/Restored] 순위 변동폭 초기화
+        window.updateRankBaseline = () => { if(confirm("현재 순위를 기준점으로 설정하여 변동폭(▲▼)을 0으로 만듭니다.")) { rankingsData.forEach((p, i) => p.previousRank = i + 1); saveRankings(); renderRankings(); alert("초기화되었습니다."); } };
+        
         window.populateMatchSelectors = () => { const s1 = document.getElementById('p1Select'); const s2 = document.getElementById('p2Select'); let opts = '<option value="">선수 선택</option>'; rankingsData.forEach((p, i) => opts += `<option value="${i}">${i+1}위 ${p.name} (${p.elo})</option>`); s1.innerHTML = opts; s2.innerHTML = opts; };
         window.addNewPlayer = () => { const name = prompt("선수 이름:"); if(name) { rankingsData.push({ id: crypto.randomUUID(), name, wins:0, losses:0, draws:0, defenseCount:0, previousRank: rankingsData.length+1, careerHighRank: rankingsData.length+1, elo: 1000, careerHighElo: 1000, lastMatchDate: new Date().toISOString().split('T')[0] }); saveRankings(); renderRankings(); } };
         
