@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RFC 랭킹 매니저 (v3.6 Upload)</title>
+    <title>RFC 랭킹 매니저 (v3.6.1 Fix)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
@@ -23,7 +23,7 @@
     <div id="loginOverlay" class="fixed inset-0 bg-slate-900/95 z-50 flex items-center justify-center backdrop-blur-sm">
         <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-sm text-center border border-slate-200">
             <div class="text-4xl mb-2">🥊</div>
-            <h2 class="text-2xl font-black text-slate-800 mb-6">RFC Admin v3.6</h2>
+            <h2 class="text-2xl font-black text-slate-800 mb-6">RFC Admin v3.6.1</h2>
             <input type="email" id="adminEmail" placeholder="admin@rfc.com" class="w-full p-3 border border-slate-300 rounded-lg mb-3 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50 transition">
             <input type="password" id="adminPw" placeholder="Password" class="w-full p-3 border border-slate-300 rounded-lg mb-6 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50 transition">
             <button id="btnLogin" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-lg transition transform active:scale-95 shadow-lg shadow-blue-500/30">시스템 접속</button>
@@ -37,7 +37,7 @@
                 <span id="currentSeasonBadge" class="bg-slate-800 text-white text-xs font-bold px-3 py-1 rounded-full shadow-md">Loading...</span>
                 <span id="saveStatus" class="text-xs font-medium text-emerald-500 transition-opacity opacity-0">✅ 저장됨</span>
             </div>
-            <div class="mt-2 md:mt-0 text-xs text-slate-400 font-medium">v3.6 Image Upload</div>
+            <div class="mt-2 md:mt-0 text-xs text-slate-400 font-medium">v3.6.1 Safe Mode</div>
         </header>
 
         <div class="bg-white rounded-t-2xl border-b border-slate-200 px-4 flex gap-6 mb-4 shadow-sm overflow-x-auto">
@@ -175,42 +175,45 @@
             try { const now = new Date(); const kstDate = new Date(now.getTime() + (9 * 60 * 60 * 1000)).toISOString().split('T')[0]; await setDoc(docRef, { rankings: rankingsData, matchHistory: matchHistoryData, seasonArchives: seasonArchives, activeSeason: activeSeason, date: kstDate }, { merge: false }); statusEl.style.opacity = 1; setTimeout(() => statusEl.style.opacity = 0, 2000); } catch (e) { alert("저장 오류: " + e.message); }
         }
 
-        // ==========================================
-        // [New] Image Handling
-        // ==========================================
+        // Image Handling (With Safety Check)
         const fileInput = document.getElementById('editImageFile');
-        fileInput.addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = function(event) {
-                const img = new Image();
-                img.onload = function() {
-                    const canvas = document.createElement('canvas');
-                    const MAX_SIZE = 500; // Resize to max 500px
-                    let width = img.width;
-                    let height = img.height;
-                    if (width > height) { if (width > MAX_SIZE) { height *= MAX_SIZE / width; width = MAX_SIZE; } } 
-                    else { if (height > MAX_SIZE) { width *= MAX_SIZE / height; height = MAX_SIZE; } }
-                    canvas.width = width; canvas.height = height;
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0, width, height);
-                    const dataUrl = canvas.toDataURL('image/jpeg', 0.8); // Compress quality 0.8
-                    document.getElementById('editImageUrl').value = dataUrl;
-                    document.getElementById('previewImage').src = dataUrl;
+        if (fileInput) {
+            fileInput.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const img = new Image();
+                    img.onload = function() {
+                        const canvas = document.createElement('canvas');
+                        const MAX_SIZE = 500;
+                        let width = img.width; let height = img.height;
+                        if (width > height) { if (width > MAX_SIZE) { height *= MAX_SIZE / width; width = MAX_SIZE; } } 
+                        else { if (height > MAX_SIZE) { width *= MAX_SIZE / height; height = MAX_SIZE; } }
+                        canvas.width = width; canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+                        const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+                        const urlInput = document.getElementById('editImageUrl');
+                        const prevImg = document.getElementById('previewImage');
+                        if(urlInput) urlInput.value = dataUrl;
+                        if(prevImg) prevImg.src = dataUrl;
+                    };
+                    img.src = event.target.result;
                 };
-                img.src = event.target.result;
-            };
-            reader.readAsDataURL(file);
-        });
+                reader.readAsDataURL(file);
+            });
+        }
 
         window.removeImage = () => {
-            document.getElementById('editImageUrl').value = '';
-            document.getElementById('previewImage').src = '';
-            document.getElementById('editImageFile').value = ''; // Reset file input
+            const urlInput = document.getElementById('editImageUrl');
+            const prevImg = document.getElementById('previewImage');
+            const fileIn = document.getElementById('editImageFile');
+            if(urlInput) urlInput.value = '';
+            if(prevImg) prevImg.src = '';
+            if(fileIn) fileIn.value = '';
         };
 
-        // ... (Remaining Logic same as v3.5.1) ...
         window.switchTab = (tab) => { document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden')); document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active')); document.getElementById(tab + 'Section').classList.remove('hidden'); document.getElementById('tab' + tab.charAt(0).toUpperCase() + tab.slice(1)).classList.add('active'); };
         function updateSeasonUI() { document.getElementById('currentSeasonBadge').textContent = activeSeason; document.querySelectorAll('.currentSeasonName').forEach(el => el.textContent = activeSeason); const num = parseInt(activeSeason.replace(/[^0-9]/g, '')) || 0; document.getElementById('newSeasonNameInput').value = `시즌 ${num + 1}`; }
         function renderSeasonList() { const container = document.getElementById('seasonListContainer'); container.innerHTML = ''; const seasons = [activeSeason, ...Object.keys(seasonArchives).sort().reverse().filter(s => s !== activeSeason)]; seasons.forEach(sName => { const isActive = sName === activeSeason; const div = document.createElement('div'); div.className = `flex justify-between items-center p-3 rounded-lg border ${isActive ? 'bg-blue-50 border-blue-300' : 'bg-white border-slate-200'}`; div.innerHTML = `<div class="flex items-center gap-2"><span class="${isActive ? 'text-blue-700 font-bold' : 'text-slate-600'} text-sm">${sName}</span>${isActive ? '<span class="text-[10px] bg-blue-600 text-white px-1.5 py-0.5 rounded">Active</span>' : ''}</div><div class="flex gap-1">${!isActive ? `<button onclick="switchActiveSeason('${sName}')" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 px-2 py-1 rounded border border-slate-200">선택</button>` : ''}<button onclick="renameSeason('${sName}')" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-500 px-2 py-1 rounded border border-slate-200">이름변경</button>${!isActive ? `<button onclick="deleteSeason('${sName}')" class="text-xs bg-red-50 hover:bg-red-100 text-red-500 px-2 py-1 rounded border border-red-100">삭제</button>` : ''}</div>`; container.appendChild(div); }); }
@@ -233,38 +236,65 @@
         function renderRankings() { const list = document.getElementById('rankingList'); list.innerHTML = ''; rankingsData.forEach((item, index) => { const diff = (item.previousRank || (index + 1)) - (index + 1); let ch = diff > 0 ? `<span class="rank-up">▲${diff}</span>` : (diff < 0 ? `<span class="rank-down">▼${Math.abs(diff)}</span>` : '<span class="rank-keep">-</span>'); list.innerHTML += `<div class="rank-card flex items-center p-3 border rounded-xl mb-2 bg-white hover:shadow-md"><div class="w-10 text-center mr-2"><span class="text-lg font-black text-slate-800">${index+1}</span><div class="text-[10px]">${ch}</div></div><div class="flex-grow"><div class="font-bold text-sm text-slate-800 flex items-center gap-2">${item.name} <span class="bg-amber-100 text-amber-800 text-xs px-1.5 rounded border border-amber-200">⚡${item.elo}</span></div><div class="text-xs text-slate-500 mt-0.5">${item.wins}승 ${item.losses}패</div></div><button onclick="openEditModal(${index})" class="p-2 text-slate-400 hover:text-blue-600">✏️</button></div>`; }); populateMatchSelectors(); }
         window.populateMatchSelectors = () => { const s1 = document.getElementById('p1Select'); const s2 = document.getElementById('p2Select'); let opts = '<option value="">선수 선택</option>'; rankingsData.forEach((p, i) => opts += `<option value="${i}">${i+1}위 ${p.name} (${p.elo})</option>`); s1.innerHTML = opts; s2.innerHTML = opts; };
         window.addNewPlayer = () => { const name = prompt("이름:"); if(name) { rankingsData.push({ id: crypto.randomUUID(), name, wins:0, losses:0, defenseCount:0, previousRank: rankingsData.length+1, careerHighRank: rankingsData.length+1, elo: 1000, careerHighElo: 1000, lastMatchDate: new Date().toISOString().split('T')[0] }); saveRankings(); renderRankings(); } };
-        window.openEditModal = (idx) => { const p = rankingsData[idx]; document.getElementById('editPlayerId').value = idx; document.getElementById('editName').value = p.name; document.getElementById('editOriginalName').value = p.name; document.getElementById('editDefenses').value = 0; document.getElementById('editImage').value = p.imageUrl || ''; document.getElementById('editGameId').value = p.gameId || ''; document.getElementById('editHeight').value = p.height || ''; document.getElementById('editReach').value = p.reach || ''; document.getElementById('editStance').value = p.stance || 'Orthodox'; document.getElementById('editElo').value = p.elo || 1000; document.getElementById('editWins').value = p.wins || 0; document.getElementById('editLosses').value = p.losses || 0; 
-            document.getElementById('editImageUrl').value = p.imageUrl || '';
-            document.getElementById('previewImage').src = p.imageUrl || '';
-            document.getElementById('editImageFile').value = ''; 
-            renderStyleTags(p.tags || []); document.getElementById('editModal').classList.remove('hidden'); 
-        };
-        function renderStyleTags(cT) { const c = document.getElementById('styleTagsContainer'); c.innerHTML = ''; STYLE_OPTIONS.forEach(s => { const id = `style-${s}`; c.innerHTML += `<div><input type="checkbox" id="${id}" value="${s}" class="style-checkbox hidden" ${cT.includes(s)?'checked':''}><label for="${id}" class="inline-block px-3 py-1 text-xs font-bold border border-slate-300 rounded-full cursor-pointer text-slate-500 hover:bg-slate-100 transition select-none ${cT.includes(s)?'bg-blue-500 text-white border-blue-500':''}">${s}</label></div>`; }); }
         
-        // [New] Save logic with Image
-        window.savePlayerDetails = () => { 
-            const idx = document.getElementById('editPlayerId').value; 
+        // [Safety Checked] openEditModal
+        window.openEditModal = (idx) => { 
             const p = rankingsData[idx]; 
-            p.name = document.getElementById('editName').value; 
+            const setVal = (id, val) => { const el = document.getElementById(id); if(el) el.value = val; };
+            
+            setVal('editPlayerId', idx);
+            setVal('editName', p.name);
+            setVal('editOriginalName', p.name);
+            setVal('editDefenses', 0);
+            setVal('editGameId', p.gameId || '');
+            setVal('editHeight', p.height || '');
+            setVal('editReach', p.reach || '');
+            setVal('editStance', p.stance || 'Orthodox');
+            setVal('editElo', p.elo || 1000);
+            setVal('editWins', p.wins || 0);
+            setVal('editLosses', p.losses || 0);
+            setVal('editImageUrl', p.imageUrl || '');
+            setVal('editImageFile', ''); // Reset input
+
+            const prevImg = document.getElementById('previewImage');
+            if(prevImg) prevImg.src = p.imageUrl || '';
+
+            renderStyleTags(p.tags || []); 
+            const modal = document.getElementById('editModal');
+            if(modal) modal.classList.remove('hidden');
+        };
+
+        function renderStyleTags(cT) { const c = document.getElementById('styleTagsContainer'); if(!c) return; c.innerHTML = ''; STYLE_OPTIONS.forEach(s => { const id = `style-${s}`; c.innerHTML += `<div><input type="checkbox" id="${id}" value="${s}" class="style-checkbox hidden" ${cT.includes(s)?'checked':''}><label for="${id}" class="inline-block px-3 py-1 text-xs font-bold border border-slate-300 rounded-full cursor-pointer text-slate-500 hover:bg-slate-100 transition select-none ${cT.includes(s)?'bg-blue-500 text-white border-blue-500':''}">${s}</label></div>`; }); }
+        
+        window.savePlayerDetails = () => { 
+            const idInput = document.getElementById('editPlayerId');
+            if(!idInput) return;
+            const idx = idInput.value; 
+            const p = rankingsData[idx]; 
+            
+            const getVal = (id) => document.getElementById(id) ? document.getElementById(id).value : '';
+            
+            p.name = getVal('editName'); 
             p.defenseCount = 0; 
+            p.imageUrl = getVal('editImageUrl'); 
+            p.gameId = getVal('editGameId'); 
+            p.height = getVal('editHeight'); 
+            p.reach = getVal('editReach'); 
+            p.stance = getVal('editStance'); 
             
-            // Image handling
-            p.imageUrl = document.getElementById('editImageUrl').value; // Get Base64 from hidden input
-            
-            p.gameId = document.getElementById('editGameId').value; 
-            p.height = document.getElementById('editHeight').value; 
-            p.reach = document.getElementById('editReach').value; 
-            p.stance = document.getElementById('editStance').value; 
-            p.elo = parseInt(document.getElementById('editElo').value)||1000; 
+            p.elo = parseInt(getVal('editElo'))||1000; 
             if(p.elo > (p.careerHighElo || 0)) p.careerHighElo = p.elo; // Update Career High
-            p.wins = parseInt(document.getElementById('editWins').value)||0; 
-            p.losses = parseInt(document.getElementById('editLosses').value)||0; 
+            
+            p.wins = parseInt(getVal('editWins'))||0; 
+            p.losses = parseInt(getVal('editLosses'))||0; 
+            
             const ct = document.querySelectorAll('.style-checkbox:checked'); 
             p.tags = Array.from(ct).map(cb => cb.value); 
             
             rankingsData.sort((a, b) => b.elo - a.elo); 
             saveRankings(); 
-            document.getElementById('editModal').classList.add('hidden'); 
+            const modal = document.getElementById('editModal');
+            if(modal) modal.classList.add('hidden');
             renderRankings(); 
         };
         
