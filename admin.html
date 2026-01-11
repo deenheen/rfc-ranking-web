@@ -680,4 +680,14 @@
             const checkedTags = document.querySelectorAll('.style-checkbox:checked');
             p.tags = Array.from(checkedTags).map(cb => cb.value);
             
-            rankingsData.sort((a, b) => b
+            rankingsData.sort((a, b) => b.elo - a.elo);
+            
+            saveRankings();
+            document.getElementById('editModal').classList.add('hidden');
+            renderRankings();
+        };
+
+        window.updateSeasonName = () => { activeSeason = document.getElementById('seasonNameInput').value; saveRankings(); };
+    </script>
+</body>
+</html>
