@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RFC 랭킹 매니저 Pro</title>
+    <title>RFC 랭킹 매니저 Pro (Fixed)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
@@ -173,7 +173,7 @@
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
         // ==========================================
-        // Firebase 설정 (기존 키 유지)
+        // Firebase 설정
         // ==========================================
         const firebaseConfig = {
             apiKey: "AIzaSyDlj68ex-fM0ExRdD-tvCy-UyIneVoPmGk",
@@ -225,10 +225,12 @@
                     document.getElementById('currentSeasonBadge').textContent = activeSeason;
                     document.getElementById('seasonNameInput').value = activeSeason;
                     
-                    // 데이터 보정
+                    // 데이터 보정 (User Site와 호환성 맞춤)
                     rankingsData.forEach((p, i) => {
-                        if(p.defenses === undefined) p.defenses = 0;
+                        // [Fix] 변수명 통일: defenses -> defenseCount
+                        if(p.defenseCount === undefined) p.defenseCount = p.defenses || 0; 
                         if(p.previousRank === undefined) p.previousRank = i + 1;
+                        if(p.careerHighRank === undefined) p.careerHighRank = i + 1;
                     });
 
                     renderRankings();
@@ -256,7 +258,7 @@
             } catch (e) { alert("저장 오류: " + e.message); }
         }
 
-        // 3. 백업 기능
+        // 백업 기능
         window.backupData = () => {
             const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({
                 rankings: rankingsData,
@@ -271,13 +273,12 @@
             downloadAnchorNode.remove();
         };
 
-        // 4. 미참여 인원 확인
+        // 미참여 인원 확인
         function checkInactivePlayers() {
             const list = document.getElementById('inactiveList');
             const countSpan = document.getElementById('inactiveCount');
             list.innerHTML = '';
             
-            // 이번 시즌 경기가 있는지 확인
             const currentSeasonMatches = matchHistoryData.filter(m => m.season === activeSeason);
             const activeNames = new Set();
             currentSeasonMatches.forEach(m => { activeNames.add(m.winner); activeNames.add(m.loser); });
@@ -297,12 +298,10 @@
             document.getElementById('inactiveList').classList.toggle('hidden');
         };
 
-        // 2. 시뮬레이션 미리보기 & 1. 랭킹 로직 계산
+        // 랭킹 로직 계산
         function calculateRankChanges(winnerIdx, loserIdx, winnerSide) {
-            // winnerSide: 'blue' or 'red' or 'draw'
             if (winnerSide === 'draw') return { type: 'draw', msg: "변동 없음 (무승부)" };
 
-            // 인덱스는 0부터 시작하므로 순위는 idx + 1
             const winRank = winnerIdx + 1;
             const loseRank = loserIdx + 1;
             const diff = Math.abs(winRank - loseRank);
@@ -319,9 +318,6 @@
             // Case 2: 하위 랭커(Blue) 승리 (업셋)
             // 🛑 6단계 이상 차이 (패널티)
             if (diff >= 6) {
-                // 승자: 한 단계 상승 (현재 winnerIdx - 1 위치로)
-                // 패자: 한 단계 하락 (현재 loserIdx + 1 위치로)
-                // 만약 승자가 이미 1등이면 이동 불가(논리상 불가능하지만), 패자가 꼴등이면 이동 불가 처리 필요
                 return {
                     type: 'penalty_upset',
                     msg: `⚠️ 상위 도전 승리! ${rankingsData[winnerIdx].name} 1단계 상승, ${rankingsData[loserIdx].name} 1단계 하락`,
@@ -330,11 +326,11 @@
                 };
             }
             
-            // 일반 업셋 (5단계 이내) -> 승자가 패자의 자리를 뺏음
+            // 일반 업셋 (5단계 이내)
             return {
                 type: 'normal_upset',
                 msg: `🚀 순위 탈환! ${rankingsData[winnerIdx].name} → ${loseRank}위로 상승`,
-                targetIdx: loserIdx // 승자가 이 위치로 이동
+                targetIdx: loserIdx 
             };
         }
 
@@ -356,24 +352,23 @@
 
             let html = '';
             
-            // Blue 승리 가정
             const blueRes = calculateRankChanges(p1Idx, p2Idx, 'blue');
             html += `<div class="${winnerVal === 'blue' ? 'font-bold text-blue-600' : 'text-gray-400'}">🔵 Blue 승: ${blueRes.msg}</div>`;
             
-            // Red 승리 가정
             const redRes = calculateRankChanges(p2Idx, p1Idx, 'red');
             html += `<div class="${winnerVal === 'red' ? 'font-bold text-red-600' : 'text-gray-400'}">🔴 Red 승: ${redRes.msg}</div>`;
 
             content.innerHTML = html;
         }
 
-        // 이벤트 리스너 등록
         document.getElementById('p1Select').addEventListener('change', updateMatchPreview);
         document.getElementById('p2Select').addEventListener('change', updateMatchPreview);
         document.querySelectorAll('input[name="winner"]').forEach(r => r.addEventListener('change', updateMatchPreview));
 
 
-        // 1. 경기 결과 적용 (자동 랭킹 반영)
+        // ==========================================
+        // [중요] 경기 결과 적용 (User Site 호환성 수정)
+        // ==========================================
         window.applyMatch = () => {
             const p1Idx = parseInt(document.getElementById('p1Select').value);
             const p2Idx = parseInt(document.getElementById('p2Select').value);
@@ -387,11 +382,13 @@
             const p1Name = p1.name;
             const p2Name = p2.name;
 
-            let moveLog = []; // 하이라이트 할 선수 이름들
+            let moveLog = []; 
+            let historyType = 'ranking'; // Default
 
             if (winnerVal === 'draw') {
                 p1.draws = (p1.draws || 0) + 1;
                 p2.draws = (p2.draws || 0) + 1;
+                historyType = 'draw';
             } else {
                 const winnerIdx = winnerVal === 'blue' ? p1Idx : p2Idx;
                 const loserIdx = winnerVal === 'blue' ? p2Idx : p1Idx;
@@ -404,60 +401,57 @@
                 const result = calculateRankChanges(winnerIdx, loserIdx, winnerVal);
 
                 if (result.type === 'defend') {
-                    winnerObj.defenses = (winnerObj.defenses || 0) + 1;
+                    // [Fix] 변수명 통일: defenseCount
+                    winnerObj.defenseCount = (winnerObj.defenseCount || 0) + 1;
+                    historyType = 'defense'; // User Site 호환
                     moveLog.push(winnerObj.name);
-                } else if (result.type === 'normal_upset') {
-                    // 승자를 잘라내서 패자 위치(targetIdx)에 삽입
-                    // 배열 조작 시 인덱스가 변하므로 주의
-                    // 1. 승자 제거
-                    const [winner] = rankingsData.splice(winnerIdx, 1);
-                    // 2. 패자 위치에 삽입 (승자가 더 아래 순위였으므로, splice 후 패자 인덱스는 그대로임)
-                    rankingsData.splice(result.targetIdx, 0, winner);
+                } else {
+                    // 업셋 발생 시
+                    historyType = 'challenge_success'; // User Site 호환
                     
-                    // 하이라이트: 승자 ~ 원래 승자 위치 사이의 모든 사람
-                    // 대략적으로 승자와 패자만 하이라이트
-                    moveLog.push(winner.name);
-                    // 밀려난 사람들 중 일부도 하이라이트 하고 싶다면 여기서 추가
-                } else if (result.type === 'penalty_upset') {
-                    // 복잡한 교환: 승자 UP 1, 패자 DOWN 1
-                    // 직접 swap을 사용하는 것이 안전
-                    
-                    // 1. 승자 이동 (위로 1칸)
-                    if (result.newWinnerIdx !== winnerIdx) {
-                         const temp = rankingsData[result.newWinnerIdx];
-                         rankingsData[result.newWinnerIdx] = rankingsData[winnerIdx];
-                         rankingsData[winnerIdx] = temp;
+                    if (result.type === 'normal_upset') {
+                        const [winner] = rankingsData.splice(winnerIdx, 1);
+                        rankingsData.splice(result.targetIdx, 0, winner);
+                        moveLog.push(winner.name);
+                    } else if (result.type === 'penalty_upset') {
+                        if (result.newWinnerIdx !== winnerIdx) {
+                             const temp = rankingsData[result.newWinnerIdx];
+                             rankingsData[result.newWinnerIdx] = rankingsData[winnerIdx];
+                             rankingsData[winnerIdx] = temp;
+                        }
+                        // 인덱스 재계산 및 패자 이동
+                        const currentLoserIdx = rankingsData.findIndex(p => p.name === loserObj.name);
+                        const targetLoserIdx = Math.min(rankingsData.length - 1, currentLoserIdx + 1);
+                        if (targetLoserIdx !== currentLoserIdx) {
+                            const temp = rankingsData[targetLoserIdx];
+                            rankingsData[targetLoserIdx] = rankingsData[currentLoserIdx];
+                            rankingsData[currentLoserIdx] = temp;
+                        }
+                        moveLog.push(winnerObj.name, loserObj.name);
                     }
-                    // 주의: 승자 이동 후 패자의 인덱스가 바뀌었을 수 있음.
-                    // 하지만 승자는 하위랭커, 패자는 상위랭커.
-                    // 하위랭커가 위로 올라가도(idx 감소), 상위랭커(idx 더 작음)의 위치에는 영향 미치지 않음 (단, 바로 인접한 경우 제외)
-                    
-                    // 재계산 필요: 배열 상태가 변했음. 이름으로 다시 찾기
-                    const currentLoserIdx = rankingsData.findIndex(p => p.name === loserObj.name);
-                    const targetLoserIdx = Math.min(rankingsData.length - 1, currentLoserIdx + 1);
-
-                    // 2. 패자 이동 (아래로 1칸)
-                    if (targetLoserIdx !== currentLoserIdx) {
-                        const temp = rankingsData[targetLoserIdx];
-                        rankingsData[targetLoserIdx] = rankingsData[currentLoserIdx];
-                        rankingsData[currentLoserIdx] = temp;
-                    }
-
-                    moveLog.push(winnerObj.name, loserObj.name);
                 }
             }
 
-            // 전적 기록
+            // [Fix] 커리어 하이 갱신 로직 추가
+            rankingsData.forEach((p, idx) => {
+                const currentRank = idx + 1;
+                if (!p.careerHighRank || currentRank < p.careerHighRank) {
+                    p.careerHighRank = currentRank;
+                }
+            });
+
+            // 전적 기록 (User Site가 인식하는 Type으로 저장)
             matchHistoryData.unshift({
                 date: new Date().toISOString().split('T')[0],
                 winner: winnerVal === 'draw' ? '-' : (winnerVal === 'blue' ? p1Name : p2Name),
                 loser: winnerVal === 'draw' ? '-' : (winnerVal === 'blue' ? p2Name : p1Name),
-                type: winnerVal === 'draw' ? 'draw' : 'ranking',
-                season: activeSeason
+                type: historyType, // defense, challenge_success, draw, ranking
+                season: activeSeason,
+                blue: p1Name // 누가 블루(도전자)였는지 기록 (UI 표기용)
             });
 
             saveRankings();
-            renderRankings(moveLog); // 하이라이트 적용
+            renderRankings(moveLog);
             alert("결과가 반영되었습니다.");
         };
 
@@ -466,12 +460,9 @@
             list.innerHTML = '';
             rankingsData.forEach((item, index) => {
                 const div = document.createElement('div');
-                
-                // 하이라이트 클래스
                 const isHighlight = highlightNames.includes(item.name);
                 const highlightClass = isHighlight ? 'highlight-change' : 'bg-white hover:shadow-md';
 
-                // 순위 변동 계산
                 const prevRank = item.previousRank || (index + 1);
                 const currentRank = index + 1;
                 const diff = prevRank - currentRank;
@@ -482,6 +473,9 @@
                 div.className = `rank-card flex items-center p-3 border rounded-xl mb-2 ${highlightClass}`;
                 div.draggable = true;
                 div.dataset.index = index;
+
+                // [Fix] defenseCount 사용
+                const defCount = item.defenseCount || 0;
 
                 div.innerHTML = `
                     <div class="flex flex-col items-center justify-center w-12 mr-3 border-r border-slate-100 pr-3">
@@ -494,7 +488,7 @@
                             <div class="font-bold text-slate-800 text-sm flex items-center gap-2">
                                 ${item.name}
                                 ${index === 0 ? '👑' : ''}
-                                ${item.defenses > 0 ? `<span class="bg-yellow-100 text-yellow-700 text-[10px] px-1.5 py-0.5 rounded-full border border-yellow-200">🛡️ ${item.defenses}</span>` : ''}
+                                ${defCount > 0 ? `<span class="bg-yellow-100 text-yellow-700 text-[10px] px-1.5 py-0.5 rounded-full border border-yellow-200">🛡️ ${defCount}</span>` : ''}
                             </div>
                             <div class="text-xs text-slate-500 mt-0.5 flex gap-2">
                                 <span class="font-medium text-slate-600">${item.wins}승 ${item.losses}패 ${item.draws||0}무</span>
@@ -511,8 +505,6 @@
                 div.addEventListener('drop', handleDrop);
                 list.appendChild(div);
             });
-
-            // 셀렉터 갱신
             populateMatchSelectors();
         }
 
@@ -528,53 +520,49 @@
                 const targetIdx = parseInt(this.dataset.index);
                 const [moved] = rankingsData.splice(srcIdx, 1);
                 rankingsData.splice(targetIdx, 0, moved);
-                saveRankings(); // 저장 시 previousRank는 유지됨 (변동폭 계산용)
+                saveRankings();
                 renderRankings();
             }
             return false;
         }
 
+        // [중요] 새 시즌 시작 (User Site 아카이브 호환성 수정)
         window.startNewSeason = () => {
             const excludeInactive = document.getElementById('excludeInactiveCheck').checked;
-            const msg = excludeInactive 
-                ? "시즌 미참여 인원을 제외하고 새 시즌을 시작하시겠습니까?" 
-                : "모든 인원을 유지한 채 새 시즌을 시작하시겠습니까?";
-            
-            if (!confirm(msg)) return;
+            if (!confirm("새 시즌을 시작하시겠습니까?")) return;
 
-            // 아카이빙
-            const champ = rankingsData[0] ? rankingsData[0].name : "없음";
-            seasonArchives[activeSeason] = { champion: champ, date: new Date().toISOString().split('T')[0] };
+            // [Fix] 아카이브 데이터 풍부하게 저장
+            const maxDef = Math.max(...rankingsData.map(i => i.defenseCount || 0), 0);
+            const defenseKing = rankingsData.filter(i => (i.defenseCount||0) === maxDef && maxDef > 0).map(i => i.name).join(', ') || '-';
 
-            // 새 시즌명 생성
+            seasonArchives[activeSeason] = { 
+                champion: rankingsData[0] ? rankingsData[0].name : "-", 
+                rank2: rankingsData[1] ? rankingsData[1].name : "-",
+                rank3: rankingsData[2] ? rankingsData[2].name : "-",
+                defenseKing: defenseKing,
+                defenseCount: maxDef,
+                date: new Date().toISOString().split('T')[0] 
+            };
+
             const num = parseInt(activeSeason.replace(/[^0-9]/g, '')) || 0;
             activeSeason = `시즌 ${num + 1}`;
 
-            // 미참여 인원 제외 로직
             if (excludeInactive) {
-                const inactiveNames = checkInactivePlayers(); // 이름 배열 반환하도록 수정 필요하지만, UI에서 가져옴
-                const inactiveSet = new Set(Array.from(document.getElementById('inactiveList').children).map(li => li.textContent.split(' ')[1]));
-                // 리스트 텍스트 파싱이 불안정할 수 있으니 로직으로 다시 계산
                 const currentMatches = matchHistoryData.filter(m => m.season === document.getElementById('currentSeasonBadge').textContent);
                 const activeNames = new Set();
                 currentMatches.forEach(m => { activeNames.add(m.winner); activeNames.add(m.loser); });
-                
-                // 필터링: 활동했거나(activeNames에 있거나) 신규 선수 등 예외처리가 필요없다면 그냥 제거
-                // 여기서는 "기록이 없는 사람"을 제거
                 rankingsData = rankingsData.filter(p => activeNames.has(p.name));
             }
 
-            // 스탯 초기화 및 기준점 갱신
             rankingsData.forEach((p, i) => {
                 p.previousRank = i + 1;
-                p.wins = 0; p.losses = 0; p.draws = 0; p.defenses = 0;
+                p.wins = 0; p.losses = 0; p.draws = 0; p.defenseCount = 0;
             });
 
             saveRankings();
             alert(`[${activeSeason}] 시작되었습니다!`);
         };
 
-        // 기타 유틸리티 함수들
         window.updateRankBaseline = () => { 
             if(confirm("현재 순위를 기준점으로 설정하여 변동폭을 0으로 만듭니다.")) {
                 rankingsData.forEach((p, i) => p.previousRank = i + 1);
@@ -595,7 +583,12 @@
         window.addNewPlayer = () => {
             const name = prompt("선수 이름:");
             if(name) { 
-                rankingsData.push({ id: crypto.randomUUID(), name, wins:0, losses:0, draws:0, defenses:0, previousRank: rankingsData.length+1 }); 
+                rankingsData.push({ 
+                    id: crypto.randomUUID(), 
+                    name, wins:0, losses:0, draws:0, defenseCount:0, 
+                    previousRank: rankingsData.length+1,
+                    careerHighRank: rankingsData.length+1
+                }); 
                 saveRankings(); renderRankings();
             }
         };
@@ -606,7 +599,7 @@
             document.getElementById('editPlayerId').value = idx;
             document.getElementById('editName').value = p.name;
             document.getElementById('editOriginalName').value = p.name;
-            document.getElementById('editDefenses').value = p.defenses || 0;
+            document.getElementById('editDefenses').value = p.defenseCount || 0;
             document.getElementById('editImage').value = p.imageUrl || '';
             document.getElementById('editModal').classList.remove('hidden');
         };
@@ -614,7 +607,7 @@
             const idx = document.getElementById('editPlayerId').value;
             const p = rankingsData[idx];
             p.name = document.getElementById('editName').value;
-            p.defenses = parseInt(document.getElementById('editDefenses').value) || 0;
+            p.defenseCount = parseInt(document.getElementById('editDefenses').value) || 0;
             p.imageUrl = document.getElementById('editImage').value;
             saveRankings();
             document.getElementById('editModal').classList.add('hidden');
