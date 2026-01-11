@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RFC 랭킹 매니저 (v2.3 Import & Stats)</title>
+    <title>RFC 랭킹 매니저 (v2.6 Reset)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
@@ -29,7 +29,7 @@
     <div id="loginOverlay" class="fixed inset-0 bg-slate-900/95 z-50 flex items-center justify-center backdrop-blur-sm">
         <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-sm text-center border border-slate-200">
             <div class="text-4xl mb-2">🥊</div>
-            <h2 class="text-2xl font-black text-slate-800 mb-6">RFC Admin v2.3</h2>
+            <h2 class="text-2xl font-black text-slate-800 mb-6">RFC Admin v2.6</h2>
             <input type="email" id="adminEmail" placeholder="admin@rfc.com" class="w-full p-3 border border-slate-300 rounded-lg mb-3 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50 transition">
             <input type="password" id="adminPw" placeholder="Password" class="w-full p-3 border border-slate-300 rounded-lg mb-6 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50 transition">
             <button id="btnLogin" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-lg transition transform active:scale-95 shadow-lg shadow-blue-500/30">시스템 접속</button>
@@ -45,19 +45,10 @@
             </div>
             <div class="flex gap-2 mt-3 md:mt-0">
                 <input type="file" id="importFile" accept=".json" class="hidden">
-                
-                <button onclick="document.getElementById('importFile').click()" class="flex items-center gap-1 bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold py-2 px-4 rounded-lg transition">
-                    📂 데이터 복원
-                </button>
-                <button onclick="backupData()" class="flex items-center gap-1 bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-bold py-2 px-4 rounded-lg transition">
-                    💾 데이터 백업
-                </button>
-                <button onclick="saveRankings()" class="flex items-center gap-1 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold py-2 px-4 rounded-lg shadow-lg shadow-indigo-500/30 transition">
-                    💾 강제 저장
-                </button>
-                <button onclick="window.open('index.html')" class="bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 text-xs font-bold py-2 px-4 rounded-lg transition">
-                    🌐 사이트
-                </button>
+                <button onclick="document.getElementById('importFile').click()" class="flex items-center gap-1 bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold py-2 px-4 rounded-lg transition">📂 데이터 복원</button>
+                <button onclick="backupData()" class="flex items-center gap-1 bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-bold py-2 px-4 rounded-lg transition">💾 데이터 백업</button>
+                <button onclick="saveRankings()" class="flex items-center gap-1 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold py-2 px-4 rounded-lg shadow-lg shadow-indigo-500/30 transition">💾 강제 저장</button>
+                <button onclick="window.open('index.html')" class="bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 text-xs font-bold py-2 px-4 rounded-lg transition">🌐 사이트</button>
             </div>
         </header>
 
@@ -97,9 +88,7 @@
                                 <div id="previewContent" class="space-y-1"></div>
                             </div>
 
-                            <button onclick="applyMatch()" class="w-full bg-gradient-to-r from-slate-800 to-slate-900 hover:from-black hover:to-black text-white font-bold py-3 rounded-xl shadow-lg transition transform active:scale-95">
-                                경기 결과 확정
-                            </button>
+                            <button onclick="applyMatch()" class="w-full bg-gradient-to-r from-slate-800 to-slate-900 hover:from-black hover:to-black text-white font-bold py-3 rounded-xl shadow-lg transition transform active:scale-95">경기 결과 확정</button>
                         </div>
                     </div>
                 </div>
@@ -117,9 +106,7 @@
                         <div class="bg-orange-50 border border-orange-200 rounded-lg p-3">
                             <h4 class="text-xs font-bold text-orange-700 mb-1">⏳ 휴면 점수 차감 (Decay)</h4>
                             <p class="text-[10px] text-orange-600 mb-2">5일 이상 경기 없는 선수 -5점/일</p>
-                            <button onclick="applyDecay()" class="w-full bg-orange-200 text-orange-800 hover:bg-orange-300 font-bold py-2 rounded text-xs transition">
-                                🔻 미활동 선수 점수 차감
-                            </button>
+                            <button onclick="applyDecay()" class="w-full bg-orange-200 text-orange-800 hover:bg-orange-300 font-bold py-2 rounded text-xs transition">🔻 미활동 선수 점수 차감</button>
                         </div>
 
                         <div class="border rounded-lg p-3 bg-slate-50">
@@ -134,14 +121,15 @@
                             </div>
                         </div>
 
-                        <button onclick="startNewSeason()" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-2.5 rounded-lg text-sm shadow-md transition">
-                            🚀 시즌 종료 및 초기화
-                        </button>
+                        <button onclick="startNewSeason()" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-2.5 rounded-lg text-sm shadow-md transition">🚀 시즌 종료 및 초기화</button>
 
                         <div class="grid grid-cols-2 gap-2 mt-4 pt-4 border-t border-slate-100">
                              <button onclick="resetAllStats()" class="bg-gray-100 text-gray-600 hover:bg-gray-200 font-bold py-2 rounded-lg text-xs">📊 전적(승패) 초기화</button>
-                             <button onclick="resetAllElo()" class="bg-red-50 text-red-600 hover:bg-red-100 font-bold py-2 rounded-lg text-xs">⚡ ELO 초기화</button>
-                             <button onclick="addNewPlayer()" class="bg-emerald-50 text-emerald-600 hover:bg-emerald-100 font-bold py-2 rounded-lg text-xs col-span-2">+ 새 선수 등록</button>
+                             <button onclick="resetAllElo()" class="bg-gray-100 text-gray-600 hover:bg-gray-200 font-bold py-2 rounded-lg text-xs">⚡ ELO 초기화</button>
+                             
+                             <button onclick="resetEverything()" class="bg-red-50 text-red-600 hover:bg-red-100 font-bold py-3 rounded-lg text-xs col-span-2 border border-red-200">🧨 시스템 전체 리셋 (기록 삭제)</button>
+                             
+                             <button onclick="addNewPlayer()" class="bg-emerald-50 text-emerald-600 hover:bg-emerald-100 font-bold py-2 rounded-lg text-xs col-span-2 mt-2">+ 새 선수 등록</button>
                         </div>
                     </div>
                 </div>
@@ -152,8 +140,7 @@
                     <h3 class="font-bold text-slate-700">🔥 실시간 랭킹 (ELO순 정렬)</h3>
                     <div class="text-xs text-slate-400 font-medium">점수 변경 시 자동 정렬</div>
                 </div>
-                <div id="rankingList" class="flex-grow overflow-y-auto p-2 space-y-1.5 bg-slate-50/50">
-                    </div>
+                <div id="rankingList" class="flex-grow overflow-y-auto p-2 space-y-1.5 bg-slate-50/50"></div>
             </div>
         </div>
     </div>
@@ -161,39 +148,22 @@
     <div id="editModal" class="fixed inset-0 bg-black/50 hidden z-[9999] flex items-center justify-center">
         <div class="bg-white rounded-xl shadow-2xl p-6 w-11/12 max-w-lg max-h-[90vh] overflow-y-auto">
             <h3 class="text-lg font-bold text-slate-800 mb-4 border-b pb-2">✏️ 선수 정보 수정</h3>
-            <input type="hidden" id="editPlayerId">
-            <input type="hidden" id="editOriginalName">
-            
+            <input type="hidden" id="editPlayerId"><input type="hidden" id="editOriginalName">
             <div class="grid grid-cols-2 gap-3 mb-3">
                 <div><label class="text-xs text-gray-500 block mb-1">이름</label><input type="text" id="editName" class="w-full border p-2 rounded text-sm font-bold"></div>
                 <div><label class="text-xs text-gray-500 block mb-1">방어전 횟수</label><input type="number" id="editDefenses" class="w-full border p-2 rounded text-sm bg-yellow-50"></div>
             </div>
-
             <div class="grid grid-cols-2 gap-3 mb-3">
-                 <div>
-                    <label class="text-xs text-gray-500 block mb-1">Game ID</label>
-                    <input type="text" id="editGameId" class="w-full border p-2 rounded text-sm" placeholder="ID 입력">
-                </div>
-                <div>
-                    <label class="text-xs text-gray-500 block mb-1">ELO 점수 (수동)</label>
-                    <input type="number" id="editElo" class="w-full border p-2 rounded text-sm text-amber-600 font-bold bg-amber-50">
-                </div>
+                 <div><label class="text-xs text-gray-500 block mb-1">Game ID</label><input type="text" id="editGameId" class="w-full border p-2 rounded text-sm" placeholder="ID 입력"></div>
+                <div><label class="text-xs text-gray-500 block mb-1">ELO 점수 (수동)</label><input type="number" id="editElo" class="w-full border p-2 rounded text-sm text-amber-600 font-bold bg-amber-50"></div>
             </div>
-
             <div class="mb-3 p-3 bg-gray-50 rounded border border-gray-200">
                 <label class="block text-xs font-bold text-gray-600 mb-2">📊 전적 수동 조절</label>
                 <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="text-xs text-gray-400">승 (Wins)</label>
-                        <input type="number" id="editWins" class="w-full border p-2 rounded text-sm text-center font-bold text-green-600">
-                    </div>
-                    <div>
-                        <label class="text-xs text-gray-400">패 (Losses)</label>
-                        <input type="number" id="editLosses" class="w-full border p-2 rounded text-sm text-center font-bold text-red-600">
-                    </div>
+                    <div><label class="text-xs text-gray-400">승 (Wins)</label><input type="number" id="editWins" class="w-full border p-2 rounded text-sm text-center font-bold text-green-600"></div>
+                    <div><label class="text-xs text-gray-400">패 (Losses)</label><input type="number" id="editLosses" class="w-full border p-2 rounded text-sm text-center font-bold text-red-600"></div>
                 </div>
             </div>
-
             <div class="grid grid-cols-3 gap-3 mb-3">
                 <div><label class="text-xs text-gray-500 block mb-1">키 (cm)</label><input type="text" id="editHeight" class="w-full border p-2 rounded text-sm"></div>
                 <div><label class="text-xs text-gray-500 block mb-1">리치 (cm)</label><input type="text" id="editReach" class="w-full border p-2 rounded text-sm"></div>
@@ -206,17 +176,11 @@
                     </select>
                 </div>
             </div>
-
-            <div class="mb-4">
-                <label class="text-xs text-gray-500 block mb-1">프로필 이미지 URL</label>
-                <input type="text" id="editImage" class="w-full border p-2 rounded text-sm text-gray-600" placeholder="https://...">
-            </div>
-
+            <div class="mb-4"><label class="text-xs text-gray-500 block mb-1">프로필 이미지 URL</label><input type="text" id="editImage" class="w-full border p-2 rounded text-sm text-gray-600" placeholder="https://..."></div>
             <div class="mb-6 p-3 bg-slate-50 rounded border border-slate-200">
                 <label class="block text-xs font-bold text-slate-600 mb-2">🥊 파이팅 스타일 태그</label>
                 <div id="styleTagsContainer" class="flex flex-wrap gap-2"></div>
             </div>
-
             <div class="flex justify-end gap-2">
                 <button onclick="document.getElementById('editModal').classList.add('hidden')" class="bg-gray-100 text-gray-600 hover:bg-gray-200 px-4 py-2 rounded-lg text-sm font-bold transition">취소</button>
                 <button onclick="savePlayerDetails()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg text-sm font-bold shadow transition">저장하기</button>
@@ -229,500 +193,122 @@
         import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-        // ==========================================
-        // Firebase Config
-        // ==========================================
-        const firebaseConfig = {
-            apiKey: "AIzaSyDlj68ex-fM0ExRdD-tvCy-UyIneVoPmGk",
-  authDomain: "rfk-ranking.firebaseapp.com",
-  projectId: "rfk-ranking",
-  storageBucket: "rfk-ranking.firebasestorage.app",
-  messagingSenderId: "675366165774",
-  appId: "1:675366165774:web:795d34c56eab630b4dcb5f",
-  measurementId: "G-CXPDZQ8GTL"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const auth = getAuth(app);
-        const appId = 'ranking-manager-default';
-
-        let rankingsData = [];
-        let matchHistoryData = [];
-        let seasonArchives = {};
-        let activeSeason = "시즌 1";
+        const firebaseConfig = { apiKey: "AIzaSyDlj68ex-fM0ExRdD-tvCy-UyIneVoPmGk", authDomain: "rfk-ranking.firebaseapp.com", projectId: "rfk-ranking", storageBucket: "rfk-ranking.firebasestorage.app", messagingSenderId: "675366165774", appId: "1:675366165774:web:795d34c56eab630b4dcb5f", measurementId: "G-CXPDZQ8GTL" };
+        const app = initializeApp(firebaseConfig); const db = getFirestore(app); const auth = getAuth(app); const appId = 'ranking-manager-default';
+        let rankingsData = []; let matchHistoryData = []; let seasonArchives = {}; let activeSeason = "시즌 1";
         const STYLE_OPTIONS = ["인파이터", "아웃복서", "슬러거", "카운터", "스워머", "하드펀처", "테크니션", "맷집왕", "변칙"];
 
-        // 로그인 처리
-        document.getElementById('btnLogin').addEventListener('click', () => {
-            const email = document.getElementById('adminEmail').value;
-            const pw = document.getElementById('adminPw').value;
-            signInWithEmailAndPassword(auth, email, pw)
-                .catch((e) => alert("로그인 실패: " + e.message));
-        });
-
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                document.getElementById('loginOverlay').classList.add('hidden');
-                document.getElementById('mainContent').classList.remove('hidden');
-                loadData();
-            }
-        });
+        document.getElementById('btnLogin').addEventListener('click', () => { const email = document.getElementById('adminEmail').value; const pw = document.getElementById('adminPw').value; signInWithEmailAndPassword(auth, email, pw).catch((e) => alert("로그인 실패: " + e.message)); });
+        onAuthStateChanged(auth, (user) => { if (user) { document.getElementById('loginOverlay').classList.add('hidden'); document.getElementById('mainContent').classList.remove('hidden'); loadData(); } });
 
         function loadData() {
             const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'rankings', 'main');
             onSnapshot(docRef, (doc) => {
                 if (doc.exists()) {
-                    const data = doc.data();
-                    rankingsData = data.rankings || [];
-                    matchHistoryData = data.matchHistory || [];
-                    seasonArchives = data.seasonArchives || {};
-                    activeSeason = data.activeSeason || "시즌 1";
-                    
-                    document.getElementById('currentSeasonBadge').textContent = activeSeason;
-                    document.getElementById('seasonNameInput').value = activeSeason;
-                    
-                    rankingsData.forEach((p, i) => {
-                        if(p.defenseCount === undefined) p.defenseCount = p.defenses || 0; 
-                        if(p.previousRank === undefined) p.previousRank = i + 1;
-                        if(p.careerHighRank === undefined) p.careerHighRank = i + 1;
-                        if(p.elo === undefined) p.elo = 1000;
-                        if(p.careerHighElo === undefined) p.careerHighElo = p.elo;
-                    });
-                    
-                    rankingsData.sort((a, b) => b.elo - a.elo);
-                    renderRankings();
-                    populateMatchSelectors();
-                    checkInactivePlayers();
+                    const data = doc.data(); rankingsData = data.rankings || []; matchHistoryData = data.matchHistory || []; seasonArchives = data.seasonArchives || {}; activeSeason = data.activeSeason || "시즌 1";
+                    document.getElementById('currentSeasonBadge').textContent = activeSeason; document.getElementById('seasonNameInput').value = activeSeason;
+                    rankingsData.forEach((p, i) => { if(p.defenseCount === undefined) p.defenseCount = p.defenses || 0; if(p.previousRank === undefined) p.previousRank = i + 1; if(p.careerHighRank === undefined) p.careerHighRank = i + 1; if(p.elo === undefined) p.elo = 1000; if(p.careerHighElo === undefined) p.careerHighElo = p.elo; });
+                    rankingsData.sort((a, b) => b.elo - a.elo); renderRankings(); populateMatchSelectors(); checkInactivePlayers();
                 }
             });
         }
 
         window.saveRankings = async function() {
-            const statusEl = document.getElementById('saveStatus');
-            const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'rankings', 'main');
-            try {
-                const now = new Date();
-                const kstDate = new Date(now.getTime() + (9 * 60 * 60 * 1000)).toISOString().split('T')[0];
-                await setDoc(docRef, {
-                    rankings: rankingsData,
-                    matchHistory: matchHistoryData,
-                    seasonArchives: seasonArchives,
-                    activeSeason: activeSeason,
-                    date: kstDate
-                }, { merge: true });
-                statusEl.style.opacity = 1;
-                setTimeout(() => statusEl.style.opacity = 0, 2000);
-            } catch (e) { alert("저장 오류: " + e.message); }
+            const statusEl = document.getElementById('saveStatus'); const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'rankings', 'main');
+            try { const now = new Date(); const kstDate = new Date(now.getTime() + (9 * 60 * 60 * 1000)).toISOString().split('T')[0]; await setDoc(docRef, { rankings: rankingsData, matchHistory: matchHistoryData, seasonArchives: seasonArchives, activeSeason: activeSeason, date: kstDate }, { merge: true }); statusEl.style.opacity = 1; setTimeout(() => statusEl.style.opacity = 0, 2000); } catch (e) { alert("저장 오류: " + e.message); }
         }
 
-        // ==========================================
-        // 1. 데이터 복원 (Import)
-        // ==========================================
         document.getElementById('importFile').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-
-            if (!confirm("⚠️ 주의: 현재 데이터를 덮어쓰고 선택한 파일로 복원하시겠습니까?")) {
-                this.value = ''; // 초기화
-                return;
-            }
-
+            const file = e.target.files[0]; if (!file) return;
+            if (!confirm("⚠️ 주의: 현재 데이터를 덮어쓰고 선택한 파일로 복원하시겠습니까?")) { this.value = ''; return; }
             const reader = new FileReader();
             reader.onload = function(e) {
-                try {
-                    const data = JSON.parse(e.target.result);
-                    if (data.rankings && Array.isArray(data.rankings)) {
-                        rankingsData = data.rankings;
-                        matchHistoryData = data.history || [];
-                        seasonArchives = data.archives || {};
-                        activeSeason = data.activeSeason || activeSeason; // 없으면 기존 유지 or 기본값
-                        
-                        saveRankings();
-                        renderRankings();
-                        alert("데이터가 성공적으로 복원되었습니다.");
-                    } else {
-                        alert("올바르지 않은 백업 파일 형식입니다.");
-                    }
-                } catch (err) {
-                    alert("파일을 읽는 중 오류가 발생했습니다: " + err.message);
-                }
-            };
-            reader.readAsText(file);
+                try { const data = JSON.parse(e.target.result); if (data.rankings && Array.isArray(data.rankings)) { rankingsData = data.rankings; matchHistoryData = data.history || []; seasonArchives = data.archives || {}; activeSeason = data.activeSeason || activeSeason; saveRankings(); renderRankings(); alert("데이터 복원 완료."); } else { alert("파일 형식 오류."); } } catch (err) { alert("오류: " + err.message); }
+            }; reader.readAsText(file);
         });
 
-        window.backupData = () => {
-            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({ 
-                rankings: rankingsData, 
-                history: matchHistoryData, 
-                archives: seasonArchives,
-                activeSeason: activeSeason
-            }, null, 2));
-            const downloadAnchorNode = document.createElement('a');
-            downloadAnchorNode.setAttribute("href", dataStr);
-            downloadAnchorNode.setAttribute("download", `RFC_BACKUP_${new Date().toISOString().slice(0,10)}.json`);
-            document.body.appendChild(downloadAnchorNode);
-            downloadAnchorNode.click();
-            downloadAnchorNode.remove();
-        };
+        window.backupData = () => { const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({ rankings: rankingsData, history: matchHistoryData, archives: seasonArchives, activeSeason: activeSeason }, null, 2)); const dl = document.createElement('a'); dl.setAttribute("href", dataStr); dl.setAttribute("download", `RFC_BACKUP_${new Date().toISOString().slice(0,10)}.json`); document.body.appendChild(dl); dl.click(); dl.remove(); };
 
-        // ... (Hybrid ELO Logic 생략 - 기존과 동일) ...
-        function getTierBonus(matchCount, isWin) {
-            if (matchCount < 4) return { mult: 1.0, reduction: 0, tier: 'Bronze' };
-            if (matchCount < 7) return { mult: 1.1, reduction: 0, tier: 'Silver' };
-            return { mult: 1.2, reduction: 0.1, tier: 'Gold' };
-        }
+        function getTierBonus(matchCount, isWin) { if (matchCount < 4) return { mult: 1.0, reduction: 0, tier: 'Bronze' }; if (matchCount < 7) return { mult: 1.1, reduction: 0, tier: 'Silver' }; return { mult: 1.2, reduction: 0.1, tier: 'Gold' }; }
         function calculateHybridEloChange(p1Elo, p2Elo, isWin, p1Stats) {
-            const result = isWin ? 1 : 0;
-            const K = 20; 
-            const expected = 1 / (1 + Math.pow(10, (p2Elo - p1Elo) / 400));
-            let baseChange = K * (result - expected);
-            const matchCount = (p1Stats.wins || 0) + (p1Stats.losses || 0); 
-            const { mult, reduction, tier } = getTierBonus(matchCount, isWin);
-            let finalChange = 0;
-            let breakdown = "";
-
-            if (isWin) { 
-                const boostedChange = baseChange * mult;
-                finalChange = boostedChange + 10; 
-                breakdown = `기본(+${Math.round(baseChange)}) x ${mult}(${tier}) + 10(참여)`;
-            } else { 
-                let loss = baseChange; 
-                if (reduction > 0) loss = loss * (1 - reduction); 
-                finalChange = loss + 10; 
-                
-                if (finalChange < -20) {
-                    finalChange = -20;
-                    breakdown = `하한선 적용(-20)`;
-                } else {
-                    breakdown = `기본(${Math.round(baseChange)}) ${reduction>0 ? '+방어(10%)' : ''} + 10(참여)`;
-                }
-            }
+            const result = isWin ? 1 : 0; const K = 20; const expected = 1 / (1 + Math.pow(10, (p2Elo - p1Elo) / 400));
+            let baseChange = K * (result - expected); const matchCount = (p1Stats.wins || 0) + (p1Stats.losses || 0);
+            const { mult, reduction, tier } = getTierBonus(matchCount, isWin); let finalChange = 0; let breakdown = "";
+            if (isWin) { finalChange = (baseChange * mult) + 10; breakdown = `기본(+${Math.round(baseChange)}) x ${mult}(${tier}) + 10`; } 
+            else { let loss = baseChange; if (reduction > 0) loss = loss * (1 - reduction); finalChange = loss + 10; if (finalChange < -20) { finalChange = -20; breakdown = `하한선(-20)`; } else { breakdown = `기본(${Math.round(baseChange)}) ${reduction>0 ? '+방어' : ''} + 10`; } }
             return { change: Math.round(finalChange), msg: breakdown };
         }
 
-        // Preview Logic
         function updateMatchPreview() {
-            const p1Val = document.getElementById('p1Select').value;
-            const p2Val = document.getElementById('p2Select').value;
-            const previewBox = document.getElementById('matchPreview');
-            const content = document.getElementById('previewContent');
-            const winnerVal = document.querySelector('input[name="winner"]:checked')?.value;
-
-            if (p1Val === "" || p2Val === "" || p1Val === p2Val) {
-                previewBox.classList.add('hidden');
-                return;
-            }
-
-            previewBox.classList.remove('hidden');
-            const p1 = rankingsData[parseInt(p1Val)];
-            const p2 = rankingsData[parseInt(p2Val)];
-
-            const blueWin = calculateHybridEloChange(p1.elo, p2.elo, true, p1);
-            const redLose = calculateHybridEloChange(p2.elo, p1.elo, false, p2);
-            const redWin = calculateHybridEloChange(p2.elo, p1.elo, true, p2);
-            const blueLose = calculateHybridEloChange(p1.elo, p2.elo, false, p1);
-
+            const p1Val = document.getElementById('p1Select').value; const p2Val = document.getElementById('p2Select').value;
+            const content = document.getElementById('previewContent'); const winnerVal = document.querySelector('input[name="winner"]:checked')?.value;
+            if (p1Val === "" || p2Val === "" || p1Val === p2Val) { document.getElementById('matchPreview').classList.add('hidden'); return; }
+            document.getElementById('matchPreview').classList.remove('hidden');
+            const p1 = rankingsData[parseInt(p1Val)]; const p2 = rankingsData[parseInt(p2Val)];
+            const blueWin = calculateHybridEloChange(p1.elo, p2.elo, true, p1); const redLose = calculateHybridEloChange(p2.elo, p1.elo, false, p2);
+            const redWin = calculateHybridEloChange(p2.elo, p1.elo, true, p2); const blueLose = calculateHybridEloChange(p1.elo, p2.elo, false, p1);
             let html = '';
-            if (winnerVal === 'blue') {
-                html += `<div class="font-bold text-blue-600">🔵 Blue(${p1.name}): ${blueWin.change > 0 ? '+' : ''}${blueWin.change}점 (${blueWin.msg})</div>`;
-                html += `<div class="text-red-400">🔴 Red(${p2.name}): ${redLose.change > 0 ? '+' : ''}${redLose.change}점 (${redLose.msg})</div>`;
-            } else if (winnerVal === 'red') {
-                html += `<div class="font-bold text-red-600">🔴 Red(${p2.name}): ${redWin.change > 0 ? '+' : ''}${redWin.change}점 (${redWin.msg})</div>`;
-                html += `<div class="text-blue-400">🔵 Blue(${p1.name}): ${blueLose.change > 0 ? '+' : ''}${blueLose.change}점 (${blueLose.msg})</div>`;
-            } else {
-                html += `<div class="text-gray-400">승리자를 선택해주세요.</div>`;
-            }
+            if (winnerVal === 'blue') { html += `<div class="font-bold text-blue-600">🔵 Blue(${p1.name}): ${blueWin.change>0?'+':''}${blueWin.change}점 (${blueWin.msg})</div><div class="text-red-400">🔴 Red(${p2.name}): ${redLose.change>0?'+':''}${redLose.change}점 (${redLose.msg})</div>`; } 
+            else if (winnerVal === 'red') { html += `<div class="font-bold text-red-600">🔴 Red(${p2.name}): ${redWin.change>0?'+':''}${redWin.change}점 (${redWin.msg})</div><div class="text-blue-400">🔵 Blue(${p1.name}): ${blueLose.change>0?'+':''}${blueLose.change}점 (${blueLose.msg})</div>`; } 
+            else { html += `<div class="text-gray-400">승리자를 선택해주세요.</div>`; }
             content.innerHTML = html;
         }
-
-        document.getElementById('p1Select').addEventListener('change', updateMatchPreview);
-        document.getElementById('p2Select').addEventListener('change', updateMatchPreview);
-        document.querySelectorAll('input[name="winner"]').forEach(r => r.addEventListener('change', updateMatchPreview));
-
+        document.getElementById('p1Select').addEventListener('change', updateMatchPreview); document.getElementById('p2Select').addEventListener('change', updateMatchPreview); document.querySelectorAll('input[name="winner"]').forEach(r => r.addEventListener('change', updateMatchPreview));
 
         window.applyMatch = () => {
-            const p1Idx = parseInt(document.getElementById('p1Select').value);
-            const p2Idx = parseInt(document.getElementById('p2Select').value);
-            const winnerVal = document.querySelector('input[name="winner"]:checked')?.value;
-
-            if (!winnerVal || isNaN(p1Idx) || isNaN(p2Idx)) return alert("선수와 승자를 선택하세요.");
-            if (p1Idx === p2Idx) return alert("동일 선수입니다.");
-
-            const p1 = rankingsData[p1Idx];
-            const p2 = rankingsData[p2Idx];
-
-            const isBlueWin = winnerVal === 'blue';
-            const winner = isBlueWin ? p1 : p2;
-            const loser = isBlueWin ? p2 : p1;
+            const p1Idx = parseInt(document.getElementById('p1Select').value); const p2Idx = parseInt(document.getElementById('p2Select').value); const winnerVal = document.querySelector('input[name="winner"]:checked')?.value;
+            if (!winnerVal || isNaN(p1Idx) || isNaN(p2Idx)) return alert("선수와 승자를 선택하세요."); if (p1Idx === p2Idx) return alert("동일 선수입니다.");
+            const p1 = rankingsData[p1Idx]; const p2 = rankingsData[p2Idx];
+            const isBlueWin = winnerVal === 'blue'; const winner = isBlueWin ? p1 : p2; const loser = isBlueWin ? p2 : p1;
             let historyType = 'ranking';
-
-            const winCalc = calculateHybridEloChange(winner.elo, loser.elo, true, winner);
-            const loseCalc = calculateHybridEloChange(loser.elo, winner.elo, false, loser);
-
-            winner.elo += winCalc.change;
-            loser.elo += loseCalc.change;
-
-            if (winner.elo > (winner.careerHighElo || 0)) winner.careerHighElo = winner.elo;
-            if (loser.elo > (loser.careerHighElo || 0)) loser.careerHighElo = loser.elo;
-
-            if (!isBlueWin) { 
-                if(p2.elo > p1.elo) {
-                     p2.defenseCount = (p2.defenseCount || 0) + 1;
-                     historyType = 'defense';
-                }
-            } else {
-                if (p1.elo < p2.elo) historyType = 'challenge_success';
-            }
-
-            winner.wins++;
-            loser.losses++;
-            
-            const today = new Date().toISOString().split('T')[0];
-            winner.lastMatchDate = today;
-            loser.lastMatchDate = today;
-
+            const winCalc = calculateHybridEloChange(winner.elo, loser.elo, true, winner); const loseCalc = calculateHybridEloChange(loser.elo, winner.elo, false, loser);
+            winner.elo += winCalc.change; loser.elo += loseCalc.change;
+            if (winner.elo > (winner.careerHighElo || 0)) winner.careerHighElo = winner.elo; if (loser.elo > (loser.careerHighElo || 0)) loser.careerHighElo = loser.elo;
+            if (!isBlueWin) { if(p2.elo > p1.elo) { p2.defenseCount = (p2.defenseCount || 0) + 1; historyType = 'defense'; } } else { if (p1.elo < p2.elo) historyType = 'challenge_success'; }
+            winner.wins++; loser.losses++;
+            const today = new Date().toISOString().split('T')[0]; winner.lastMatchDate = today; loser.lastMatchDate = today;
             rankingsData.sort((a, b) => b.elo - a.elo);
-            rankingsData.forEach((p, idx) => {
-                const currentRank = idx + 1;
-                if (!p.careerHighRank || currentRank < p.careerHighRank) {
-                    p.careerHighRank = currentRank;
-                }
-            });
-
-            matchHistoryData.unshift({
-                date: today,
-                winner: isBlueWin ? p1.name : p2.name,
-                loser: isBlueWin ? p2.name : p1.name,
-                type: historyType,
-                season: activeSeason,
-                blue: p1.name
-            });
-
-            saveRankings();
-            renderRankings([winner.name, loser.name]);
-            alert(`결과 반영 완료!\n${winner.name}: +${winCalc.change}\n${loser.name}: ${loseCalc.change}`);
+            rankingsData.forEach((p, idx) => { const currentRank = idx + 1; if (!p.careerHighRank || currentRank < p.careerHighRank) p.careerHighRank = currentRank; });
+            matchHistoryData.unshift({ date: today, winner: isBlueWin ? p1.name : p2.name, loser: isBlueWin ? p2.name : p1.name, type: historyType, season: activeSeason, blue: p1.name });
+            saveRankings(); renderRankings([winner.name, loser.name]); alert(`결과 반영 완료!\n${winner.name}: +${winCalc.change}\n${loser.name}: ${loseCalc.change}`);
         };
 
-        window.resetAllElo = () => {
-            if(!confirm("⚠️ 경고: 모든 선수의 ELO 점수를 1000점으로 초기화하시겠습니까?\n(승/패 전적은 유지됩니다.)")) return;
-            rankingsData.forEach(p => { p.elo = 1000; p.careerHighElo = 1000; });
-            saveRankings();
-            renderRankings();
-            alert("ELO 초기화 완료");
+        window.resetAllElo = () => { if(!confirm("⚠️ ELO를 1000으로 초기화하시겠습니까?")) return; rankingsData.forEach(p => { p.elo = 1000; p.careerHighElo = 1000; }); saveRankings(); renderRankings(); alert("ELO 초기화 완료"); };
+        window.resetAllStats = () => { if(!confirm("⚠️ 전적(승/패)을 0으로 초기화하시겠습니까?")) return; rankingsData.forEach(p => { p.wins = 0; p.losses = 0; }); saveRankings(); renderRankings(); alert("전적 초기화 완료"); };
+        
+        // [New] 전체 초기화
+        window.resetEverything = () => {
+            if(!confirm("🚨 경고: 모든 경기 기록과 아카이브를 삭제하고, 선수들의 상태를 초기화하시겠습니까?\n(선수 명단은 유지됩니다)")) return;
+            if(!confirm("❗ 정말 확실합니까? 되돌릴 수 없습니다.")) return;
+            matchHistoryData = []; seasonArchives = {}; activeSeason = "시즌 1";
+            rankingsData.forEach(p => { p.wins = 0; p.losses = 0; p.draws = 0; p.defenseCount = 0; p.elo = 1000; p.careerHighElo = 1000; p.careerHighRank = rankingsData.length; p.previousRank = rankingsData.indexOf(p) + 1; });
+            saveRankings(); renderRankings(); document.getElementById('currentSeasonBadge').textContent = activeSeason; document.getElementById('seasonNameInput').value = activeSeason;
+            alert("시스템이 초기 상태로 리셋되었습니다.");
         };
 
-        // 2. 전적 초기화 (Reset Stats Only)
-        window.resetAllStats = () => {
-            if(!confirm("⚠️ 경고: 모든 선수의 승/패 전적을 0으로 초기화하시겠습니까?\n(ELO 점수는 유지됩니다.)")) return;
-            rankingsData.forEach(p => { p.wins = 0; p.losses = 0; p.draws = 0; });
-            saveRankings();
-            renderRankings();
-            alert("전적 초기화 완료");
-        };
-
-        // ... (Decay, Inactive 등 기존 로직 유지) ...
-        window.applyDecay = () => {
-            if (!confirm("마지막 경기 후 5일이 지난 선수들의 점수를 5점씩 차감하시겠습니까?")) return;
-            const now = new Date();
-            let count = 0;
-            const log = [];
-            rankingsData.forEach(p => {
-                if (!p.lastMatchDate) return;
-                const last = new Date(p.lastMatchDate);
-                const diffTime = Math.abs(now - last);
-                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
-                if (diffDays > 5) { p.elo -= 5; count++; log.push(p.name); }
-            });
-            if (count > 0) {
-                rankingsData.sort((a, b) => b.elo - a.elo);
-                saveRankings();
-                renderRankings(log);
-                alert(`${count}명의 휴면 선수 점수를 차감했습니다.`);
-            } else { alert("대상 선수가 없습니다."); }
-        };
-
-        function checkInactivePlayers() {
-            const list = document.getElementById('inactiveList');
-            const countSpan = document.getElementById('inactiveCount');
-            list.innerHTML = '';
-            const currentSeasonMatches = matchHistoryData.filter(m => m.season === activeSeason);
-            const activeNames = new Set();
-            currentSeasonMatches.forEach(m => { activeNames.add(m.winner); activeNames.add(m.loser); });
-            const inactivePlayers = rankingsData.filter(p => !activeNames.has(p.name));
-            countSpan.textContent = inactivePlayers.length;
-            inactivePlayers.forEach(p => { const li = document.createElement('li'); li.textContent = `${rankingsData.indexOf(p)+1}위 ${p.name}`; list.appendChild(li); });
-            return inactivePlayers.map(p => p.name);
-        }
+        window.applyDecay = () => { if (!confirm("5일 이상 미활동 선수 점수 차감?")) return; const now = new Date(); let count = 0; const log = []; rankingsData.forEach(p => { if (!p.lastMatchDate) return; const last = new Date(p.lastMatchDate); const diff = Math.ceil(Math.abs(now - last) / (1000 * 60 * 60 * 24)); if (diff > 5) { p.elo -= 5; count++; log.push(p.name); } }); if (count > 0) { rankingsData.sort((a, b) => b.elo - a.elo); saveRankings(); renderRankings(log); alert(`${count}명 차감 완료.`); } else { alert("대상 없음."); } };
+        function checkInactivePlayers() { const list = document.getElementById('inactiveList'); const countSpan = document.getElementById('inactiveCount'); list.innerHTML = ''; const currentSeasonMatches = matchHistoryData.filter(m => m.season === activeSeason); const activeNames = new Set(); currentSeasonMatches.forEach(m => { activeNames.add(m.winner); activeNames.add(m.loser); }); const inactivePlayers = rankingsData.filter(p => !activeNames.has(p.name)); countSpan.textContent = inactivePlayers.length; inactivePlayers.forEach(p => { const li = document.createElement('li'); li.textContent = `${rankingsData.indexOf(p)+1}위 ${p.name}`; list.appendChild(li); }); return inactivePlayers.map(p => p.name); }
         window.toggleInactiveList = () => document.getElementById('inactiveList').classList.toggle('hidden');
 
         function renderRankings(highlightNames = []) {
-            const list = document.getElementById('rankingList');
-            list.innerHTML = '';
+            const list = document.getElementById('rankingList'); list.innerHTML = '';
             rankingsData.forEach((item, index) => {
-                const div = document.createElement('div');
-                const isHighlight = highlightNames.includes(item.name);
-                const highlightClass = isHighlight ? 'highlight-change' : 'bg-white hover:shadow-md';
-                const prevRank = item.previousRank || (index + 1);
-                const currentRank = index + 1;
-                const diff = prevRank - currentRank;
-                let changeHtml = '<span class="rank-keep">-</span>';
-                if (diff > 0) changeHtml = `<span class="rank-up">▲${diff}</span>`;
-                else if (diff < 0) changeHtml = `<span class="rank-down">▼${Math.abs(diff)}</span>`;
-
-                div.className = `rank-card flex items-center p-3 border rounded-xl mb-2 ${highlightClass}`;
-                div.draggable = false; 
-                div.dataset.index = index;
-
-                div.innerHTML = `
-                    <div class="flex flex-col items-center justify-center w-12 mr-3 border-r border-slate-100 pr-3">
-                        <span class="text-xl font-black text-slate-800 italic">${currentRank}</span>
-                        <span class="text-[10px] mt-1">${changeHtml}</span>
-                    </div>
-                    <div class="flex-grow flex items-center gap-3">
-                        ${item.imageUrl ? `<img src="${item.imageUrl}" class="w-10 h-10 rounded-full object-cover bg-slate-200 border border-slate-200">` : `<div class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-lg">👤</div>`}
-                        <div>
-                            <div class="font-bold text-slate-800 text-sm flex items-center gap-2">
-                                ${item.name}
-                                <span class="bg-amber-100 text-amber-700 px-1.5 rounded text-xs border border-amber-200">⚡${item.elo}</span>
-                                ${index === 0 ? '👑' : ''}
-                                ${item.defenseCount > 0 ? `<span class="bg-yellow-100 text-yellow-700 text-[10px] px-1.5 py-0.5 rounded-full border border-yellow-200">🛡️ ${item.defenseCount}</span>` : ''}
-                            </div>
-                            <div class="text-xs text-slate-500 mt-0.5 flex gap-2">
-                                <span class="font-medium text-slate-600">${item.wins}승 ${item.losses}패</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="flex gap-1 opacity-20 group-hover:opacity-100 transition-opacity hover:opacity-100">
-                        <button onclick="openEditModal(${index})" class="p-2 hover:bg-slate-100 rounded text-slate-400 hover:text-blue-600">✏️</button>
-                    </div>
-                `;
+                const div = document.createElement('div'); const isHighlight = highlightNames.includes(item.name); const highlightClass = isHighlight ? 'highlight-change' : 'bg-white hover:shadow-md';
+                const prevRank = item.previousRank || (index + 1); const diff = prevRank - (index + 1); let changeHtml = '<span class="rank-keep">-</span>'; if (diff > 0) changeHtml = `<span class="rank-up">▲${diff}</span>`; else if (diff < 0) changeHtml = `<span class="rank-down">▼${Math.abs(diff)}</span>`;
+                div.className = `rank-card flex items-center p-3 border rounded-xl mb-2 ${highlightClass}`; div.dataset.index = index;
+                div.innerHTML = `<div class="flex flex-col items-center justify-center w-12 mr-3 border-r border-slate-100 pr-3"><span class="text-xl font-black text-slate-800 italic">${index+1}</span><span class="text-[10px] mt-1">${changeHtml}</span></div><div class="flex-grow flex items-center gap-3">${item.imageUrl ? `<img src="${item.imageUrl}" class="w-10 h-10 rounded-full object-cover bg-slate-200 border border-slate-200">` : `<div class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-lg">👤</div>`}<div><div class="font-bold text-slate-800 text-sm flex items-center gap-2">${item.name}<span class="bg-amber-100 text-amber-700 px-1.5 rounded text-xs border border-amber-200">⚡${item.elo}</span>${index === 0 ? '👑' : ''}${item.defenseCount > 0 ? `<span class="bg-yellow-100 text-yellow-700 text-[10px] px-1.5 py-0.5 rounded-full border border-yellow-200">🛡️ ${item.defenseCount}</span>` : ''}</div><div class="text-xs text-slate-500 mt-0.5 flex gap-2"><span class="font-medium text-slate-600">${item.wins}승 ${item.losses}패</span></div></div></div><div class="flex gap-1 opacity-20 group-hover:opacity-100 transition-opacity hover:opacity-100"><button onclick="openEditModal(${index})" class="p-2 hover:bg-slate-100 rounded text-slate-400 hover:text-blue-600">✏️</button></div>`;
                 list.appendChild(div);
-            });
-            populateMatchSelectors();
+            }); populateMatchSelectors();
         }
 
-        window.startNewSeason = () => {
-            const excludeInactive = document.getElementById('excludeInactiveCheck').checked;
-            if (!confirm("새 시즌을 시작하시겠습니까?")) return;
-            const maxDef = Math.max(...rankingsData.map(i => i.defenseCount || 0), 0);
-            const defenseKing = rankingsData.filter(i => (i.defenseCount||0) === maxDef && maxDef > 0).map(i => i.name).join(', ') || '-';
-            seasonArchives[activeSeason] = { 
-                champion: rankingsData[0] ? rankingsData[0].name : "-", 
-                rank2: rankingsData[1] ? rankingsData[1].name : "-",
-                rank3: rankingsData[2] ? rankingsData[2].name : "-",
-                defenseKing: defenseKing,
-                defenseCount: maxDef,
-                date: new Date().toISOString().split('T')[0] 
-            };
-            const num = parseInt(activeSeason.replace(/[^0-9]/g, '')) || 0;
-            activeSeason = `시즌 ${num + 1}`;
-            if (excludeInactive) {
-                const currentMatches = matchHistoryData.filter(m => m.season === document.getElementById('currentSeasonBadge').textContent);
-                const activeNames = new Set();
-                currentMatches.forEach(m => { activeNames.add(m.winner); activeNames.add(m.loser); });
-                rankingsData = rankingsData.filter(p => activeNames.has(p.name));
-            }
-            rankingsData.forEach((p, i) => {
-                p.previousRank = i + 1;
-                p.wins = 0; p.losses = 0; p.draws = 0; p.defenseCount = 0;
-            });
-            saveRankings();
-            alert(`[${activeSeason}] 시작되었습니다!`);
-        };
-
-        window.updateRankBaseline = () => { 
-            if(confirm("현재 순위를 기준점으로 설정하여 변동폭을 0으로 만듭니다.")) {
-                rankingsData.forEach((p, i) => p.previousRank = i + 1);
-                saveRankings();
-                renderRankings();
-            }
-        };
-        window.populateMatchSelectors = () => {
-            const s1 = document.getElementById('p1Select');
-            const s2 = document.getElementById('p2Select');
-            const current1 = s1.value;
-            const current2 = s2.value;
-            let opts = '<option value="">선수 선택</option>';
-            rankingsData.forEach((p, i) => opts += `<option value="${i}">${i+1}위 ${p.name} (${p.elo})</option>`);
-            s1.innerHTML = opts; s2.innerHTML = opts;
-            s1.value = current1; s2.value = current2;
-        };
-        window.addNewPlayer = () => {
-            const name = prompt("선수 이름:");
-            if(name) { 
-                rankingsData.push({ 
-                    id: crypto.randomUUID(), 
-                    name, wins:0, losses:0, draws:0, defenseCount:0, 
-                    previousRank: rankingsData.length+1,
-                    careerHighRank: rankingsData.length+1,
-                    elo: 1000,
-                    careerHighElo: 1000,
-                    lastMatchDate: new Date().toISOString().split('T')[0]
-                }); 
-                saveRankings(); renderRankings();
-            }
-        };
+        window.startNewSeason = () => { if (!confirm("새 시즌 시작?")) return; const maxDef = Math.max(...rankingsData.map(i => i.defenseCount || 0), 0); const defenseKing = rankingsData.filter(i => (i.defenseCount||0) === maxDef && maxDef > 0).map(i => i.name).join(', ') || '-'; seasonArchives[activeSeason] = { champion: rankingsData[0]?.name || "-", rank2: rankingsData[1]?.name || "-", rank3: rankingsData[2]?.name || "-", defenseKing, defenseCount: maxDef, date: new Date().toISOString().split('T')[0] }; const num = parseInt(activeSeason.replace(/[^0-9]/g, '')) || 0; activeSeason = `시즌 ${num + 1}`; if (document.getElementById('excludeInactiveCheck').checked) { const cm = matchHistoryData.filter(m => m.season === document.getElementById('currentSeasonBadge').textContent); const an = new Set(); cm.forEach(m => { an.add(m.winner); an.add(m.loser); }); rankingsData = rankingsData.filter(p => an.has(p.name)); } rankingsData.forEach((p, i) => { p.previousRank = i + 1; p.wins = 0; p.losses = 0; p.draws = 0; p.defenseCount = 0; }); saveRankings(); alert(`[${activeSeason}] 시작!`); };
+        window.updateRankBaseline = () => { if(confirm("현재 순위를 기준점으로 설정?")) { rankingsData.forEach((p, i) => p.previousRank = i + 1); saveRankings(); renderRankings(); } };
+        window.populateMatchSelectors = () => { const s1 = document.getElementById('p1Select'); const s2 = document.getElementById('p2Select'); let opts = '<option value="">선수 선택</option>'; rankingsData.forEach((p, i) => opts += `<option value="${i}">${i+1}위 ${p.name} (${p.elo})</option>`); s1.innerHTML = opts; s2.innerHTML = opts; };
+        window.addNewPlayer = () => { const name = prompt("선수 이름:"); if(name) { rankingsData.push({ id: crypto.randomUUID(), name, wins:0, losses:0, draws:0, defenseCount:0, previousRank: rankingsData.length+1, careerHighRank: rankingsData.length+1, elo: 1000, careerHighElo: 1000, lastMatchDate: new Date().toISOString().split('T')[0] }); saveRankings(); renderRankings(); } };
         
-        // 2. 상세 정보 수정 (+ 전적 수동 수정)
-        window.openEditModal = (idx) => {
-            const p = rankingsData[idx];
-            document.getElementById('editPlayerId').value = idx;
-            document.getElementById('editName').value = p.name;
-            document.getElementById('editOriginalName').value = p.name;
-            document.getElementById('editDefenses').value = p.defenseCount || 0;
-            document.getElementById('editImage').value = p.imageUrl || '';
-            document.getElementById('editGameId').value = p.gameId || '';
-            document.getElementById('editHeight').value = p.height || '';
-            document.getElementById('editReach').value = p.reach || '';
-            document.getElementById('editStance').value = p.stance || 'Orthodox';
-            document.getElementById('editElo').value = p.elo || 1000;
-            
-            // 전적 값 할당
-            document.getElementById('editWins').value = p.wins || 0;
-            document.getElementById('editLosses').value = p.losses || 0;
-
-            renderStyleTags(p.tags || []);
-            document.getElementById('editModal').classList.remove('hidden');
-        };
-
-        function renderStyleTags(currentTags) {
-            const container = document.getElementById('styleTagsContainer');
-            container.innerHTML = '';
-            STYLE_OPTIONS.forEach(style => {
-                const isChecked = currentTags.includes(style);
-                const id = `style-${style}`;
-                const html = `<div><input type="checkbox" id="${id}" value="${style}" class="style-checkbox hidden" ${isChecked ? 'checked' : ''}><label for="${id}" class="inline-block px-3 py-1 text-xs font-bold border border-slate-300 rounded-full cursor-pointer text-slate-500 hover:bg-slate-100 transition select-none ${isChecked ? 'bg-blue-500 text-white border-blue-500' : ''}">${style}</label></div>`;
-                container.innerHTML += html;
-            });
-        }
-
-        window.savePlayerDetails = () => {
-            const idx = document.getElementById('editPlayerId').value;
-            const p = rankingsData[idx];
-            p.name = document.getElementById('editName').value;
-            p.defenseCount = parseInt(document.getElementById('editDefenses').value) || 0;
-            p.imageUrl = document.getElementById('editImage').value;
-            p.gameId = document.getElementById('editGameId').value;
-            p.height = document.getElementById('editHeight').value;
-            p.reach = document.getElementById('editReach').value;
-            p.stance = document.getElementById('editStance').value;
-            p.elo = parseInt(document.getElementById('editElo').value) || 1000;
-            
-            // 전적 저장
-            p.wins = parseInt(document.getElementById('editWins').value) || 0;
-            p.losses = parseInt(document.getElementById('editLosses').value) || 0;
-
-            const checkedTags = document.querySelectorAll('.style-checkbox:checked');
-            p.tags = Array.from(checkedTags).map(cb => cb.value);
-            
-            rankingsData.sort((a, b) => b.elo - a.elo);
-            
-            saveRankings();
-            document.getElementById('editModal').classList.add('hidden');
-            renderRankings();
-        };
-
+        window.openEditModal = (idx) => { const p = rankingsData[idx]; document.getElementById('editPlayerId').value = idx; document.getElementById('editName').value = p.name; document.getElementById('editOriginalName').value = p.name; document.getElementById('editDefenses').value = p.defenseCount || 0; document.getElementById('editImage').value = p.imageUrl || ''; document.getElementById('editGameId').value = p.gameId || ''; document.getElementById('editHeight').value = p.height || ''; document.getElementById('editReach').value = p.reach || ''; document.getElementById('editStance').value = p.stance || 'Orthodox'; document.getElementById('editElo').value = p.elo || 1000; document.getElementById('editWins').value = p.wins || 0; document.getElementById('editLosses').value = p.losses || 0; renderStyleTags(p.tags || []); document.getElementById('editModal').classList.remove('hidden'); };
+        function renderStyleTags(currentTags) { const c = document.getElementById('styleTagsContainer'); c.innerHTML = ''; STYLE_OPTIONS.forEach(s => { const id = `style-${s}`; c.innerHTML += `<div><input type="checkbox" id="${id}" value="${s}" class="style-checkbox hidden" ${currentTags.includes(s)?'checked':''}><label for="${id}" class="inline-block px-3 py-1 text-xs font-bold border border-slate-300 rounded-full cursor-pointer text-slate-500 hover:bg-slate-100 transition select-none ${currentTags.includes(s)?'bg-blue-500 text-white border-blue-500':''}">${s}</label></div>`; }); }
+        window.savePlayerDetails = () => { const idx = document.getElementById('editPlayerId').value; const p = rankingsData[idx]; p.name = document.getElementById('editName').value; p.defenseCount = parseInt(document.getElementById('editDefenses').value)||0; p.imageUrl = document.getElementById('editImage').value; p.gameId = document.getElementById('editGameId').value; p.height = document.getElementById('editHeight').value; p.reach = document.getElementById('editReach').value; p.stance = document.getElementById('editStance').value; p.elo = parseInt(document.getElementById('editElo').value)||1000; p.wins = parseInt(document.getElementById('editWins').value)||0; p.losses = parseInt(document.getElementById('editLosses').value)||0; const ct = document.querySelectorAll('.style-checkbox:checked'); p.tags = Array.from(ct).map(cb => cb.value); rankingsData.sort((a, b) => b.elo - a.elo); saveRankings(); document.getElementById('editModal').classList.add('hidden'); renderRankings(); };
         window.updateSeasonName = () => { activeSeason = document.getElementById('seasonNameInput').value; saveRankings(); };
     </script>
 </body>
