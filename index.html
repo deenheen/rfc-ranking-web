@@ -3,30 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RFC 랭킹전 (v2.1 Hybrid)</title>
+    <title>RFC 랭킹전 (v2.2 Hybrid)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;700;800;900&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Pretendard', sans-serif; background-color: #f1f5f9; -webkit-tap-highlight-color: transparent; }
-        
-        /* 티어별 스타일 */
         .tier-bronze { border-left: 4px solid #ad8a56; background: linear-gradient(90deg, #fff 0%, #fdfbf7 100%); }
         .tier-silver { border-left: 4px solid #94a3b8; background: linear-gradient(90deg, #fff 0%, #f8fafc 100%); }
         .tier-gold { border-left: 4px solid #f59e0b; background: linear-gradient(90deg, #fff 0%, #fffbeb 100%); }
-        
-        /* 랭킹 숫자 */
         .rank-num-1 { color: #f59e0b; font-size: 1.5rem; text-shadow: 0 2px 4px rgba(245, 158, 11, 0.2); }
         .rank-num-2 { color: #94a3b8; font-size: 1.4rem; }
         .rank-num-3 { color: #ad8a56; font-size: 1.3rem; }
-        
-        /* 애니메이션 */
         .fade-in { animation: fadeIn 0.3s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-
-        /* 탭 스타일 */
         .tab-active { color: #2563eb; border-bottom: 2px solid #2563eb; font-weight: 700; }
         .tab-inactive { color: #64748b; border-bottom: 2px solid transparent; font-weight: 500; }
-
         .modal-enter { animation: modalSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
         @keyframes modalSlideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
     </style>
@@ -50,7 +41,6 @@
                 </div>
             </div>
         </div>
-        
         <nav class="flex border-t border-slate-100 max-w-3xl mx-auto">
             <button onclick="switchTab('ranking')" id="tabRanking" class="tab-active flex-1 py-3 text-sm transition-colors text-center">🔥 랭킹</button>
             <button onclick="switchTab('matches')" id="tabMatches" class="tab-inactive flex-1 py-3 text-sm transition-colors text-center">⚔️ 기록</button>
@@ -60,7 +50,6 @@
     </header>
 
     <main class="max-w-3xl mx-auto p-3 min-h-screen">
-        
         <div id="rankingSection" class="fade-in space-y-3">
             <div class="flex justify-between items-end px-1 pb-1">
                 <span class="text-xs font-bold text-slate-400">Hybrid ELO 기준 정렬</span>
@@ -88,26 +77,21 @@
                 진행 중인 토너먼트가 없습니다.
             </div>
         </div>
-
     </main>
 
     <div id="profileModal" class="fixed inset-0 z-50 hidden" role="dialog" aria-modal="true">
         <div class="absolute inset-0 bg-slate-900/80 backdrop-blur-sm transition-opacity" onclick="closeProfile()"></div>
         <div class="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl shadow-[0_-10px_40px_rgba(0,0,0,0.2)] max-w-3xl mx-auto h-[90vh] overflow-y-auto modal-enter flex flex-col">
-            
             <div class="sticky top-0 bg-white/95 backdrop-blur z-10 pt-3 pb-2 flex justify-center cursor-pointer border-b border-slate-100" onclick="closeProfile()">
                 <div class="w-12 h-1.5 bg-slate-200 rounded-full"></div>
             </div>
             
             <div class="px-6 pb-8 relative mt-4">
                 <button onclick="closeProfile()" class="absolute top-0 right-4 text-slate-400 hover:text-slate-600 p-2 text-2xl font-bold z-20">✕</button>
-                
                 <div class="flex flex-col items-center">
                     <div class="relative mb-6">
                         <img id="pModalImg" src="" class="w-64 h-64 rounded-2xl object-cover shadow-2xl bg-slate-100">
-                        <div id="pModalTierBadge" class="absolute -bottom-3 -right-3 bg-slate-800 text-white text-xs font-bold px-4 py-1.5 rounded-full border-4 border-white shadow-md">
-                            Bronze
-                        </div>
+                        <div id="pModalTierBadge" class="absolute -bottom-3 -right-3 bg-slate-800 text-white text-xs font-bold px-4 py-1.5 rounded-full border-4 border-white shadow-md">Bronze</div>
                     </div>
                     
                     <h2 class="text-3xl font-black text-slate-800 flex items-center gap-2 mb-1">
@@ -117,9 +101,10 @@
                     <p id="pModalGameId" class="text-sm text-slate-500 font-medium mb-6">Game ID: -</p>
                     
                     <div class="grid grid-cols-3 gap-3 w-full mb-8">
-                        <div class="bg-slate-50 p-4 rounded-2xl text-center border border-slate-100">
+                        <div class="bg-slate-50 p-4 rounded-2xl text-center border border-slate-100 relative overflow-hidden">
                             <div class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">Elo Score</div>
-                            <div id="pModalElo" class="text-2xl font-black text-amber-500">1000</div>
+                            <div id="pModalElo" class="text-2xl font-black text-amber-500 leading-none">1000</div>
+                            <div class="text-[10px] text-slate-400 font-medium mt-1">Best: <span id="pModalHighElo">1000</span></div>
                         </div>
                         <div class="bg-slate-50 p-4 rounded-2xl text-center border border-slate-100">
                             <div class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">Rank</div>
@@ -164,40 +149,45 @@
     <div id="rulesModal" class="fixed inset-0 z-[60] hidden" role="dialog" aria-modal="true">
         <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="closeRules()"></div>
         <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-2xl shadow-2xl w-11/12 max-w-md p-6 max-h-[80vh] overflow-y-auto">
-            <h2 class="text-xl font-black text-slate-800 mb-4 border-b pb-2">📜 RFC Hybrid ELO 규칙</h2>
+            <h2 class="text-xl font-black text-slate-800 mb-4 border-b pb-2">📜 RFC 점수 산정 방식</h2>
             
-            <div class="space-y-4 text-sm text-slate-600">
-                <div class="bg-blue-50 p-3 rounded-lg border border-blue-100">
-                    <h3 class="font-bold text-blue-700 mb-1">1. 점수 계산 (Hybrid)</h3>
-                    <p class="mb-1">• 승패 점수(Elo) + <span class="text-red-500 font-bold">참여 보너스 10점</span></p>
-                    <p class="text-xs text-slate-500">지더라도 참여 점수 덕분에 손해를 최소화하거나 오히려 점수가 오를 수 있습니다.</p>
+            <div class="space-y-5 text-sm text-slate-600">
+                
+                <div class="bg-blue-50 p-4 rounded-xl border border-blue-100">
+                    <h3 class="font-bold text-blue-700 mb-2 text-base">1. 점수 계산 프로세스</h3>
+                    <ol class="list-decimal pl-4 space-y-2 text-xs">
+                        <li><strong>상대와의 점수 차이 확인:</strong> 상대의 ELO 점수와 나의 점수 차이를 계산합니다.</li>
+                        <li><strong>승리 확률 예측:</strong> 점수 차이를 기반으로 시스템이 승리 확률을 예측합니다. (강한 상대를 이길수록 점수가 높음)</li>
+                        <li><strong>기본 점수 산출:</strong> 실제 결과(승/패)에서 예측 확률을 뺀 값에 기본 계수(20)를 곱합니다.</li>
+                        <li><strong>참여 보너스 합산:</strong> 마지막으로 <span class="text-red-500 font-bold">+10점</span>을 무조건 더해줍니다.</li>
+                    </ol>
+                    <div class="mt-3 pt-3 border-t border-blue-200 text-xs font-bold text-center text-blue-800">
+                        "지더라도 참여 점수(+10) 덕분에 손해는 최소화!"
+                    </div>
                 </div>
 
                 <div>
                     <h3 class="font-bold text-slate-800 mb-2">2. 티어별 혜택 (시즌 누적 경기 수)</h3>
                     <ul class="list-disc pl-4 space-y-1 text-xs">
-                        <li><span class="font-bold text-amber-700">🥉 브론즈 (0~3전):</span> 기본 점수</li>
-                        <li><span class="font-bold text-slate-500">🥈 실버 (4~6전):</span> 승리 시 점수 <span class="text-blue-600">1.1배</span></li>
-                        <li><span class="font-bold text-amber-500">🥇 골드 (7전 이상):</span> 승리 시 <span class="text-blue-600">1.2배</span>, 패배 시 감점 <span class="text-green-600">10% 면제</span></li>
+                        <li><span class="font-bold text-amber-700">🥉 브론즈 (0~3전):</span> 기본 점수 적용</li>
+                        <li><span class="font-bold text-slate-500">🥈 실버 (4~6전):</span> 승리 점수 <span class="text-blue-600 font-bold">1.1배</span></li>
+                        <li><span class="font-bold text-amber-500">🥇 골드 (7전 이상):</span> 승리 <span class="text-blue-600 font-bold">1.2배</span>, 패배 감점 <span class="text-green-600 font-bold">10% 면제</span></li>
                     </ul>
                 </div>
 
-                <div>
-                    <h3 class="font-bold text-slate-800 mb-2">3. 보호 및 강등 시스템</h3>
-                    <div class="space-y-2">
-                        <div class="p-2 bg-slate-50 rounded border border-slate-100">
-                            <span class="font-bold text-xs block">🛡️ 패배 하한선 (Max Loss)</span>
-                            <span class="text-xs">압도적인 상대에게 져도 최대 <span class="text-red-500 font-bold">-20점</span>까지만 깎입니다.</span>
-                        </div>
-                        <div class="p-2 bg-orange-50 rounded border border-orange-100">
-                            <span class="font-bold text-xs text-orange-700 block">📉 휴면 강등 (Decay)</span>
-                            <span class="text-xs">마지막 경기 후 <span class="font-bold">5일</span> 경과 시, 매일 <span class="text-red-500 font-bold">-5점</span>씩 자동 차감됩니다.</span>
-                        </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="p-3 bg-slate-50 rounded-xl border border-slate-100">
+                        <span class="font-bold text-xs block mb-1">🛡️ 패배 하한선</span>
+                        <span class="text-[11px] leading-tight block">강자에게 져도 최대 <span class="text-red-500 font-bold">-20점</span>까지만 깎입니다.</span>
+                    </div>
+                    <div class="p-3 bg-orange-50 rounded-xl border border-orange-100">
+                        <span class="font-bold text-xs text-orange-700 block mb-1">📉 휴면 강등</span>
+                        <span class="text-[11px] leading-tight block">마지막 경기 후 <span class="font-bold">5일</span> 경과 시, 매일 <span class="text-red-500 font-bold">-5점</span>씩 차감.</span>
                     </div>
                 </div>
             </div>
             
-            <button onclick="closeRules()" class="w-full mt-6 bg-slate-800 text-white font-bold py-3 rounded-xl">확인했습니다</button>
+            <button onclick="closeRules()" class="w-full mt-6 bg-slate-800 text-white font-bold py-3 rounded-xl hover:bg-slate-900 transition">확인했습니다</button>
         </div>
     </div>
 
@@ -237,7 +227,11 @@
                 
                 if (!viewSeason) viewSeason = activeSeason;
 
-                // ELO 기준 정렬
+                rankingsData.forEach(p => {
+                     // 하위 호환성 (커리어 하이 없으면 현재 Elo로)
+                     if (!p.careerHighElo) p.careerHighElo = p.elo || 1000;
+                });
+
                 rankingsData.sort((a, b) => (b.elo || 1000) - (a.elo || 1000));
 
                 updateUI();
@@ -259,9 +253,8 @@
             renderHOF();
         }
 
-        // 무승부 제외하고 경기 수 계산
         function getTier(wins, losses) {
-            const matches = (wins || 0) + (losses || 0); // Draws 제외
+            const matches = (wins || 0) + (losses || 0); 
             if (matches < 4) return { name: 'Bronze', class: 'tier-bronze', color: 'text-slate-500' };
             if (matches < 7) return { name: 'Silver', class: 'tier-silver', color: 'text-slate-400' };
             return { name: 'Gold', class: 'tier-gold', color: 'text-amber-500' };
@@ -286,7 +279,6 @@
                 else if (rank === 2) rankNumClass = "rank-num-2 font-black";
                 else if (rank === 3) rankNumClass = "rank-num-3 font-black";
 
-                // 최근 전적 (무승부 제외)
                 const myMatches = matchHistoryData
                     .filter(m => (m.winner === p.name || m.loser === p.name) && m.season === activeSeason && m.type !== 'draw')
                     .slice(0, 5);
@@ -350,7 +342,6 @@
         function renderMatches() {
             const container = document.getElementById('matchList');
             container.innerHTML = '';
-            // 무승부 필터링
             const filtered = matchHistoryData.filter(m => (m.season || "시즌 1") === viewSeason && m.type !== 'draw');
             
             if (filtered.length === 0) {
@@ -467,14 +458,13 @@
             tierEl.className = `absolute -bottom-3 -right-3 text-white text-xs font-bold px-4 py-1.5 rounded-full border-4 border-white shadow-md ${tier.name === 'Gold' ? 'bg-amber-500' : (tier.name === 'Silver' ? 'bg-slate-400' : 'bg-amber-700')}`;
 
             document.getElementById('pModalElo').textContent = p.elo || 1000;
+            document.getElementById('pModalHighElo').textContent = p.careerHighElo || p.elo || 1000;
             document.getElementById('pModalRank').textContent = '#' + (rankingsData.indexOf(p) + 1);
             
-            // 승률 계산 (무승부 제외)
             const totalMatches = (p.wins || 0) + (p.losses || 0);
             const winRate = totalMatches > 0 ? Math.round((p.wins / totalMatches) * 100) : 0;
             document.getElementById('pModalWinRate').textContent = `${winRate}%`;
             
-            // 전적 표시 (무승부 제외)
             document.getElementById('pModalRecordText').textContent = `(${p.wins}승 ${p.losses}패)`;
 
             document.getElementById('pModalHeight').textContent = p.height ? p.height + 'cm' : '-';
@@ -504,7 +494,6 @@
             container.innerHTML = '';
             const p = rankingsData.find(x => x.id === id);
             
-            // 무승부 제외 필터링
             let matches = matchHistoryData.filter(m => (m.winner === p.name || m.loser === p.name) && m.type !== 'draw');
             if (filter === 'current') matches = matches.filter(m => m.season === activeSeason);
 
