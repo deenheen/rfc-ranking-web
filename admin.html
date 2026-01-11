@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RFC 랭킹 매니저 (v3.6 URL)</title>
+    <title>RFC 랭킹 매니저 (v3.7 Rules)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
@@ -21,7 +21,7 @@
     <div id="loginOverlay" class="fixed inset-0 bg-slate-900/95 z-50 flex items-center justify-center backdrop-blur-sm">
         <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-sm text-center border border-slate-200">
             <div class="text-4xl mb-2">🥊</div>
-            <h2 class="text-2xl font-black text-slate-800 mb-6">RFC Admin v3.6</h2>
+            <h2 class="text-2xl font-black text-slate-800 mb-6">RFC Admin v3.7</h2>
             <input type="email" id="adminEmail" placeholder="admin@rfc.com" class="w-full p-3 border border-slate-300 rounded-lg mb-3 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50 transition">
             <input type="password" id="adminPw" placeholder="Password" class="w-full p-3 border border-slate-300 rounded-lg mb-6 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50 transition">
             <button id="btnLogin" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-lg transition transform active:scale-95 shadow-lg shadow-blue-500/30">시스템 접속</button>
@@ -35,14 +35,14 @@
                 <span id="currentSeasonBadge" class="bg-slate-800 text-white text-xs font-bold px-3 py-1 rounded-full shadow-md">Loading...</span>
                 <span id="saveStatus" class="text-xs font-medium text-emerald-500 transition-opacity opacity-0">✅ 저장됨</span>
             </div>
-            <div class="mt-2 md:mt-0 text-xs text-slate-400 font-medium">URL Image Mode</div>
+            <div class="mt-2 md:mt-0 text-xs text-slate-400 font-medium">Rule HTML Editor Added</div>
         </header>
 
         <div class="bg-white rounded-t-2xl border-b border-slate-200 px-4 flex gap-6 mb-4 shadow-sm overflow-x-auto">
             <button onclick="switchTab('main')" id="tabMain" class="tab-btn active py-4 whitespace-nowrap">🔥 랭킹/경기</button>
             <button onclick="switchTab('season')" id="tabSeason" class="tab-btn py-4 whitespace-nowrap">📅 시즌 관리</button>
             <button onclick="switchTab('tools')" id="tabTools" class="tab-btn py-4 whitespace-nowrap">🛠️ 데이터/백업</button>
-            <button onclick="switchTab('settings')" id="tabSettings" class="tab-btn py-4 whitespace-nowrap">📝 메모장</button>
+            <button onclick="switchTab('settings')" id="tabSettings" class="tab-btn py-4 whitespace-nowrap">⚙️ 설정/메모</button>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 flex-grow">
@@ -69,19 +69,10 @@
                     <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden p-5">
                         <h3 class="font-bold text-slate-700 mb-4 border-b pb-2">👤 선수 관리 도구</h3>
                         <button onclick="addNewPlayer()" class="w-full bg-emerald-50 text-emerald-600 hover:bg-emerald-100 font-bold py-3 rounded-xl border border-emerald-100 mb-3 transition">+ 새 선수 등록</button>
-                        
                         <div class="bg-orange-50 border border-orange-200 rounded-xl p-3 mb-3">
-                            <div class="flex justify-between items-center mb-2">
-                                <h4 class="text-xs font-bold text-orange-700">💀 패널티 부여 (-30점)</h4>
-                            </div>
-                            <div class="flex gap-2">
-                                <select id="penaltyTargetSelect" class="w-full text-xs border border-orange-200 rounded p-2 focus:outline-none bg-white">
-                                    <option value="">대상 선택...</option>
-                                </select>
-                                <button onclick="applyManualPenalty()" class="bg-white text-orange-700 font-bold px-3 py-2 rounded-lg text-xs border border-orange-200 transition hover:bg-orange-100 whitespace-nowrap">실행</button>
-                            </div>
+                            <div class="flex justify-between items-center mb-2"><h4 class="text-xs font-bold text-orange-700">💀 패널티 부여 (-30점)</h4></div>
+                            <div class="flex gap-2"><select id="penaltyTargetSelect" class="w-full text-xs border border-orange-200 rounded p-2 focus:outline-none bg-white"><option value="">대상 선택...</option></select><button onclick="applyManualPenalty()" class="bg-white text-orange-700 font-bold px-3 py-2 rounded-lg text-xs border border-orange-200 transition hover:bg-orange-100 whitespace-nowrap">실행</button></div>
                         </div>
-
                         <button onclick="updateRankBaseline()" class="w-full bg-slate-100 text-slate-600 hover:bg-slate-200 font-bold py-3 rounded-xl text-xs transition">📉 순위 변동(▲▼) 리셋</button>
                     </div>
                 </div>
@@ -104,20 +95,24 @@
 
                 <div id="settingsSection" class="tab-content hidden">
                     <div class="space-y-6">
+                        
+                        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden p-5">
+                            <h3 class="font-bold text-slate-700 mb-2">📜 규칙 HTML 편집</h3>
+                            <p class="text-[10px] text-slate-400 mb-3">HTML 코드로 디자인된 규칙을 수정합니다. 내용만 살짝 고치세요.</p>
+                            <textarea id="ruleHtmlInput" class="w-full h-48 p-3 text-xs font-mono border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50 resize-none mb-3" placeholder="HTML 코드를 입력하세요..."></textarea>
+                            <div class="flex gap-2">
+                                <button onclick="loadDefaultRuleHtml()" class="flex-1 bg-slate-100 text-slate-600 font-bold py-2.5 rounded-lg text-xs hover:bg-slate-200 transition">↺ 기본 디자인 불러오기</button>
+                                <button onclick="saveRules()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-lg text-xs transition">규칙 저장하기</button>
+                            </div>
+                        </div>
+
                         <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden p-5 flex flex-col h-[400px]">
                             <h3 class="font-bold text-slate-700 mb-3 flex justify-between">
                                 📝 관리자 메모장
                                 <span class="text-[10px] font-normal text-slate-400">관리자간 공유용</span>
                             </h3>
-                            
-                            <div id="memoListContainer" class="flex-grow overflow-y-auto space-y-2 mb-3 pr-1 bg-slate-50 rounded-lg p-2 border border-slate-100">
-                                <div class="text-center text-xs text-gray-400 py-4">작성된 메모가 없습니다.</div>
-                            </div>
-
-                            <div class="flex gap-2">
-                                <input type="text" id="newMemoInput" class="flex-grow border border-slate-200 rounded-lg p-2.5 text-sm focus:outline-none focus:border-blue-500" placeholder="메세지 남기기..." onkeypress="if(event.key==='Enter') addMemo()">
-                                <button onclick="addMemo()" class="bg-slate-800 hover:bg-slate-900 text-white font-bold px-4 rounded-lg text-xs transition whitespace-nowrap">등록</button>
-                            </div>
+                            <div id="memoListContainer" class="flex-grow overflow-y-auto space-y-2 mb-3 pr-1 bg-slate-50 rounded-lg p-2 border border-slate-100"><div class="text-center text-xs text-gray-400 py-4">작성된 메모가 없습니다.</div></div>
+                            <div class="flex gap-2"><input type="text" id="newMemoInput" class="flex-grow border border-slate-200 rounded-lg p-2.5 text-sm focus:outline-none focus:border-blue-500" placeholder="메세지 남기기..." onkeypress="if(event.key==='Enter') addMemo()"><button onclick="addMemo()" class="bg-slate-800 hover:bg-slate-900 text-white font-bold px-4 rounded-lg text-xs transition whitespace-nowrap">등록</button></div>
                         </div>
                     </div>
                 </div>
@@ -135,48 +130,11 @@
         <div class="bg-white rounded-xl shadow-2xl p-6 w-11/12 max-w-lg max-h-[90vh] overflow-y-auto">
             <h3 class="text-lg font-bold text-slate-800 mb-4 border-b pb-2">✏️ 선수 정보 수정</h3>
             <input type="hidden" id="editPlayerId"><input type="hidden" id="editOriginalName">
-            
-            <div class="grid grid-cols-2 gap-3 mb-3">
-                <div><label class="text-xs text-gray-500 block mb-1">이름</label><input type="text" id="editName" class="w-full border p-2 rounded text-sm font-bold"></div>
-                <div><label class="text-xs text-gray-500 block mb-1">방어전 횟수 (미사용)</label><input type="number" id="editDefenses" class="w-full border p-2 rounded text-sm bg-gray-100 text-gray-400" disabled></div>
-            </div>
-            
-            <div class="grid grid-cols-3 gap-2 mb-3">
-                 <div><label class="text-xs text-gray-500 block mb-1">Game ID</label><input type="text" id="editGameId" class="w-full border p-2 rounded text-sm" placeholder="ID 입력"></div>
-                 <div><label class="text-xs text-gray-500 block mb-1 font-bold text-blue-600">비밀번호</label><input type="text" id="editPassword" class="w-full border p-2 rounded text-sm font-mono font-bold bg-blue-50 text-blue-700" placeholder="0000"></div>
-                 <div><label class="text-xs text-gray-500 block mb-1">ELO (수동)</label><input type="number" id="editElo" class="w-full border p-2 rounded text-sm text-amber-600 font-bold bg-amber-50"></div>
-            </div>
-
-            <div class="mb-3 p-3 bg-gray-50 rounded border border-gray-200">
-                <label class="block text-xs font-bold text-gray-600 mb-2">📊 시즌 전적 수동 조절</label>
-                <div class="grid grid-cols-2 gap-3">
-                    <div><label class="text-xs text-gray-400">승 (Wins)</label><input type="number" id="editWins" class="w-full border p-2 rounded text-sm text-center font-bold text-green-600"></div>
-                    <div><label class="text-xs text-gray-400">패 (Losses)</label><input type="number" id="editLosses" class="w-full border p-2 rounded text-sm text-center font-bold text-red-600"></div>
-                </div>
-            </div>
-            
-            <div class="mb-4">
-                <label class="text-xs text-gray-500 block mb-1">프로필 이미지 (URL 주소)</label>
-                <div class="flex items-start gap-4">
-                    <div class="relative w-16 h-16 shrink-0">
-                        <img id="previewImage" src="" class="w-full h-full rounded-2xl object-cover border border-gray-200 bg-gray-50" onerror="this.src='https://via.placeholder.com/150?text=No+Img'">
-                        <button onclick="removeImage()" class="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-0.5 shadow-sm hover:bg-red-600" title="지우기"><svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" /></svg></button>
-                    </div>
-                    <div class="flex-grow">
-                        <input type="text" id="editImageUrlInput" placeholder="예: https://imgur.com/..." class="w-full border p-2 rounded text-sm bg-slate-50 focus:bg-white transition" oninput="updatePreview(this.value)">
-                        <p class="text-[10px] text-gray-400 mt-1.5 leading-snug">
-                            * <strong>사용법:</strong> 디스코드나 카톡에 사진을 올린 뒤, 우클릭하여 <strong>'이미지 주소 복사'</strong> 후 붙여넣으세요.<br>
-                            * URL 방식은 DB 용량을 거의 차지하지 않습니다.
-                        </p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="grid grid-cols-3 gap-3 mb-3">
-                <div><label class="text-xs text-gray-500 block mb-1">키 (cm)</label><input type="text" id="editHeight" class="w-full border p-2 rounded text-sm"></div>
-                <div><label class="text-xs text-gray-500 block mb-1">리치 (cm)</label><input type="text" id="editReach" class="w-full border p-2 rounded text-sm"></div>
-                <div><label class="text-xs text-gray-500 block mb-1">스탠스</label><select id="editStance" class="w-full border p-2 rounded text-sm bg-white"><option value="Orthodox">Orthodox</option><option value="Southpaw">Southpaw</option><option value="Switch">Switch</option></select></div>
-            </div>
+            <div class="grid grid-cols-2 gap-3 mb-3"><div><label class="text-xs text-gray-500 block mb-1">이름</label><input type="text" id="editName" class="w-full border p-2 rounded text-sm font-bold"></div><div><label class="text-xs text-gray-500 block mb-1">방어전 횟수 (미사용)</label><input type="number" id="editDefenses" class="w-full border p-2 rounded text-sm bg-gray-100 text-gray-400" disabled></div></div>
+            <div class="grid grid-cols-3 gap-2 mb-3"><div><label class="text-xs text-gray-500 block mb-1">Game ID</label><input type="text" id="editGameId" class="w-full border p-2 rounded text-sm" placeholder="ID 입력"></div><div><label class="text-xs text-gray-500 block mb-1 font-bold text-blue-600">비밀번호</label><input type="text" id="editPassword" class="w-full border p-2 rounded text-sm font-mono font-bold bg-blue-50 text-blue-700" placeholder="0000"></div><div><label class="text-xs text-gray-500 block mb-1">ELO (수동)</label><input type="number" id="editElo" class="w-full border p-2 rounded text-sm text-amber-600 font-bold bg-amber-50"></div></div>
+            <div class="mb-3 p-3 bg-gray-50 rounded border border-gray-200"><label class="block text-xs font-bold text-gray-600 mb-2">📊 시즌 전적 수동 조절</label><div class="grid grid-cols-2 gap-3"><div><label class="text-xs text-gray-400">승 (Wins)</label><input type="number" id="editWins" class="w-full border p-2 rounded text-sm text-center font-bold text-green-600"></div><div><label class="text-xs text-gray-400">패 (Losses)</label><input type="number" id="editLosses" class="w-full border p-2 rounded text-sm text-center font-bold text-red-600"></div></div></div>
+            <div class="mb-4"><label class="text-xs text-gray-500 block mb-1">프로필 이미지 (URL 주소)</label><div class="flex items-start gap-4"><div class="relative w-16 h-16 shrink-0"><img id="previewImage" src="" class="w-full h-full rounded-2xl object-cover border border-gray-200 bg-gray-50" onerror="this.src='https://via.placeholder.com/150?text=No+Img'"><button onclick="removeImage()" class="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-0.5 shadow-sm hover:bg-red-600" title="지우기"><svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" /></svg></button></div><div class="flex-grow"><input type="text" id="editImageUrlInput" placeholder="예: https://imgur.com/..." class="w-full border p-2 rounded text-sm bg-slate-50 focus:bg-white transition" oninput="updatePreview(this.value)"><p class="text-[10px] text-gray-400 mt-1.5 leading-snug">* <strong>사용법:</strong> 디스코드나 카톡에 사진을 올린 뒤, 우클릭하여 <strong>'이미지 주소 복사'</strong> 후 붙여넣으세요.<br>* URL 방식은 DB 용량을 거의 차지하지 않습니다.</p></div></div></div>
+            <div class="grid grid-cols-3 gap-3 mb-3"><div><label class="text-xs text-gray-500 block mb-1">키 (cm)</label><input type="text" id="editHeight" class="w-full border p-2 rounded text-sm"></div><div><label class="text-xs text-gray-500 block mb-1">리치 (cm)</label><input type="text" id="editReach" class="w-full border p-2 rounded text-sm"></div><div><label class="text-xs text-gray-500 block mb-1">스탠스</label><select id="editStance" class="w-full border p-2 rounded text-sm bg-white"><option value="Orthodox">Orthodox</option><option value="Southpaw">Southpaw</option><option value="Switch">Switch</option></select></div></div>
             <div class="mb-6 p-3 bg-slate-50 rounded border border-slate-200"><label class="block text-xs font-bold text-slate-600 mb-2">🥊 스타일 태그</label><div id="styleTagsContainer" class="flex flex-wrap gap-2"></div></div>
             <div class="flex justify-end gap-2"><button onclick="document.getElementById('editModal').classList.add('hidden')" class="bg-gray-100 text-gray-600 hover:bg-gray-200 px-4 py-2 rounded-lg text-sm font-bold transition">취소</button><button onclick="savePlayerDetails()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg text-sm font-bold shadow transition">저장하기</button></div>
         </div>
@@ -190,8 +148,11 @@
         const firebaseConfig = { apiKey: "AIzaSyDlj68ex-fM0ExRdD-tvCy-UyIneVoPmGk", authDomain: "rfk-ranking.firebaseapp.com", projectId: "rfk-ranking", storageBucket: "rfk-ranking.firebasestorage.app", messagingSenderId: "675366165774", appId: "1:675366165774:web:795d34c56eab630b4dcb5f", measurementId: "G-CXPDZQ8GTL" };
         const app = initializeApp(firebaseConfig); const db = getFirestore(app); const auth = getAuth(app); const appId = 'ranking-manager-default';
         
-        let rankingsData = []; let matchHistoryData = []; let seasonArchives = {}; let activeSeason = "시즌 1"; let adminMemos = []; 
+        let rankingsData = []; let matchHistoryData = []; let seasonArchives = {}; let activeSeason = "시즌 1"; let adminMemos = []; let ruleHtml = "";
         const STYLE_OPTIONS = ["인파이터", "아웃복서", "슬러거", "카운터", "스워머", "하드펀처", "테크니션", "맷집왕", "변칙"];
+
+        // 예쁜 기본 디자인 HTML
+        const DEFAULT_RULE_HTML = `<div class="bg-blue-50 p-4 rounded-xl border border-blue-100"><h3 class="font-bold text-blue-700 mb-2 text-base">1. 점수 계산 프로세스</h3><ol class="list-decimal pl-4 space-y-2 text-xs"><li><strong>상대와의 점수 차이 확인:</strong> 상대 ELO와 나의 점수 차이를 계산합니다.</li><li><strong>승리 확률 예측:</strong> 점수 차이를 기반으로 승률을 예측합니다.</li><li><strong>기본 점수 산출:</strong> 실제 결과에서 예측 확률을 뺀 값에 계수를 곱합니다.</li><li><strong>참여 보너스:</strong> <span class="text-red-500 font-bold">+10점</span>을 무조건 더해줍니다.</li></ol></div><div><h3 class="font-bold text-slate-800 mb-2">2. 티어별 혜택</h3><ul class="list-disc pl-4 space-y-1 text-xs"><li><span class="font-bold text-amber-700">🥉 브론즈 (0~4전):</span> 기본 점수</li><li><span class="font-bold text-slate-500">🥈 실버 (5~8전):</span> 승리 점수 1.1배</li><li><span class="font-bold text-amber-500">🥇 골드 (9전 이상):</span> 승리 1.2배, 패배 감점 10% 면제</li></ul></div><div class="grid grid-cols-2 gap-3"><div class="p-3 bg-slate-50 rounded-xl border border-slate-100"><span class="font-bold text-xs block mb-1">🛡️ 패배 하한선</span><span class="text-[11px] leading-tight block">최대 <span class="text-red-500 font-bold">-20점</span>까지만 깎입니다.</span></div><div class="p-3 bg-orange-50 rounded-xl border border-orange-100"><span class="font-bold text-xs text-orange-700 block mb-1">📉 휴면 강등</span><span class="text-[11px] leading-tight block">5일 미활동 시 매일 -5점.</span></div></div>`;
 
         document.getElementById('btnLogin').addEventListener('click', () => { const email = document.getElementById('adminEmail').value; const pw = document.getElementById('adminPw').value; signInWithEmailAndPassword(auth, email, pw).catch((e) => alert("로그인 실패: " + e.message)); });
         onAuthStateChanged(auth, (user) => { if (user) { document.getElementById('loginOverlay').classList.add('hidden'); document.getElementById('mainContent').classList.remove('hidden'); loadData(); } });
@@ -200,8 +161,11 @@
             const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'rankings', 'main');
             onSnapshot(docRef, (doc) => {
                 if (doc.exists()) {
-                    const data = doc.data(); rankingsData = data.rankings || []; matchHistoryData = data.matchHistory || []; seasonArchives = data.seasonArchives || {}; activeSeason = data.activeSeason || "시즌 1"; adminMemos = data.adminMemos || [];
+                    const data = doc.data(); rankingsData = data.rankings || []; matchHistoryData = data.matchHistory || []; seasonArchives = data.seasonArchives || {}; activeSeason = data.activeSeason || "시즌 1"; adminMemos = data.adminMemos || []; ruleHtml = data.ruleHtml || DEFAULT_RULE_HTML;
+                    
                     updateSeasonUI(); renderMemos();
+                    document.getElementById('ruleHtmlInput').value = ruleHtml; // Load Rules
+
                     rankingsData.forEach((p, i) => { if(p.defenseCount === undefined) p.defenseCount = 0; if(p.previousRank === undefined) p.previousRank = i + 1; if(p.careerHighRank === undefined) p.careerHighRank = i + 1; if(p.elo === undefined) p.elo = 1000; if(p.careerHighElo === undefined) p.careerHighElo = p.elo; });
                     rankingsData.sort((a, b) => b.elo - a.elo); renderRankings(); populateMatchSelectors(); renderSeasonList(); checkSeasonInactive();
                 }
@@ -212,10 +176,14 @@
             const statusEl = document.getElementById('saveStatus'); const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'rankings', 'main');
             try { 
                 const now = new Date(); const kstDate = new Date(now.getTime() + (9 * 60 * 60 * 1000)).toISOString().split('T')[0]; 
-                await setDoc(docRef, { rankings: rankingsData, matchHistory: matchHistoryData, seasonArchives: seasonArchives, activeSeason: activeSeason, date: kstDate, adminMemos: adminMemos }, { merge: false }); 
+                await setDoc(docRef, { rankings: rankingsData, matchHistory: matchHistoryData, seasonArchives: seasonArchives, activeSeason: activeSeason, date: kstDate, adminMemos: adminMemos, ruleHtml: ruleHtml }, { merge: false }); 
                 statusEl.style.opacity = 1; setTimeout(() => statusEl.style.opacity = 0, 2000); 
             } catch (e) { alert("저장 오류: " + e.message); }
         }
+
+        // [New] Rule Functions
+        window.saveRules = () => { ruleHtml = document.getElementById('ruleHtmlInput').value; saveRankings(); alert("규칙 디자인이 저장되었습니다."); };
+        window.loadDefaultRuleHtml = () => { if(confirm("기본 예쁜 디자인으로 되돌리시겠습니까?")) { document.getElementById('ruleHtmlInput').value = DEFAULT_RULE_HTML; } };
 
         window.addMemo = () => { const input = document.getElementById('newMemoInput'); const content = input.value.trim(); if (!content) return; const today = new Date().toLocaleString('ko-KR', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' }); adminMemos.unshift({ id: Date.now(), content: content, date: today }); input.value = ''; saveRankings(); renderMemos(); };
         window.deleteMemo = (id) => { if(!confirm("삭제?")) return; adminMemos = adminMemos.filter(m => m.id !== id); saveRankings(); renderMemos(); };
@@ -250,35 +218,22 @@
             const p = rankingsData[idx]; 
             const setVal = (id, val) => { const el = document.getElementById(id); if(el) el.value = val; };
             setVal('editPlayerId', idx); setVal('editName', p.name); setVal('editOriginalName', p.name); setVal('editDefenses', 0); setVal('editGameId', p.gameId || ''); setVal('editPassword', p.password || '0000'); setVal('editHeight', p.height || ''); setVal('editReach', p.reach || ''); setVal('editStance', p.stance || 'Orthodox'); setVal('editElo', p.elo || 1000); setVal('editWins', p.wins || 0); setVal('editLosses', p.losses || 0);
-            
-            // Image URL Logic
-            const urlInput = document.getElementById('editImageUrlInput');
-            urlInput.value = p.imageUrl || '';
-            document.getElementById('previewImage').src = p.imageUrl || '';
-
+            const urlInput = document.getElementById('editImageUrlInput'); urlInput.value = p.imageUrl || ''; document.getElementById('previewImage').src = p.imageUrl || '';
             renderStyleTags(p.tags || []); 
             const modal = document.getElementById('editModal'); if(modal) modal.classList.remove('hidden');
         };
 
-        // URL Preview Logic
         window.updatePreview = (url) => { document.getElementById('previewImage').src = url || ''; };
         window.removeImage = () => { document.getElementById('editImageUrlInput').value = ''; document.getElementById('previewImage').src = ''; };
-
         function renderStyleTags(cT) { const c = document.getElementById('styleTagsContainer'); if(!c) return; c.innerHTML = ''; STYLE_OPTIONS.forEach(s => { const id = `style-${s}`; c.innerHTML += `<div><input type="checkbox" id="${id}" value="${s}" class="style-checkbox hidden" ${cT.includes(s)?'checked':''}><label for="${id}" class="inline-block px-3 py-1 text-xs font-bold border border-slate-300 rounded-full cursor-pointer text-slate-500 hover:bg-slate-100 transition select-none ${cT.includes(s)?'bg-blue-500 text-white border-blue-500':''}">${s}</label></div>`; }); }
         
         window.savePlayerDetails = async () => { 
             const idInput = document.getElementById('editPlayerId'); if(!idInput) return;
             const idx = idInput.value; const p = rankingsData[idx]; 
             const getVal = (id) => document.getElementById(id) ? document.getElementById(id).value : '';
-
-            // Update Image URL
             p.imageUrl = getVal('editImageUrlInput').trim();
-
             p.name = getVal('editName'); p.defenseCount = 0; p.gameId = getVal('editGameId'); p.password = getVal('editPassword'); p.height = getVal('editHeight'); p.reach = getVal('editReach'); p.stance = getVal('editStance'); p.elo = parseInt(getVal('editElo'))||1000; if(p.elo > (p.careerHighElo || 0)) p.careerHighElo = p.elo; p.wins = parseInt(getVal('editWins'))||0; p.losses = parseInt(getVal('editLosses'))||0; const ct = document.querySelectorAll('.style-checkbox:checked'); p.tags = Array.from(ct).map(cb => cb.value); 
-            rankingsData.sort((a, b) => b.elo - a.elo); 
-            await saveRankings(); 
-            document.getElementById('editModal').classList.add('hidden');
-            renderRankings(); 
+            rankingsData.sort((a, b) => b.elo - a.elo); await saveRankings(); document.getElementById('editModal').classList.add('hidden'); renderRankings(); 
         };
         
         window.backupData = () => { const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({ rankings: rankingsData, history: matchHistoryData, archives: seasonArchives, activeSeason: activeSeason }, null, 2)); const dl = document.createElement('a'); dl.setAttribute("href", dataStr); dl.setAttribute("download", `RFC_BACKUP_${new Date().toISOString().slice(0,10)}.json`); document.body.appendChild(dl); dl.click(); dl.remove(); };
