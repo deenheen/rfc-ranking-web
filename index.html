@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RFC 랭킹전 (v2.4 UI)</title>
+    <title>RFC 랭킹전 (v2.5 History)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;700;800;900&display=swap" rel="stylesheet">
     <style>
@@ -61,8 +61,8 @@
             <div class="flex justify-between items-end px-1 pb-1">
                 <span class="text-xs font-bold text-slate-400">Hybrid ELO 기준 정렬</span>
                 <div class="flex gap-2">
-                    <span class="text-[10px] text-slate-400 bg-white border px-2 py-1 rounded-full">● 승리</span>
-                    <span class="text-[10px] text-slate-400 bg-white border px-2 py-1 rounded-full">● 패배</span>
+                    <span class="text-[10px] text-slate-400 bg-white border px-2 py-1 rounded-full"><span class="text-emerald-500">●</span> 승리</span>
+                    <span class="text-[10px] text-slate-400 bg-white border px-2 py-1 rounded-full"><span class="text-rose-500">●</span> 패배</span>
                 </div>
             </div>
             <div id="rankingList" class="space-y-2.5">
@@ -221,6 +221,7 @@
 
         let rankingsData = [];
         let matchHistoryData = [];
+        let enrichedMatchHistory = []; // 분석된 기록
         let seasonArchives = {};
         let activeSeason = "";
         let viewSeason = "";
@@ -241,12 +242,52 @@
                 });
                 rankingsData.sort((a, b) => (b.elo || 1000) - (a.elo || 1000));
 
+                // [중요] 과거 전적 재구성
+                enrichMatchHistory();
+
                 updateUI();
                 if (currentProfileId) {
                     renderProfileMatches(currentProfileId, document.getElementById('pModalSeason').value);
                 }
             }
         });
+
+        // 경기 기록을 시간순으로 재생하여 당시 상대의 전적을 계산
+        function enrichMatchHistory() {
+            // 시간순 정렬 (오래된 순)
+            const chronological = [...matchHistoryData].sort((a, b) => new Date(a.date) - new Date(b.date));
+            const statsTracker = {}; // { 'PlayerName': { wins: 0, losses: 0, history: [] } }
+
+            enrichedMatchHistory = chronological.map(match => {
+                const winner = match.winner;
+                const loser = match.loser;
+
+                // 트래커 초기화
+                if (!statsTracker[winner]) statsTracker[winner] = { w: 0, l: 0, h: [] };
+                if (!statsTracker[loser]) statsTracker[loser] = { w: 0, l: 0, h: [] };
+
+                // 스냅샷 생성 (경기 '직전' 상태가 아닌 '당시 누적'으로 표시하려면 경기 후 업데이트가 맞으나, 
+                // 보통 '상대 전적'은 그 사람이 그때까지 쌓은 기록을 의미하므로 경기 전 스탯이 맞음. 
+                // 하지만 경기 결과에 따라 '몇승 몇패'가 결정되므로, 경기 '당시' 스펙은 경기 전 누적 데이터임)
+                const snapshot = {
+                    [winner]: { ...statsTracker[winner] },
+                    [loser]: { ...statsTracker[loser] }
+                };
+
+                // 스탯 업데이트 (무승부는 제외된 시스템)
+                if (match.type !== 'draw') {
+                    statsTracker[winner].w += 1;
+                    statsTracker[winner].h = [...statsTracker[winner].h, 'W'].slice(-6); // 최근 6경기
+                    statsTracker[loser].l += 1;
+                    statsTracker[loser].h = [...statsTracker[loser].h, 'L'].slice(-6);
+                }
+
+                return { ...match, snapshot };
+            });
+
+            // 다시 최신순 정렬
+            enrichedMatchHistory.reverse();
+        }
 
         function updateUI() {
             const now = new Date();
@@ -284,14 +325,12 @@
                 else if (rank === 2) rankNumClass = "rank-num-2 font-black";
                 else if (rank === 3) rankNumClass = "rank-num-3 font-black";
 
-                // [Task 6] 최근 전적 (Last 6 Dots)
+                // 최근 전적 (Last 6 Dots)
                 const myMatches = matchHistoryData
                     .filter(m => (m.winner === p.name || m.loser === p.name) && m.season === activeSeason && m.type !== 'draw')
-                    .slice(0, 6); // 최대 6개
+                    .slice(0, 6);
                 
                 let dots = '';
-                // 최신순이 왼쪽? 오른쪽? 보통 오른쪽이 최신이지만 공간상 왼쪽부터 채우는게 깔끔할 수 있음. 
-                // 여기서는 배열 순서대로(최신순) 렌더링
                 myMatches.forEach(m => {
                     if (m.winner === p.name) dots += `<div class="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-sm"></div>`;
                     else dots += `<div class="w-1.5 h-1.5 rounded-full bg-rose-500 shadow-sm"></div>`;
@@ -497,12 +536,14 @@
             document.getElementById('profileModal').classList.add('hidden');
         }
 
+        // [중요] 당시 전적 표시 로직 포함
         window.renderProfileMatches = (id, filter) => {
             const container = document.getElementById('pModalMatchList');
             container.innerHTML = '';
             const p = rankingsData.find(x => x.id === id);
             
-            let matches = matchHistoryData.filter(m => (m.winner === p.name || m.loser === p.name) && m.type !== 'draw');
+            // enrichedMatchHistory 사용 (이미 당시 스탯 포함됨)
+            let matches = enrichedMatchHistory.filter(m => (m.winner === p.name || m.loser === p.name) && m.type !== 'draw');
             if (filter === 'current') matches = matches.filter(m => m.season === activeSeason);
 
             if (matches.length === 0) {
@@ -515,15 +556,32 @@
                 const resultText = isWin ? 'W' : 'L';
                 const resultColor = isWin ? 'bg-emerald-100 text-emerald-600' : 'bg-rose-100 text-rose-600';
                 const oppName = isWin ? m.loser : m.winner;
+                
+                // 상대방의 당시 스탯 가져오기
+                const oppStats = m.snapshot[oppName] || { w:0, l:0, h:[] };
+                const oppRecordStr = `${oppStats.w}승 ${oppStats.l}패`;
+                
+                // 상대방의 최근 흐름 (Dots)
+                let oppDots = '';
+                (oppStats.h || []).forEach(res => {
+                    if (res === 'W') oppDots += `<div class="w-1 h-1 rounded-full bg-emerald-400"></div>`;
+                    else oppDots += `<div class="w-1 h-1 rounded-full bg-rose-400"></div>`;
+                });
 
                 const div = document.createElement('div');
                 div.className = "flex items-center justify-between text-xs p-3 bg-slate-50 rounded-xl border border-slate-100";
                 div.innerHTML = `
-                    <div class="flex items-center gap-3">
-                        <span class="font-bold ${resultColor} w-8 h-8 flex items-center justify-center rounded-lg text-sm">${resultText}</span>
-                        <div class="flex flex-col">
-                            <span class="font-bold text-slate-700 text-sm">vs ${oppName}</span>
-                            <span class="text-slate-400 font-medium text-[10px]">${m.date}</span>
+                    <div class="flex items-center gap-3 w-full">
+                        <span class="font-bold ${resultColor} w-8 h-8 flex items-center justify-center rounded-lg text-sm shrink-0">${resultText}</span>
+                        <div class="flex flex-col w-full overflow-hidden">
+                            <div class="flex justify-between items-center w-full">
+                                <span class="font-bold text-slate-700 text-sm truncate">vs ${oppName}</span>
+                                <span class="text-slate-300 font-medium text-[10px] shrink-0">${m.date}</span>
+                            </div>
+                            <div class="flex items-center gap-2 mt-0.5">
+                                <span class="text-[10px] text-slate-400 font-medium bg-white px-1.5 py-0.5 rounded border border-slate-100">당시: ${oppRecordStr}</span>
+                                <div class="flex gap-0.5">${oppDots}</div>
+                            </div>
                         </div>
                     </div>
                 `;
