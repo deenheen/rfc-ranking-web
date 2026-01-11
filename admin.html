@@ -3,14 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RFC 랭킹 매니저 (v3.4 Memo)</title>
+    <title>RFC 랭킹 매니저 (v3.6 URL)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Pretendard', sans-serif; background-color: #f8fafc; }
         .rank-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-        .highlight-change { animation: highlightPulse 2s ease-out; background-color: #fef9c3; border-left: 4px solid #facc15; }
-        @keyframes highlightPulse { 0% { transform: scale(1.02); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); } 100% { transform: scale(1); box-shadow: none; } }
         .rank-up { color: #dc2626; font-weight: 800; } .rank-down { color: #2563eb; font-weight: 800; } .rank-keep { color: #9ca3af; }
         .style-checkbox:checked + label { background-color: #3b82f6; color: white; border-color: #3b82f6; }
         .tab-btn { @apply text-slate-500 border-b-2 border-transparent hover:text-slate-700 font-medium transition-colors; }
@@ -23,7 +21,7 @@
     <div id="loginOverlay" class="fixed inset-0 bg-slate-900/95 z-50 flex items-center justify-center backdrop-blur-sm">
         <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-sm text-center border border-slate-200">
             <div class="text-4xl mb-2">🥊</div>
-            <h2 class="text-2xl font-black text-slate-800 mb-6">RFC Admin v3.4</h2>
+            <h2 class="text-2xl font-black text-slate-800 mb-6">RFC Admin v3.6</h2>
             <input type="email" id="adminEmail" placeholder="admin@rfc.com" class="w-full p-3 border border-slate-300 rounded-lg mb-3 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50 transition">
             <input type="password" id="adminPw" placeholder="Password" class="w-full p-3 border border-slate-300 rounded-lg mb-6 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50 transition">
             <button id="btnLogin" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-lg transition transform active:scale-95 shadow-lg shadow-blue-500/30">시스템 접속</button>
@@ -37,14 +35,14 @@
                 <span id="currentSeasonBadge" class="bg-slate-800 text-white text-xs font-bold px-3 py-1 rounded-full shadow-md">Loading...</span>
                 <span id="saveStatus" class="text-xs font-medium text-emerald-500 transition-opacity opacity-0">✅ 저장됨</span>
             </div>
-            <div class="mt-2 md:mt-0 text-xs text-slate-400 font-medium">Rule Editor & Memo Added</div>
+            <div class="mt-2 md:mt-0 text-xs text-slate-400 font-medium">URL Image Mode</div>
         </header>
 
         <div class="bg-white rounded-t-2xl border-b border-slate-200 px-4 flex gap-6 mb-4 shadow-sm overflow-x-auto">
             <button onclick="switchTab('main')" id="tabMain" class="tab-btn active py-4 whitespace-nowrap">🔥 랭킹/경기</button>
             <button onclick="switchTab('season')" id="tabSeason" class="tab-btn py-4 whitespace-nowrap">📅 시즌 관리</button>
             <button onclick="switchTab('tools')" id="tabTools" class="tab-btn py-4 whitespace-nowrap">🛠️ 데이터/백업</button>
-            <button onclick="switchTab('settings')" id="tabSettings" class="tab-btn py-4 whitespace-nowrap">⚙️ 설정/메모</button>
+            <button onclick="switchTab('settings')" id="tabSettings" class="tab-btn py-4 whitespace-nowrap">📝 메모장</button>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 flex-grow">
@@ -106,13 +104,6 @@
 
                 <div id="settingsSection" class="tab-content hidden">
                     <div class="space-y-6">
-                        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden p-5">
-                            <h3 class="font-bold text-slate-700 mb-2">📜 랭킹 규칙 편집</h3>
-                            <p class="text-xs text-slate-400 mb-3">사용자 사이트에 표시될 규칙 내용을 작성하세요. (줄바꿈 반영됨)</p>
-                            <textarea id="ruleTextInput" class="w-full h-40 p-3 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50 resize-none mb-3" placeholder="예: 승리 시 +10점, 5일 미활동 시 차감..."></textarea>
-                            <button onclick="saveRules()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-lg text-xs transition">규칙 저장하기</button>
-                        </div>
-
                         <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden p-5 flex flex-col h-[400px]">
                             <h3 class="font-bold text-slate-700 mb-3 flex justify-between">
                                 📝 관리자 메모장
@@ -165,16 +156,18 @@
             </div>
             
             <div class="mb-4">
-                <label class="text-xs text-gray-500 block mb-1">프로필 이미지 (파일 업로드)</label>
-                <div class="flex items-center gap-4">
+                <label class="text-xs text-gray-500 block mb-1">프로필 이미지 (URL 주소)</label>
+                <div class="flex items-start gap-4">
                     <div class="relative w-16 h-16 shrink-0">
-                        <img id="previewImage" src="" class="w-full h-full rounded-2xl object-cover border border-gray-200 bg-gray-50">
-                        <button onclick="removeImage()" class="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-0.5 shadow-sm hover:bg-red-600" title="삭제"><svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" /></svg></button>
+                        <img id="previewImage" src="" class="w-full h-full rounded-2xl object-cover border border-gray-200 bg-gray-50" onerror="this.src='https://via.placeholder.com/150?text=No+Img'">
+                        <button onclick="removeImage()" class="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-0.5 shadow-sm hover:bg-red-600" title="지우기"><svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" /></svg></button>
                     </div>
                     <div class="flex-grow">
-                        <input type="file" id="editImageFile" accept="image/*" class="block w-full text-xs text-gray-500 file:mr-2 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
-                        <p class="text-[10px] text-gray-400 mt-1">* 500px 자동 리사이징</p>
-                        <input type="hidden" id="editImageUrl">
+                        <input type="text" id="editImageUrlInput" placeholder="예: https://imgur.com/..." class="w-full border p-2 rounded text-sm bg-slate-50 focus:bg-white transition" oninput="updatePreview(this.value)">
+                        <p class="text-[10px] text-gray-400 mt-1.5 leading-snug">
+                            * <strong>사용법:</strong> 디스코드나 카톡에 사진을 올린 뒤, 우클릭하여 <strong>'이미지 주소 복사'</strong> 후 붙여넣으세요.<br>
+                            * URL 방식은 DB 용량을 거의 차지하지 않습니다.
+                        </p>
                     </div>
                 </div>
             </div>
@@ -197,15 +190,7 @@
         const firebaseConfig = { apiKey: "AIzaSyDlj68ex-fM0ExRdD-tvCy-UyIneVoPmGk", authDomain: "rfk-ranking.firebaseapp.com", projectId: "rfk-ranking", storageBucket: "rfk-ranking.firebasestorage.app", messagingSenderId: "675366165774", appId: "1:675366165774:web:795d34c56eab630b4dcb5f", measurementId: "G-CXPDZQ8GTL" };
         const app = initializeApp(firebaseConfig); const db = getFirestore(app); const auth = getAuth(app); const appId = 'ranking-manager-default';
         
-        let rankingsData = []; 
-        let matchHistoryData = []; 
-        let seasonArchives = {}; 
-        let activeSeason = "시즌 1";
-        
-        // [New Data Fields]
-        let ruleText = "규칙이 아직 설정되지 않았습니다.";
-        let adminMemos = []; 
-
+        let rankingsData = []; let matchHistoryData = []; let seasonArchives = {}; let activeSeason = "시즌 1"; let adminMemos = []; 
         const STYLE_OPTIONS = ["인파이터", "아웃복서", "슬러거", "카운터", "스워머", "하드펀처", "테크니션", "맷집왕", "변칙"];
 
         document.getElementById('btnLogin').addEventListener('click', () => { const email = document.getElementById('adminEmail').value; const pw = document.getElementById('adminPw').value; signInWithEmailAndPassword(auth, email, pw).catch((e) => alert("로그인 실패: " + e.message)); });
@@ -215,25 +200,10 @@
             const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'rankings', 'main');
             onSnapshot(docRef, (doc) => {
                 if (doc.exists()) {
-                    const data = doc.data(); 
-                    rankingsData = data.rankings || []; 
-                    matchHistoryData = data.matchHistory || []; 
-                    seasonArchives = data.seasonArchives || {}; 
-                    activeSeason = data.activeSeason || "시즌 1";
-                    
-                    // [Load New Data]
-                    ruleText = data.ruleText || "";
-                    adminMemos = data.adminMemos || [];
-
-                    updateSeasonUI();
-                    
-                    // Init Settings UI
-                    document.getElementById('ruleTextInput').value = ruleText;
-                    renderMemos();
-
+                    const data = doc.data(); rankingsData = data.rankings || []; matchHistoryData = data.matchHistory || []; seasonArchives = data.seasonArchives || {}; activeSeason = data.activeSeason || "시즌 1"; adminMemos = data.adminMemos || [];
+                    updateSeasonUI(); renderMemos();
                     rankingsData.forEach((p, i) => { if(p.defenseCount === undefined) p.defenseCount = 0; if(p.previousRank === undefined) p.previousRank = i + 1; if(p.careerHighRank === undefined) p.careerHighRank = i + 1; if(p.elo === undefined) p.elo = 1000; if(p.careerHighElo === undefined) p.careerHighElo = p.elo; });
-                    rankingsData.sort((a, b) => b.elo - a.elo); renderRankings(); populateMatchSelectors(); 
-                    renderSeasonList(); checkSeasonInactive();
+                    rankingsData.sort((a, b) => b.elo - a.elo); renderRankings(); populateMatchSelectors(); renderSeasonList(); checkSeasonInactive();
                 }
             });
         }
@@ -242,113 +212,14 @@
             const statusEl = document.getElementById('saveStatus'); const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'rankings', 'main');
             try { 
                 const now = new Date(); const kstDate = new Date(now.getTime() + (9 * 60 * 60 * 1000)).toISOString().split('T')[0]; 
-                await setDoc(docRef, { 
-                    rankings: rankingsData, 
-                    matchHistory: matchHistoryData, 
-                    seasonArchives: seasonArchives, 
-                    activeSeason: activeSeason, 
-                    date: kstDate,
-                    // [Save New Data]
-                    ruleText: ruleText,
-                    adminMemos: adminMemos
-                }, { merge: false }); 
+                await setDoc(docRef, { rankings: rankingsData, matchHistory: matchHistoryData, seasonArchives: seasonArchives, activeSeason: activeSeason, date: kstDate, adminMemos: adminMemos }, { merge: false }); 
                 statusEl.style.opacity = 1; setTimeout(() => statusEl.style.opacity = 0, 2000); 
             } catch (e) { alert("저장 오류: " + e.message); }
         }
 
-        // -----------------------------------------------------------
-        // [New Features] Rule & Memo Functions
-        // -----------------------------------------------------------
-        
-        // 1. Rule Editor
-        window.saveRules = () => {
-            const txt = document.getElementById('ruleTextInput').value;
-            if(!confirm("규칙 내용을 저장하시겠습니까? (사용자 사이트에 반영됨)")) return;
-            ruleText = txt;
-            saveRankings();
-            alert("규칙이 저장되었습니다.");
-        };
-
-        // 2. Admin Memos
-        window.addMemo = () => {
-            const input = document.getElementById('newMemoInput');
-            const content = input.value.trim();
-            if (!content) return;
-            
-            const today = new Date().toLocaleString('ko-KR', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' });
-            adminMemos.unshift({ id: Date.now(), content: content, date: today });
-            input.value = '';
-            
-            saveRankings();
-            renderMemos();
-        };
-
-        window.deleteMemo = (id) => {
-            if(!confirm("이 메모를 삭제합니까?")) return;
-            adminMemos = adminMemos.filter(m => m.id !== id);
-            saveRankings();
-            renderMemos();
-        };
-
-        function renderMemos() {
-            const container = document.getElementById('memoListContainer');
-            if(adminMemos.length === 0) {
-                container.innerHTML = '<div class="text-center text-xs text-gray-400 py-4">작성된 메모가 없습니다.</div>';
-                return;
-            }
-            container.innerHTML = '';
-            adminMemos.forEach(m => {
-                const el = document.createElement('div');
-                el.className = 'bg-white border border-slate-200 rounded p-2 text-sm shadow-sm flex justify-between items-start group';
-                el.innerHTML = `
-                    <div>
-                        <div class="text-[10px] text-slate-400 font-medium mb-0.5">${m.date}</div>
-                        <div class="text-slate-700 whitespace-pre-wrap">${m.content}</div>
-                    </div>
-                    <button onclick="deleteMemo(${m.id})" class="text-slate-300 hover:text-red-500 text-xs px-1 opacity-0 group-hover:opacity-100 transition">✕</button>
-                `;
-                container.appendChild(el);
-            });
-        }
-
-        // Image Handling (With Safety Check)
-        const fileInput = document.getElementById('editImageFile');
-        if (fileInput) {
-            fileInput.addEventListener('change', function(e) {
-                const file = e.target.files[0];
-                if (!file) return;
-                const reader = new FileReader();
-                reader.onload = function(event) {
-                    const img = new Image();
-                    img.onload = function() {
-                        const canvas = document.createElement('canvas');
-                        const MAX_SIZE = 500;
-                        let width = img.width; let height = img.height;
-                        if (width > height) { if (width > MAX_SIZE) { height *= MAX_SIZE / width; width = MAX_SIZE; } } 
-                        else { if (height > MAX_SIZE) { width *= MAX_SIZE / height; height = MAX_SIZE; } }
-                        canvas.width = width; canvas.height = height;
-                        const ctx = canvas.getContext('2d');
-                        ctx.drawImage(img, 0, 0, width, height);
-                        const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
-                        const urlInput = document.getElementById('editImageUrl');
-                        const prevImg = document.getElementById('previewImage');
-                        if(urlInput) urlInput.value = dataUrl;
-                        if(prevImg) prevImg.src = dataUrl;
-                    };
-                    img.src = event.target.result;
-                };
-                reader.readAsDataURL(file);
-            });
-        }
-
-        window.removeImage = () => {
-            const urlInput = document.getElementById('editImageUrl');
-            const prevImg = document.getElementById('previewImage');
-            const fileIn = document.getElementById('editImageFile');
-            if(urlInput) urlInput.value = '';
-            if(prevImg) prevImg.src = '';
-            if(fileIn) fileIn.value = '';
-        };
+        window.addMemo = () => { const input = document.getElementById('newMemoInput'); const content = input.value.trim(); if (!content) return; const today = new Date().toLocaleString('ko-KR', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' }); adminMemos.unshift({ id: Date.now(), content: content, date: today }); input.value = ''; saveRankings(); renderMemos(); };
+        window.deleteMemo = (id) => { if(!confirm("삭제?")) return; adminMemos = adminMemos.filter(m => m.id !== id); saveRankings(); renderMemos(); };
+        function renderMemos() { const container = document.getElementById('memoListContainer'); if(adminMemos.length === 0) { container.innerHTML = '<div class="text-center text-xs text-gray-400 py-4">작성된 메모가 없습니다.</div>'; return; } container.innerHTML = ''; adminMemos.forEach(m => { const el = document.createElement('div'); el.className = 'bg-white border border-slate-200 rounded p-2 text-sm shadow-sm flex justify-between items-start group'; el.innerHTML = `<div><div class="text-[10px] text-slate-400 font-medium mb-0.5">${m.date}</div><div class="text-slate-700 whitespace-pre-wrap">${m.content}</div></div><button onclick="deleteMemo(${m.id})" class="text-slate-300 hover:text-red-500 text-xs px-1 opacity-0 group-hover:opacity-100 transition">✕</button>`; container.appendChild(el); }); }
 
         window.switchTab = (tab) => { document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden')); document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active')); document.getElementById(tab + 'Section').classList.remove('hidden'); document.getElementById('tab' + tab.charAt(0).toUpperCase() + tab.slice(1)).classList.add('active'); };
         function updateSeasonUI() { document.getElementById('currentSeasonBadge').textContent = activeSeason; document.querySelectorAll('.currentSeasonName').forEach(el => el.textContent = activeSeason); const num = parseInt(activeSeason.replace(/[^0-9]/g, '')) || 0; document.getElementById('newSeasonNameInput').value = `시즌 ${num + 1}`; }
@@ -357,158 +228,60 @@
         window.switchActiveSeason = (targetName) => { if (!confirm(`[${targetName}] 전환?`)) return; seasonArchives[activeSeason] = { rankings: JSON.parse(JSON.stringify(rankingsData)) }; const t = seasonArchives[targetName]; if (t) rankingsData = t.rankings || []; delete seasonArchives[targetName]; activeSeason = targetName; saveRankings(); alert("전환 완료"); };
         window.renameSeason = (old) => { const n = prompt("새 이름:", old); if(!n||n===old)return; if(n===activeSeason||seasonArchives[n])return alert("중복 이름"); if(old===activeSeason)activeSeason=n; else { seasonArchives[n]=seasonArchives[old]; delete seasonArchives[old]; } matchHistoryData.forEach(m => { if(m.season===old) m.season=n; }); saveRankings(); };
         window.finishAndStartNewSeason = () => { const n = document.getElementById('newSeasonNameInput').value.trim(); if(!n)return alert("이름 입력"); if(n===activeSeason||seasonArchives[n])return alert("중복 이름"); if(!confirm(`[${activeSeason}] 종료 후 [${n}] 시작?`))return; seasonArchives[activeSeason]={rankings:JSON.parse(JSON.stringify(rankingsData))}; activeSeason=n; rankingsData.forEach(p => { p.previousRank=p.rank||rankingsData.indexOf(p)+1; p.wins=0; p.losses=0; p.draws=0; p.defenseCount=0; p.elo=1000; }); saveRankings(); alert("시작됨"); };
-        
-        // -----------------------------------------------------------
-        // [RFC v3.3 Final] Logic Update
-        // -----------------------------------------------------------
-        
-        // 티어 판정
-        function getTierBonus(matchCount) {
-            if (matchCount < 5) { // 0~4 (Bronze)
-                return { winMult: 1.0, lossMult: 1.0, tier: '🥉Bronze' };
-            } else if (matchCount < 9) { // 5~8 (Silver)
-                return { winMult: 1.1, lossMult: 0.9, tier: '🥈Silver' };
-            } else { // 9+ (Gold)
-                return { winMult: 1.2, lossMult: 0.8, tier: '🥇Gold' };
-            }
-        }
 
-        // ELO 계산 (+10점 참여점수 부활)
-        function calculateHybridEloChange(p1Elo, p2Elo, isWin, p1Stats) {
-            const matchCount = (p1Stats.wins || 0) + (p1Stats.losses || 0);
-            const K = 60; // 변동폭
-            const expected = 1 / (1 + Math.pow(10, (p2Elo - p1Elo) / 400));
-            const { winMult, lossMult, tier } = getTierBonus(matchCount);
-
-            let finalChange = 0;
-            let breakdown = "";
-
-            if (isWin) {
-                let baseGain = K * (1 - expected);
-                // [참여점수 +10 추가]
-                finalChange = (baseGain * winMult) + 10;
-                
-                breakdown = `${tier}승(x${winMult}) + 10`;
-            } else {
-                let baseLoss = K * (0 - expected); // 음수
-                // [참여점수 +10 추가] -> 손실을 줄여줌
-                finalChange = (baseLoss * lossMult) + 10;
-                
-                breakdown = `${tier}패(x${lossMult}) + 10`;
-            }
-
-            return { change: Math.round(finalChange), msg: breakdown };
-        }
+        function getTierBonus(matchCount) { if (matchCount < 5) return { winMult: 1.0, lossMult: 1.0, tier: '🥉Bronze' }; else if (matchCount < 9) return { winMult: 1.1, lossMult: 0.9, tier: '🥈Silver' }; else return { winMult: 1.2, lossMult: 0.8, tier: '🥇Gold' }; }
+        function calculateHybridEloChange(p1Elo, p2Elo, isWin, p1Stats) { const matchCount = (p1Stats.wins || 0) + (p1Stats.losses || 0); const K = 60; const expected = 1 / (1 + Math.pow(10, (p2Elo - p1Elo) / 400)); const { winMult, lossMult, tier } = getTierBonus(matchCount); let finalChange = 0; let breakdown = ""; if (isWin) { let baseGain = K * (1 - expected); finalChange = (baseGain * winMult) + 10; breakdown = `${tier}승(x${winMult}) + 10`; } else { let baseLoss = K * (0 - expected); finalChange = (baseLoss * lossMult) + 10; breakdown = `${tier}패(x${lossMult}) + 10`; } return { change: Math.round(finalChange), msg: breakdown }; }
 
         window.applyMatch = () => { const p1Idx = parseInt(document.getElementById('p1Select').value); const p2Idx = parseInt(document.getElementById('p2Select').value); const winnerVal = document.querySelector('input[name="winner"]:checked')?.value; if (!winnerVal || isNaN(p1Idx) || isNaN(p2Idx)) return alert("선택 오류"); if (p1Idx === p2Idx) return alert("동일 선수"); const p1 = rankingsData[p1Idx]; const p2 = rankingsData[p2Idx]; const isBlueWin = winnerVal === 'blue'; const winner = isBlueWin ? p1 : p2; const loser = isBlueWin ? p2 : p1; const winCalc = calculateHybridEloChange(winner.elo, loser.elo, true, winner); const loseCalc = calculateHybridEloChange(loser.elo, winner.elo, false, loser); winner.elo += winCalc.change; loser.elo += loseCalc.change; if (winner.elo > (winner.careerHighElo || 0)) winner.careerHighElo = winner.elo; if (loser.elo > (loser.careerHighElo || 0)) loser.careerHighElo = loser.elo; let type = 'ranking'; winner.wins++; loser.losses++; const today = new Date().toISOString().split('T')[0]; winner.lastMatchDate = today; loser.lastMatchDate = today; rankingsData.sort((a, b) => b.elo - a.elo); matchHistoryData.unshift({ date: today, winner: isBlueWin ? p1.name : p2.name, loser: isBlueWin ? p2.name : p1.name, type, season: activeSeason, blue: p1.name }); saveRankings(); renderRankings(); alert(`반영 완료!\n${winner.name}: +${winCalc.change}\n${loser.name}: ${loseCalc.change}`); };
-        
         function updateMatchPreview() { const p1Val = document.getElementById('p1Select').value; const p2Val = document.getElementById('p2Select').value; if (p1Val === "" || p2Val === "" || p1Val === p2Val) { document.getElementById('matchPreview').classList.add('hidden'); return; } document.getElementById('matchPreview').classList.remove('hidden'); const p1 = rankingsData[parseInt(p1Val)]; const p2 = rankingsData[parseInt(p2Val)]; const blueWin = calculateHybridEloChange(p1.elo, p2.elo, true, p1); const redLose = calculateHybridEloChange(p2.elo, p1.elo, false, p2); const redWin = calculateHybridEloChange(p2.elo, p1.elo, true, p2); const blueLose = calculateHybridEloChange(p1.elo, p2.elo, false, p1); document.getElementById('previewContent').innerHTML = `<div class="font-bold text-blue-600">🔵 Blue승: +${blueWin.change} / 🔴 Red패: ${redLose.change}</div><div class="font-bold text-red-600 mt-1">🔴 Red승: +${redWin.change} / 🔵 Blue패: ${blueLose.change}</div>`; }
         document.getElementById('p1Select').addEventListener('change', updateMatchPreview); document.getElementById('p2Select').addEventListener('change', updateMatchPreview);
-        
         window.resetAllElo = () => { if(!confirm("ELO 1000 초기화?")) return; rankingsData.forEach(p => p.elo = 1000); saveRankings(); renderRankings(); };
         window.resetAllStats = () => { if(!confirm("전적 0 초기화?")) return; rankingsData.forEach(p => { p.wins = 0; p.losses = 0; }); saveRankings(); renderRankings(); };
         window.resetEverything = () => { if(!confirm("🚨 전체 리셋?")) return; matchHistoryData = []; seasonArchives = {}; activeSeason = "시즌 1"; rankingsData.forEach(p => { p.wins=0; p.losses=0; p.defenseCount=0; p.elo=1000; p.careerHighElo=1000; }); saveRankings(); location.reload(); };
         window.updateRankBaseline = () => { if(confirm("변동폭 리셋?")) { rankingsData.forEach((p, i) => p.previousRank = i + 1); saveRankings(); renderRankings(); } };
-        
-        // [Key Change] Manual Penalty Implementation
-        window.applyManualPenalty = () => {
-            const idx = document.getElementById('penaltyTargetSelect').value;
-            if (idx === "") return alert("선수를 선택해주세요.");
-            
-            const p = rankingsData[idx];
-            if (!confirm(`[${p.name}] 선수에게 패널티(-30점)를 부여합니까?\n현재 점수: ${p.elo}`)) return;
-            
-            p.elo -= 30;
-            
-            rankingsData.sort((a, b) => b.elo - a.elo);
-            saveRankings();
-            renderRankings();
-            alert(`[${p.name}] -30점 차감 완료.\n현재 점수: ${p.elo}`);
-        };
-        
+        window.applyManualPenalty = () => { const idx = document.getElementById('penaltyTargetSelect').value; if (idx === "") return alert("선수를 선택해주세요."); const p = rankingsData[idx]; if (!confirm(`[${p.name}] 선수에게 패널티(-30점)를 부여합니까?\n현재 점수: ${p.elo}`)) return; p.elo -= 30; rankingsData.sort((a, b) => b.elo - a.elo); saveRankings(); renderRankings(); alert(`[${p.name}] -30점 차감 완료.\n현재 점수: ${p.elo}`); };
         function checkSeasonInactive() { const list = document.getElementById('seasonInactiveList'); list.innerHTML = ''; const m = matchHistoryData.filter(m => m.season === activeSeason); const an = new Set(); m.forEach(m => { an.add(m.winner); an.add(m.loser); }); const inact = rankingsData.filter(p => !an.has(p.name)); document.getElementById('seasonInactiveCount').textContent = inact.length + "명"; inact.forEach(p => { list.innerHTML += `<li>${p.name}</li>`; }); }
         window.toggleInactiveList = () => document.getElementById('seasonInactiveList').classList.toggle('hidden');
         function renderRankings() { const list = document.getElementById('rankingList'); list.innerHTML = ''; rankingsData.forEach((item, index) => { const diff = (item.previousRank || (index + 1)) - (index + 1); let ch = diff > 0 ? `<span class="rank-up">▲${diff}</span>` : (diff < 0 ? `<span class="rank-down">▼${Math.abs(diff)}</span>` : '<span class="rank-keep">-</span>'); list.innerHTML += `<div class="rank-card flex items-center p-3 border rounded-xl mb-2 bg-white hover:shadow-md"><div class="w-10 text-center mr-2"><span class="text-lg font-black text-slate-800">${index+1}</span><div class="text-[10px]">${ch}</div></div><div class="flex-grow"><div class="font-bold text-sm text-slate-800 flex items-center gap-2">${item.name} <span class="bg-amber-100 text-amber-800 text-xs px-1.5 rounded border border-amber-200">⚡${item.elo}</span></div><div class="text-xs text-slate-500 mt-0.5">${item.wins}승 ${item.losses}패</div></div><button onclick="openEditModal(${index})" class="p-2 text-slate-400 hover:text-blue-600">✏️</button></div>`; }); populateMatchSelectors(); }
-        
-        window.populateMatchSelectors = () => { 
-            const s1 = document.getElementById('p1Select'); const s2 = document.getElementById('p2Select'); 
-            const sPen = document.getElementById('penaltyTargetSelect'); // 패널티 대상 선택 셀렉터
-
-            let opts = '<option value="">선수 선택</option>'; 
-            rankingsData.forEach((p, i) => opts += `<option value="${i}">${i+1}위 ${p.name} (${p.elo})</option>`); 
-            
-            s1.innerHTML = opts; 
-            s2.innerHTML = opts;
-            if(sPen) sPen.innerHTML = opts;
-        };
-        
+        window.populateMatchSelectors = () => { const s1 = document.getElementById('p1Select'); const s2 = document.getElementById('p2Select'); const sPen = document.getElementById('penaltyTargetSelect'); let opts = '<option value="">선수 선택</option>'; rankingsData.forEach((p, i) => opts += `<option value="${i}">${i+1}위 ${p.name} (${p.elo})</option>`); s1.innerHTML = opts; s2.innerHTML = opts; if(sPen) sPen.innerHTML = opts; };
         window.addNewPlayer = () => { const name = prompt("이름:"); if(name) { rankingsData.push({ id: crypto.randomUUID(), name, wins:0, losses:0, defenseCount:0, previousRank: rankingsData.length+1, careerHighRank: rankingsData.length+1, elo: 1000, careerHighElo: 1000, lastMatchDate: new Date().toISOString().split('T')[0] }); saveRankings(); renderRankings(); } };
         
-        // [Safety Checked + Password] openEditModal
         window.openEditModal = (idx) => { 
             const p = rankingsData[idx]; 
             const setVal = (id, val) => { const el = document.getElementById(id); if(el) el.value = val; };
+            setVal('editPlayerId', idx); setVal('editName', p.name); setVal('editOriginalName', p.name); setVal('editDefenses', 0); setVal('editGameId', p.gameId || ''); setVal('editPassword', p.password || '0000'); setVal('editHeight', p.height || ''); setVal('editReach', p.reach || ''); setVal('editStance', p.stance || 'Orthodox'); setVal('editElo', p.elo || 1000); setVal('editWins', p.wins || 0); setVal('editLosses', p.losses || 0);
             
-            setVal('editPlayerId', idx);
-            setVal('editName', p.name);
-            setVal('editOriginalName', p.name);
-            setVal('editDefenses', 0);
-            setVal('editGameId', p.gameId || '');
-            setVal('editPassword', p.password || '0000'); // [New] Load Password
-            setVal('editHeight', p.height || '');
-            setVal('editReach', p.reach || '');
-            setVal('editStance', p.stance || 'Orthodox');
-            setVal('editElo', p.elo || 1000);
-            setVal('editWins', p.wins || 0);
-            setVal('editLosses', p.losses || 0);
-            setVal('editImageUrl', p.imageUrl || '');
-            setVal('editImageFile', ''); // Reset input
-
-            const prevImg = document.getElementById('previewImage');
-            if(prevImg) prevImg.src = p.imageUrl || '';
+            // Image URL Logic
+            const urlInput = document.getElementById('editImageUrlInput');
+            urlInput.value = p.imageUrl || '';
+            document.getElementById('previewImage').src = p.imageUrl || '';
 
             renderStyleTags(p.tags || []); 
-            const modal = document.getElementById('editModal');
-            if(modal) modal.classList.remove('hidden');
+            const modal = document.getElementById('editModal'); if(modal) modal.classList.remove('hidden');
         };
+
+        // URL Preview Logic
+        window.updatePreview = (url) => { document.getElementById('previewImage').src = url || ''; };
+        window.removeImage = () => { document.getElementById('editImageUrlInput').value = ''; document.getElementById('previewImage').src = ''; };
 
         function renderStyleTags(cT) { const c = document.getElementById('styleTagsContainer'); if(!c) return; c.innerHTML = ''; STYLE_OPTIONS.forEach(s => { const id = `style-${s}`; c.innerHTML += `<div><input type="checkbox" id="${id}" value="${s}" class="style-checkbox hidden" ${cT.includes(s)?'checked':''}><label for="${id}" class="inline-block px-3 py-1 text-xs font-bold border border-slate-300 rounded-full cursor-pointer text-slate-500 hover:bg-slate-100 transition select-none ${cT.includes(s)?'bg-blue-500 text-white border-blue-500':''}">${s}</label></div>`; }); }
         
-        window.savePlayerDetails = () => { 
-            const idInput = document.getElementById('editPlayerId');
-            if(!idInput) return;
-            const idx = idInput.value; 
-            const p = rankingsData[idx]; 
-            
+        window.savePlayerDetails = async () => { 
+            const idInput = document.getElementById('editPlayerId'); if(!idInput) return;
+            const idx = idInput.value; const p = rankingsData[idx]; 
             const getVal = (id) => document.getElementById(id) ? document.getElementById(id).value : '';
-            
-            p.name = getVal('editName'); 
-            p.defenseCount = 0; 
-            p.imageUrl = getVal('editImageUrl'); 
-            p.gameId = getVal('editGameId'); 
-            p.password = getVal('editPassword'); // [New] Save Password
-            p.height = getVal('editHeight'); 
-            p.reach = getVal('editReach'); 
-            p.stance = getVal('editStance'); 
-            
-            p.elo = parseInt(getVal('editElo'))||1000; 
-            if(p.elo > (p.careerHighElo || 0)) p.careerHighElo = p.elo; // Update Career High
-            
-            p.wins = parseInt(getVal('editWins'))||0; 
-            p.losses = parseInt(getVal('editLosses'))||0; 
-            
-            const ct = document.querySelectorAll('.style-checkbox:checked'); 
-            p.tags = Array.from(ct).map(cb => cb.value); 
-            
+
+            // Update Image URL
+            p.imageUrl = getVal('editImageUrlInput').trim();
+
+            p.name = getVal('editName'); p.defenseCount = 0; p.gameId = getVal('editGameId'); p.password = getVal('editPassword'); p.height = getVal('editHeight'); p.reach = getVal('editReach'); p.stance = getVal('editStance'); p.elo = parseInt(getVal('editElo'))||1000; if(p.elo > (p.careerHighElo || 0)) p.careerHighElo = p.elo; p.wins = parseInt(getVal('editWins'))||0; p.losses = parseInt(getVal('editLosses'))||0; const ct = document.querySelectorAll('.style-checkbox:checked'); p.tags = Array.from(ct).map(cb => cb.value); 
             rankingsData.sort((a, b) => b.elo - a.elo); 
-            saveRankings(); 
-            const modal = document.getElementById('editModal');
-            if(modal) modal.classList.add('hidden');
+            await saveRankings(); 
+            document.getElementById('editModal').classList.add('hidden');
             renderRankings(); 
         };
         
         window.backupData = () => { const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({ rankings: rankingsData, history: matchHistoryData, archives: seasonArchives, activeSeason: activeSeason }, null, 2)); const dl = document.createElement('a'); dl.setAttribute("href", dataStr); dl.setAttribute("download", `RFC_BACKUP_${new Date().toISOString().slice(0,10)}.json`); document.body.appendChild(dl); dl.click(); dl.remove(); };
-        document.getElementById('importFile').addEventListener('change', function(e) { const file = e.target.files[0]; if (!file) return; if (!confirm("복원하시겠습니까?")) return; const reader = new FileReader(); reader.onload = function(e) { try { const data = JSON.parse(e.target.result); if (data.rankings) { rankingsData = data.rankings; matchHistoryData = data.history || []; seasonArchives = data.archives || {}; activeSeason = data.activeSeason || activeSeason; saveRankings(); renderRankings(); alert("복원 완료"); } } catch (err) { alert("오류"); } }; reader.readAsText(file); });
     </script>
 </body>
 </html>
