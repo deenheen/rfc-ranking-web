@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RFC 랭킹 매니저 (v3.26 Stable)</title>
+    <title>RFC 랭킹 매니저 (v3.23 Name Fix)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
@@ -32,7 +32,7 @@
     <div id="loginOverlay" class="fixed inset-0 bg-slate-900/95 z-50 flex items-center justify-center backdrop-blur-sm">
         <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-sm text-center border border-slate-200">
             <div class="text-4xl mb-2">🥊</div>
-            <h2 class="text-2xl font-black text-slate-800 mb-6">RFC Admin v3.26</h2>
+            <h2 class="text-2xl font-black text-slate-800 mb-6">RFC Admin v3.23</h2>
             <input type="email" id="adminEmail" placeholder="admin@rfc.com" class="w-full p-3 border border-slate-300 rounded-lg mb-3 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50 transition">
             <input type="password" id="adminPw" placeholder="Password" class="w-full p-3 border border-slate-300 rounded-lg mb-6 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50 transition">
             <button id="btnLogin" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-lg transition transform active:scale-95 shadow-lg shadow-blue-500/30">시스템 접속</button>
@@ -46,7 +46,7 @@
                 <span id="currentSeasonBadge" class="bg-slate-800 text-white text-xs font-bold px-3 py-1 rounded-full shadow-md">Loading...</span>
                 <span id="saveStatus" class="text-xs font-medium text-emerald-500 transition-opacity opacity-0">✅ 저장됨</span>
             </div>
-            <div class="mt-2 md:mt-0 text-xs text-slate-400 font-medium">System Stabilized</div>
+            <div class="mt-2 md:mt-0 text-xs text-slate-400 font-medium">Auto-Rename History Logic</div>
         </header>
 
         <div class="bg-white rounded-t-2xl border-b border-slate-200 px-4 flex gap-6 mb-4 shadow-sm overflow-x-auto">
@@ -64,14 +64,8 @@
                         <div class="p-5">
                             <div class="space-y-4">
                                 <div class="grid grid-cols-2 gap-3">
-                                    <div>
-                                        <label class="flex items-center gap-1 text-xs font-bold text-blue-600 mb-1 pl-1">🔵 Blue <div id="p1ColorBox" class="w-3 h-3 rounded-sm border border-slate-300 bg-white"></div></label>
-                                        <select id="p1Select" class="w-full text-sm border-slate-200 rounded-lg p-2.5 bg-blue-50/50 outline-none"></select>
-                                    </div>
-                                    <div>
-                                        <label class="flex items-center gap-1 text-xs font-bold text-red-600 mb-1 pl-1">🔴 Red <div id="p2ColorBox" class="w-3 h-3 rounded-sm border border-slate-300 bg-white"></div></label>
-                                        <select id="p2Select" class="w-full text-sm border-slate-200 rounded-lg p-2.5 bg-red-50/50 outline-none"></select>
-                                    </div>
+                                    <div><label class="block text-xs font-bold text-blue-600 mb-1 pl-1">🔵 Blue</label><select id="p1Select" class="w-full text-sm border-slate-200 rounded-lg p-2.5 bg-blue-50/50 outline-none"></select></div>
+                                    <div><label class="block text-xs font-bold text-red-600 mb-1 pl-1">🔴 Red</label><select id="p2Select" class="w-full text-sm border-slate-200 rounded-lg p-2.5 bg-red-50/50 outline-none"></select></div>
                                 </div>
                                 <div class="grid grid-cols-2 gap-3 bg-slate-50 p-2 rounded-xl border border-slate-200">
                                     <label class="cursor-pointer flex flex-col items-center gap-1 p-3 rounded-lg hover:bg-blue-100 transition border border-transparent has-[:checked]:bg-blue-100 has-[:checked]:border-blue-300"><input type="radio" name="winner" value="blue" class="w-5 h-5 accent-blue-600"><span class="text-sm font-bold text-blue-600">Blue 승</span></label>
@@ -93,18 +87,44 @@
                     </div>
                 </div>
 
-                <div id="seasonSection" class="tab-content hidden"><div class="space-y-4"><div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden p-5"><h3 class="font-bold text-slate-700 mb-3 border-b pb-2">📅 시즌 목록</h3><div id="seasonListContainer" class="space-y-2 max-h-60 overflow-y-auto mb-2"></div><p class="text-[10px] text-slate-400 mt-2">* 목록에서 삭제하면 사용자 화면에서도 즉시 사라집니다.</p></div><div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden p-5"><div class="flex justify-between items-center mb-2"><h3 class="font-bold text-slate-700">😴 미참여 선수</h3><span id="seasonInactiveCount" class="bg-slate-100 text-slate-600 text-xs font-bold px-2 py-1 rounded">0명</span></div><div class="text-xs text-slate-500 mb-3">현재 시즌(<span class="currentSeasonName font-bold"></span>) 경기 기록 없음</div><button onclick="toggleInactiveList()" class="text-xs text-blue-500 font-bold underline mb-2">목록 보기/숨기기</button><ul id="seasonInactiveList" class="hidden bg-slate-50 p-2 rounded text-xs text-slate-600 space-y-1 mb-3 max-h-40 overflow-y-auto border border-slate-200"></ul></div><div class="bg-purple-50 rounded-2xl shadow-sm border border-purple-100 overflow-hidden p-5"><h3 class="font-bold text-purple-800 mb-2">🚀 시즌 종료 및 시작</h3><p class="text-xs text-purple-600 mb-4">현재 시즌을 마감하고 새 시즌을 시작합니다.</p><div class="flex gap-2"><input type="text" id="newSeasonNameInput" class="flex-grow border border-purple-200 rounded-lg p-2 text-sm focus:outline-none focus:border-purple-400" placeholder="새 시즌 이름"><button onclick="finishAndStartNewSeason()" class="bg-purple-600 hover:bg-purple-700 text-white font-bold px-4 py-2 rounded-lg text-xs shadow transition whitespace-nowrap">시즌 시작</button></div></div></div></div>
+                <div id="seasonSection" class="tab-content hidden">
+                    <div class="space-y-4">
+                        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden p-5"><h3 class="font-bold text-slate-700 mb-3 border-b pb-2">📅 시즌 목록</h3><div id="seasonListContainer" class="space-y-2 max-h-60 overflow-y-auto mb-2"></div><p class="text-[10px] text-slate-400 mt-2">* 목록에서 삭제하면 사용자 화면에서도 즉시 사라집니다.</p></div>
+                        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden p-5"><div class="flex justify-between items-center mb-2"><h3 class="font-bold text-slate-700">😴 미참여 선수</h3><span id="seasonInactiveCount" class="bg-slate-100 text-slate-600 text-xs font-bold px-2 py-1 rounded">0명</span></div><div class="text-xs text-slate-500 mb-3">현재 시즌(<span class="currentSeasonName font-bold"></span>) 경기 기록 없음</div><button onclick="toggleInactiveList()" class="text-xs text-blue-500 font-bold underline mb-2">목록 보기/숨기기</button><ul id="seasonInactiveList" class="hidden bg-slate-50 p-2 rounded text-xs text-slate-600 space-y-1 mb-3 max-h-40 overflow-y-auto border border-slate-200"></ul></div>
+                        <div class="bg-purple-50 rounded-2xl shadow-sm border border-purple-100 overflow-hidden p-5"><h3 class="font-bold text-purple-800 mb-2">🚀 시즌 종료 및 시작</h3><p class="text-xs text-purple-600 mb-4">현재 시즌을 마감하고 새 시즌을 시작합니다.</p><div class="flex gap-2"><input type="text" id="newSeasonNameInput" class="flex-grow border border-purple-200 rounded-lg p-2 text-sm focus:outline-none focus:border-purple-400" placeholder="새 시즌 이름"><button onclick="finishAndStartNewSeason()" class="bg-purple-600 hover:bg-purple-700 text-white font-bold px-4 py-2 rounded-lg text-xs shadow transition whitespace-nowrap">시즌 시작</button></div></div>
+                    </div>
+                </div>
 
                 <div id="toolsSection" class="tab-content hidden">
                     <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden p-5 space-y-4">
                         <h3 class="font-bold text-slate-700">🛠️ 데이터 도구</h3>
                         <div class="grid grid-cols-2 gap-2"><input type="file" id="importFile" accept=".json" class="hidden"><button onclick="document.getElementById('importFile').click()" class="bg-slate-700 hover:bg-slate-800 text-white font-bold py-3 rounded-lg text-xs">📂 데이터 복원</button><button onclick="backupData()" class="bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-3 rounded-lg text-xs">💾 데이터 백업</button></div>
-                        <button onclick="resetAllPasswords()" class="w-full bg-indigo-50 text-indigo-600 hover:bg-indigo-100 font-bold py-3 rounded-lg text-xs border border-indigo-200 transition">🔑 모든 사용자 비번 재설정 (Random)</button>
                         <div class="pt-4 border-t border-slate-100 space-y-2"><h4 class="text-xs font-bold text-red-500">초기화 (주의)</h4><button onclick="resetAllStats()" class="w-full bg-gray-50 text-gray-500 hover:bg-gray-100 font-bold py-2 rounded-lg text-xs border border-gray-200">📊 현재 시즌 전적 초기화</button><button onclick="resetAllElo()" class="w-full bg-gray-50 text-gray-500 hover:bg-gray-100 font-bold py-2 rounded-lg text-xs border border-gray-200">⚡ 현재 시즌 ELO 초기화</button><button onclick="resetEverything()" class="w-full bg-red-50 text-red-600 hover:bg-red-100 font-bold py-3 rounded-lg text-xs border border-red-200 mt-2">🧨 시스템 전체 리셋</button></div>
                     </div>
                 </div>
 
-                <div id="settingsSection" class="tab-content hidden"><div class="space-y-6"><div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden p-5"><h3 class="font-bold text-slate-700 mb-2">📜 규칙 HTML 편집</h3><p class="text-[10px] text-slate-400 mb-3">HTML 코드로 디자인된 규칙을 수정합니다.</p><textarea id="ruleHtmlInput" class="w-full h-48 p-3 text-xs font-mono border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50 resize-none mb-3" placeholder="HTML 코드를 입력하세요..."></textarea><div class="flex gap-2"><button onclick="loadDefaultRuleHtml()" class="flex-1 bg-slate-100 text-slate-600 font-bold py-2.5 rounded-lg text-xs hover:bg-slate-200 transition">↺ 기본 디자인 불러오기</button><button onclick="saveRules()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-lg text-xs transition">규칙 저장하기</button></div></div><div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden p-5 flex flex-col h-[400px]"><h3 class="font-bold text-slate-700 mb-3 flex justify-between">📝 관리자 메모장 <span class="text-[10px] font-normal text-slate-400">관리자간 공유용</span></h3><div id="memoListContainer" class="flex-grow overflow-y-auto space-y-2 mb-3 pr-1 bg-slate-50 rounded-lg p-2 border border-slate-100"><div class="text-center text-xs text-gray-400 py-4">작성된 메모가 없습니다.</div></div><div class="flex gap-2"><input type="text" id="newMemoInput" class="flex-grow border border-slate-200 rounded-lg p-2.5 text-sm focus:outline-none focus:border-blue-500" placeholder="메세지 남기기..." onkeypress="if(event.key==='Enter') addMemo()"><button onclick="addMemo()" class="bg-slate-800 hover:bg-slate-900 text-white font-bold px-4 rounded-lg text-xs transition whitespace-nowrap">등록</button></div></div></div></div>
+                <div id="settingsSection" class="tab-content hidden">
+                    <div class="space-y-6">
+                        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden p-5">
+                            <h3 class="font-bold text-slate-700 mb-2">📜 규칙 HTML 편집</h3>
+                            <p class="text-[10px] text-slate-400 mb-3">HTML 코드로 디자인된 규칙을 수정합니다.</p>
+                            <textarea id="ruleHtmlInput" class="w-full h-48 p-3 text-xs font-mono border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50 resize-none mb-3" placeholder="HTML 코드를 입력하세요..."></textarea>
+                            <div class="flex gap-2">
+                                <button onclick="loadDefaultRuleHtml()" class="flex-1 bg-slate-100 text-slate-600 font-bold py-2.5 rounded-lg text-xs hover:bg-slate-200 transition">↺ 기본 디자인 불러오기</button>
+                                <button onclick="saveRules()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-lg text-xs transition">규칙 저장하기</button>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden p-5 flex flex-col h-[400px]">
+                            <h3 class="font-bold text-slate-700 mb-3 flex justify-between">
+                                📝 관리자 메모장
+                                <span class="text-[10px] font-normal text-slate-400">관리자간 공유용</span>
+                            </h3>
+                            <div id="memoListContainer" class="flex-grow overflow-y-auto space-y-2 mb-3 pr-1 bg-slate-50 rounded-lg p-2 border border-slate-100"><div class="text-center text-xs text-gray-400 py-4">작성된 메모가 없습니다.</div></div>
+                            <div class="flex gap-2"><input type="text" id="newMemoInput" class="flex-grow border border-slate-200 rounded-lg p-2.5 text-sm focus:outline-none focus:border-blue-500" placeholder="메세지 남기기..." onkeypress="if(event.key==='Enter') addMemo()"><button onclick="addMemo()" class="bg-slate-800 hover:bg-slate-900 text-white font-bold px-4 rounded-lg text-xs transition whitespace-nowrap">등록</button></div>
+                        </div>
+                    </div>
+                </div>
+
             </div>
 
             <div class="lg:col-span-8 bg-white rounded-2xl shadow-sm border border-slate-100 flex flex-col h-[calc(100vh-140px)]">
@@ -134,24 +154,16 @@
                 </div>
             </div>
 
-            <div class="mb-4">
-                <label class="text-xs text-gray-500 block mb-1">바지 색상 (Trunk Color)</label>
-                <div class="flex items-center gap-3 bg-slate-50 p-2 rounded-lg border border-slate-200">
-                    <input type="color" id="editTrunkColor" class="w-8 h-8 rounded cursor-pointer border-none bg-transparent" value="#000000">
-                    <div class="text-xs text-slate-500">
-                        <span id="colorHexCode" class="font-mono font-bold text-slate-700">#000000</span>
-                        <span class="block text-[10px] text-slate-400">클릭하여 색상 선택</span>
-                    </div>
-                    <svg id="previewTrunks" class="w-8 h-8 ml-auto" viewBox="0 0 24 24" fill="#000000" stroke="currentColor" stroke-width="1">
-                        <path d="M4 4h16v4h-2v10a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V8H4V4z" stroke="none" />
-                        <path d="M4 4h16v4h-16z" fill="white" fill-opacity="0.3" stroke="none" />
-                    </svg>
-                </div>
-            </div>
-
             <div class="grid grid-cols-3 gap-3 mb-3"><div><label class="text-xs text-gray-500 block mb-1">키 (cm)</label><input type="text" id="editHeight" class="w-full border p-2 rounded text-sm"></div><div><label class="text-xs text-gray-500 block mb-1">리치 (cm)</label><input type="text" id="editReach" class="w-full border p-2 rounded text-sm"></div><div><label class="text-xs text-gray-500 block mb-1">스탠스</label><select id="editStance" class="w-full border p-2 rounded text-sm bg-white"><option value="Orthodox">Orthodox</option><option value="Southpaw">Southpaw</option><option value="Switch">Switch</option></select></div></div>
             <div class="mb-6 p-3 bg-slate-50 rounded border border-slate-200"><label class="block text-xs font-bold text-slate-600 mb-2">🥊 스타일 태그</label><div id="styleTagsContainer" class="flex flex-wrap gap-2"></div></div>
-            <div class="flex justify-between items-center"><button onclick="deletePlayer()" class="bg-red-50 text-red-600 hover:bg-red-100 px-4 py-2 rounded-lg text-sm font-bold transition border border-red-200">🗑️ 선수 삭제</button><div class="flex gap-2"><button onclick="document.getElementById('editModal').classList.add('hidden')" class="bg-gray-100 text-gray-600 hover:bg-gray-200 px-4 py-2 rounded-lg text-sm font-bold transition">취소</button><button onclick="savePlayerDetails()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg text-sm font-bold shadow transition">저장하기</button></div></div>
+            
+            <div class="flex justify-between items-center">
+                <button onclick="deletePlayer()" class="bg-red-50 text-red-600 hover:bg-red-100 px-4 py-2 rounded-lg text-sm font-bold transition border border-red-200">🗑️ 선수 삭제</button>
+                <div class="flex gap-2">
+                    <button onclick="document.getElementById('editModal').classList.add('hidden')" class="bg-gray-100 text-gray-600 hover:bg-gray-200 px-4 py-2 rounded-lg text-sm font-bold transition">취소</button>
+                    <button onclick="savePlayerDetails()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg text-sm font-bold shadow transition">저장하기</button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -179,42 +191,21 @@
             const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'rankings', 'main');
             onSnapshot(docRef, (doc) => {
                 if (doc.exists()) {
-                    const data = doc.data(); rankingsData = data.rankings || []; matchHistoryData = data.matchHistory || []; seasonArchives = data.seasonArchives || {}; activeSeason = data.activeSeason || "시즌 1"; adminMemos = data.adminMemos || []; 
-                    
-                    if (data.ruleHtml) ruleHtml = data.ruleHtml; 
-                    else if (!ruleHtml) ruleHtml = DEFAULT_RULE_HTML; 
-
+                    const data = doc.data(); rankingsData = data.rankings || []; matchHistoryData = data.matchHistory || []; seasonArchives = data.seasonArchives || {}; activeSeason = data.activeSeason || "시즌 1"; adminMemos = data.adminMemos || []; ruleHtml = data.ruleHtml || DEFAULT_RULE_HTML;
                     updateSeasonUI(); renderMemos(); document.getElementById('ruleHtmlInput').value = ruleHtml;
-                    rankingsData.forEach((p, i) => { if(p.defenseCount === undefined) p.defenseCount = 0; if(p.previousRank === undefined) p.previousRank = i + 1; if(p.careerHighRank === undefined) p.careerHighRank = i + 1; if(p.elo === undefined) p.elo = 1000; if(p.careerHighElo === undefined) p.careerHighElo = p.elo; if(p.wins === undefined) p.wins = 0; if(p.losses === undefined) p.losses = 0; });
+                    rankingsData.forEach((p, i) => { if(p.defenseCount === undefined) p.defenseCount = 0; if(p.previousRank === undefined) p.previousRank = i + 1; if(p.careerHighRank === undefined) p.careerHighRank = i + 1; if(p.elo === undefined) p.elo = 1000; if(p.careerHighElo === undefined) p.careerHighElo = p.elo; });
                     renderRankings(); populateMatchSelectors(); renderSeasonList(); checkSeasonInactive();
                 }
             });
         }
 
-        window.resetAllPasswords = async () => {
-            if(!confirm("⚠️ 경고: 모든 선수의 비밀번호를 랜덤 4자리 숫자로 재설정하시겠습니까?\n이 작업은 되돌릴 수 없습니다.")) return;
-            captureState();
-            let pwListText = "📋 [RFC 전체 선수 비밀번호 목록] (" + new Date().toLocaleDateString() + ")\n--------------------------------\n";
-            rankingsData.forEach(p => { const newPin = Math.floor(1000 + Math.random() * 9000).toString(); p.password = newPin; pwListText += `[${p.name}] : ${newPin}\n`; });
-            try { await navigator.clipboard.writeText(pwListText); alert("✅ 재설정 완료! 비밀번호 목록이 [클립보드]에 복사되었습니다.\n\n메모장이나 엑셀에 '붙여넣기(Ctrl+V)' 하세요."); } catch (err) { console.error(err); alert("✅ 재설정 완료! (클립보드 복사 실패)"); }
-            await saveRankings(); renderRankings();
-        };
-
-        function captureState() { const currentState = { rankings: JSON.parse(JSON.stringify(rankingsData)), matchHistory: JSON.parse(JSON.stringify(matchHistoryData)), seasonArchives: JSON.parse(JSON.stringify(seasonArchives)), activeSeason: activeSeason }; undoStack.push(currentState); if (undoStack.length > MAX_UNDO) undoStack.shift(); updateUndoUI(); }
+        function captureState() {
+            const currentState = { rankings: JSON.parse(JSON.stringify(rankingsData)), matchHistory: JSON.parse(JSON.stringify(matchHistoryData)), seasonArchives: JSON.parse(JSON.stringify(seasonArchives)), activeSeason: activeSeason };
+            undoStack.push(currentState); if (undoStack.length > MAX_UNDO) undoStack.shift(); updateUndoUI();
+        }
         window.executeUndo = async () => { if (undoStack.length === 0) return; const prevState = undoStack.pop(); rankingsData = prevState.rankings; matchHistoryData = prevState.matchHistory; seasonArchives = prevState.seasonArchives; activeSeason = prevState.activeSeason; await saveRankings(true); renderRankings(); updateUndoUI(); alert("이전 상태로 되돌렸습니다."); };
         function updateUndoUI() { const btn = document.getElementById('undoBtn'); const cnt = document.getElementById('undoCount'); if (undoStack.length > 0) { btn.classList.remove('hidden'); btn.classList.add('pop-in'); btn.disabled = false; cnt.textContent = undoStack.length; } else { btn.classList.add('hidden'); } }
-        
-        window.saveRankings = async function(isUndo = false) { 
-            const statusEl = document.getElementById('saveStatus'); const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'rankings', 'main'); 
-            try { 
-                const payload = { rankings: rankingsData, matchHistory: matchHistoryData, seasonArchives: seasonArchives, activeSeason: activeSeason, date: new Date().toISOString() }; 
-                if(!isUndo) { payload.adminMemos = adminMemos; payload.ruleHtml = ruleHtml; }
-                else { payload.ruleHtml = ruleHtml || DEFAULT_RULE_HTML; }
-                await setDoc(docRef, payload, { merge: true }); 
-                statusEl.style.opacity = 1; setTimeout(() => statusEl.style.opacity = 0, 2000); 
-            } catch (e) { alert("저장 오류: " + e.message); } 
-        }
-        
+        window.saveRankings = async function(isUndo = false) { const statusEl = document.getElementById('saveStatus'); const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'rankings', 'main'); try { const payload = { rankings: rankingsData, matchHistory: matchHistoryData, seasonArchives: seasonArchives, activeSeason: activeSeason, date: new Date().toISOString() }; if(!isUndo) { payload.adminMemos = adminMemos; payload.ruleHtml = ruleHtml; } await setDoc(docRef, payload, { merge: true }); statusEl.style.opacity = 1; setTimeout(() => statusEl.style.opacity = 0, 2000); } catch (e) { alert("저장 오류: " + e.message); } }
         window.saveRules = () => { ruleHtml = document.getElementById('ruleHtmlInput').value; saveRankings(); alert("규칙 디자인이 저장되었습니다."); };
         window.loadDefaultRuleHtml = () => { if(confirm("기본 예쁜 디자인으로 되돌리시겠습니까?")) { document.getElementById('ruleHtmlInput').value = DEFAULT_RULE_HTML; } };
         window.addMemo = () => { const input = document.getElementById('newMemoInput'); const content = input.value.trim(); if (!content) return; adminMemos.unshift({ id: Date.now(), content: content, date: new Date().toLocaleString() }); input.value = ''; saveRankings(); renderMemos(); };
@@ -229,10 +220,19 @@
         window.finishAndStartNewSeason = () => { const n = document.getElementById('newSeasonNameInput').value.trim(); if(!n)return alert("이름 입력"); if(n===activeSeason||seasonArchives[n])return alert("중복 이름"); if(!confirm(`[${activeSeason}] 종료 후 [${n}] 시작?`))return; captureState(); seasonArchives[activeSeason]={rankings:JSON.parse(JSON.stringify(rankingsData))}; activeSeason=n; rankingsData.forEach(p => { p.previousRank=p.rank||rankingsData.indexOf(p)+1; p.wins=0; p.losses=0; p.draws=0; p.defenseCount=0; p.elo=1000; }); saveRankings(); alert("시작됨"); };
 
         function getTierBonus(matchCount) { if (matchCount < 3) return { winMult: 1.0, lossMult: 1.0, tier: '🥉Bronze' }; else if (matchCount < 7) return { winMult: 1.1, lossMult: 0.9, tier: '🥈Silver' }; else return { winMult: 1.2, lossMult: 0.8, tier: '🥇Gold' }; }
-        function calculateHybridEloChange(p1Elo, p2Elo, isWin, p1Stats) { const matchCount = (p1Stats.wins || 0) + (p1Stats.losses || 0); const K = 60; const expected = 1 / (1 + Math.pow(10, (p2Elo - p1Elo) / 400)); const { winMult, lossMult, tier } = getTierBonus(matchCount); let finalChange = 0; let breakdown = ""; if (isWin) { let baseGain = K * (1 - expected); finalChange = (baseGain * winMult) + 5; breakdown = `${tier}승(x${winMult}) + 5`; } else { let baseLoss = K * (0 - expected); finalChange = (baseLoss * lossMult) + 5; breakdown = `${tier}패(x${lossMult}) + 5`; } return { change: Math.round(finalChange), msg: breakdown }; }
+        function calculateHybridEloChange(p1Elo, p2Elo, isWin, p1Stats) { 
+            const matchCount = (p1Stats.wins || 0) + (p1Stats.losses || 0); 
+            const K = 60; 
+            const expected = 1 / (1 + Math.pow(10, (p2Elo - p1Elo) / 400)); 
+            const { winMult, lossMult, tier } = getTierBonus(matchCount); 
+            let finalChange = 0; let breakdown = ""; 
+            if (isWin) { let baseGain = K * (1 - expected); finalChange = (baseGain * winMult) + 5; breakdown = `${tier}승(x${winMult}) + 5`; } 
+            else { let baseLoss = K * (0 - expected); finalChange = (baseLoss * lossMult) + 5; breakdown = `${tier}패(x${lossMult}) + 5`; } 
+            return { change: Math.round(finalChange), msg: breakdown }; 
+        }
 
         window.applyMatch = () => { const p1Idx = parseInt(document.getElementById('p1Select').value); const p2Idx = parseInt(document.getElementById('p2Select').value); const winnerVal = document.querySelector('input[name="winner"]:checked')?.value; if (!winnerVal || isNaN(p1Idx) || isNaN(p2Idx)) return alert("선택 오류"); if (p1Idx === p2Idx) return alert("동일 선수"); const p1 = rankingsData[p1Idx]; const p2 = rankingsData[p2Idx]; const isBlueWin = winnerVal === 'blue'; const winner = isBlueWin ? p1 : p2; const loser = isBlueWin ? p2 : p1; captureState(); const winCalc = calculateHybridEloChange(winner.elo, loser.elo, true, winner); const loseCalc = calculateHybridEloChange(loser.elo, winner.elo, false, loser); winner.elo += winCalc.change; loser.elo += loseCalc.change; if (winner.elo > (winner.careerHighElo || 0)) winner.careerHighElo = winner.elo; if (loser.elo > (loser.careerHighElo || 0)) loser.careerHighElo = loser.elo; let type = 'ranking'; winner.wins++; loser.losses++; const today = new Date().toISOString().split('T')[0]; winner.lastMatchDate = today; loser.lastMatchDate = today; rankingsData.sort((a, b) => b.elo - a.elo); matchHistoryData.unshift({ date: today, winner: isBlueWin ? p1.name : p2.name, loser: isBlueWin ? p2.name : p1.name, type, season: activeSeason, blue: p1.name }); saveRankings(); renderRankings(); alert(`반영 완료!\n${winner.name}: +${winCalc.change}\n${loser.name}: ${loseCalc.change}`); };
-        function updateMatchPreview() { const p1Val = document.getElementById('p1Select').value; const p2Val = document.getElementById('p2Select').value; const box1 = document.getElementById('p1ColorBox'); const box2 = document.getElementById('p2ColorBox'); if (p1Val !== "") box1.style.backgroundColor = rankingsData[parseInt(p1Val)].trunkColor || '#000000'; else box1.style.backgroundColor = 'white'; if (p2Val !== "") box2.style.backgroundColor = rankingsData[parseInt(p2Val)].trunkColor || '#000000'; else box2.style.backgroundColor = 'white'; if (p1Val === "" || p2Val === "" || p1Val === p2Val) { document.getElementById('matchPreview').classList.add('hidden'); return; } document.getElementById('matchPreview').classList.remove('hidden'); const p1 = rankingsData[parseInt(p1Val)]; const p2 = rankingsData[parseInt(p2Val)]; const blueWin = calculateHybridEloChange(p1.elo, p2.elo, true, p1); const redLose = calculateHybridEloChange(p2.elo, p1.elo, false, p2); const redWin = calculateHybridEloChange(p2.elo, p1.elo, true, p2); const blueLose = calculateHybridEloChange(p1.elo, p2.elo, false, p1); document.getElementById('previewContent').innerHTML = `<div class="font-bold text-blue-600">🔵 Blue승: +${blueWin.change} / 🔴 Red패: ${redLose.change}</div><div class="font-bold text-red-600 mt-1">🔴 Red승: +${redWin.change} / 🔵 Blue패: ${blueLose.change}</div>`; }
+        function updateMatchPreview() { const p1Val = document.getElementById('p1Select').value; const p2Val = document.getElementById('p2Select').value; if (p1Val === "" || p2Val === "" || p1Val === p2Val) { document.getElementById('matchPreview').classList.add('hidden'); return; } document.getElementById('matchPreview').classList.remove('hidden'); const p1 = rankingsData[parseInt(p1Val)]; const p2 = rankingsData[parseInt(p2Val)]; const blueWin = calculateHybridEloChange(p1.elo, p2.elo, true, p1); const redLose = calculateHybridEloChange(p2.elo, p1.elo, false, p2); const redWin = calculateHybridEloChange(p2.elo, p1.elo, true, p2); const blueLose = calculateHybridEloChange(p1.elo, p2.elo, false, p1); document.getElementById('previewContent').innerHTML = `<div class="font-bold text-blue-600">🔵 Blue승: +${blueWin.change} / 🔴 Red패: ${redLose.change}</div><div class="font-bold text-red-600 mt-1">🔴 Red승: +${redWin.change} / 🔵 Blue패: ${blueLose.change}</div>`; }
         document.getElementById('p1Select').addEventListener('change', updateMatchPreview); document.getElementById('p2Select').addEventListener('change', updateMatchPreview);
         window.resetAllElo = () => { if(!confirm("ELO 1000 초기화?")) return; captureState(); rankingsData.forEach(p => p.elo = 1000); saveRankings(); renderRankings(); };
         window.resetAllStats = () => { if(!confirm("⚠️ 주의: 현재 시즌의 [승/패 숫자]와 [모든 경기 기록]을 초기화하시겠습니까?\n(최근 전적 표시도 사라집니다)")) return; captureState(); rankingsData.forEach(p => { p.wins = 0; p.losses = 0; }); matchHistoryData = matchHistoryData.filter(m => m.season !== activeSeason); saveRankings(); renderRankings(); alert("현재 시즌 전적과 기록이 모두 초기화되었습니다."); };
@@ -242,56 +242,86 @@
         function checkSeasonInactive() { const list = document.getElementById('seasonInactiveList'); list.innerHTML = ''; const m = matchHistoryData.filter(m => m.season === activeSeason); const an = new Set(); m.forEach(m => { an.add(m.winner); an.add(m.loser); }); const inact = rankingsData.filter(p => !an.has(p.name)); document.getElementById('seasonInactiveCount').textContent = inact.length + "명"; inact.forEach(p => { list.innerHTML += `<li>${p.name}</li>`; }); }
         window.toggleInactiveList = () => document.getElementById('seasonInactiveList').classList.toggle('hidden');
         
+        // [Fixed] Render Rankings with Search Filter + Unranked Separation
         function renderRankings() { 
             const list = document.getElementById('rankingList'); list.innerHTML = ''; 
-            const filteredData = rankingsData.filter(p => p.name.toLowerCase().includes(searchQuery));
-            const ranked = filteredData.filter(p => ((p.wins || 0) + (p.losses || 0)) > 0).sort((a, b) => (b.elo || 1000) - (a.elo || 1000));
-            const unranked = filteredData.filter(p => ((p.wins || 0) + (p.losses || 0)) === 0).sort((a, b) => (b.elo || 1000) - (a.elo || 1000));
             
+            // 1. Filter by Search Query
+            const filteredData = rankingsData.filter(p => p.name.toLowerCase().includes(searchQuery));
+
+            // 2. Separate Ranked and Unranked
+            const ranked = filteredData.filter(p => (p.wins + p.losses) > 0).sort((a, b) => (b.elo || 1000) - (a.elo || 1000));
+            const unranked = filteredData.filter(p => (p.wins + p.losses) === 0).sort((a, b) => (b.elo || 1000) - (a.elo || 1000));
+            
+            // 3. Render Ranked
             ranked.forEach((item, index) => { 
-                const globalIndex = rankingsData.indexOf(item); const diff = (item.previousRank || (index + 1)) - (index + 1); 
+                // Note: Rank number is based on *filtered* list index for simplicity in view, but technically rank should be global.
+                // However, for admin search view, showing relative order is fine.
+                const globalIndex = rankingsData.indexOf(item); // Use global index for edit modal
+                const diff = (item.previousRank || (index + 1)) - (index + 1); 
                 let ch = diff > 0 ? `<span class="rank-up">▲${diff}</span>` : (diff < 0 ? `<span class="rank-down">▼${Math.abs(diff)}</span>` : '<span class="rank-keep">-</span>'); 
-                let rankClass = index === 0 ? "rank-num-1" : index === 1 ? "rank-num-2" : index === 2 ? "rank-num-3" : "rank-num-normal";
-                const tColor = item.trunkColor || '#000000';
-                const trunkIcon = `<svg class="w-4 h-4 shrink-0 drop-shadow-sm" viewBox="0 0 24 24" fill="${tColor}" xmlns="http://www.w3.org/2000/svg"><path d="M20 2H4C2.9 2 2 2.9 2 4V8C2 8.55 2.45 9 3 9H4V19C4 20.66 5.34 22 7 22H8C8.55 22 9 21.55 9 21V13H15V21C15 21.55 15.45 22 16 22H17C18.66 22 20 20.66 20 19V9H21C21.55 9 22 8.55 22 8V4C22 2.9 21.1 2 20 2ZM6 4H18V7H6V4Z" stroke="rgba(0,0,0,0.1)" stroke-width="1"/></svg>`;
-                list.innerHTML += `<div class="rank-card flex items-center p-3 border rounded-xl mb-2 bg-white hover:shadow-md"><div class="w-10 text-center mr-2"><span class="${rankClass}">${index+1}</span><div class="text-[10px]">${ch}</div></div><div class="shrink-0 relative mr-3"><img src="${item.imageUrl || 'https://placehold.co/150?text=No+Img'}" class="w-10 h-10 rounded-full bg-slate-100 object-cover border border-slate-100" onerror="this.src='https://placehold.co/150?text=No+Img'">${index === 0 ? `<div class="absolute -top-1 -right-1 text-sm">👑</div>` : ''}</div><div class="flex-grow min-w-0"><div class="font-bold text-sm text-slate-800 flex items-center gap-1"><span class="truncate">${item.name}</span><span class="text-[9px] text-slate-400 font-mono">(PW: ${item.password || '????'})</span> ${trunkIcon}</div><div class="flex items-center gap-1.5 mt-0.5"><span class="bg-amber-100 text-amber-800 text-[10px] px-1.5 py-0.5 rounded border border-amber-200 font-bold">⚡${item.elo}</span><span class="text-xs text-slate-400">| ${item.wins}승 ${item.losses}패</span></div></div><button onclick="openEditModal(${globalIndex})" class="p-2 text-slate-300 hover:text-blue-600 transition"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg></button></div>`; 
+                
+                let rankClass = "rank-num-normal";
+                if(index === 0) rankClass = "rank-num-1";
+                else if(index === 1) rankClass = "rank-num-2";
+                else if(index === 2) rankClass = "rank-num-3";
+
+                list.innerHTML += `
+                    <div class="rank-card flex items-center p-3 border rounded-xl mb-2 bg-white hover:shadow-md">
+                        <div class="w-10 text-center mr-2"><span class="${rankClass}">${index+1}</span><div class="text-[10px]">${ch}</div></div>
+                        <div class="shrink-0 relative mr-3">
+                            <img src="${item.imageUrl || 'https://placehold.co/150?text=No+Img'}" class="w-10 h-10 rounded-full bg-slate-100 object-cover border border-slate-100" onerror="this.src='https://placehold.co/150?text=No+Img'">
+                            ${index === 0 ? `<div class="absolute -top-1 -right-1 text-sm">👑</div>` : ''}
+                        </div>
+                        <div class="flex-grow min-w-0">
+                            <div class="font-bold text-sm text-slate-800 flex items-center gap-1">
+                                <span class="truncate">${item.name}</span>
+                                <span class="text-[9px] text-slate-400 font-mono">(PW: ${item.password || '????'})</span>
+                            </div>
+                            <div class="flex items-center gap-1.5 mt-0.5">
+                                <span class="bg-amber-100 text-amber-800 text-[10px] px-1.5 py-0.5 rounded border border-amber-200 font-bold">⚡${item.elo}</span>
+                                <span class="text-xs text-slate-400">| ${item.wins}승 ${item.losses}패</span>
+                            </div>
+                        </div>
+                        <button onclick="openEditModal(${globalIndex})" class="p-2 text-slate-300 hover:text-blue-600 transition">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                        </button>
+                    </div>`; 
             }); 
-            if(unranked.length > 0) { list.innerHTML += `<div class="text-center text-xs text-slate-300 font-bold my-4">- Unranked / Search Results -</div>`; unranked.forEach((item) => { const globalIndex = rankingsData.indexOf(item); list.innerHTML += `<div class="rank-card flex items-center p-3 border rounded-xl mb-2 bg-slate-50 opacity-80 hover:opacity-100"><div class="w-10 text-center mr-2"><span class="rank-unranked">-</span></div><div class="shrink-0 relative mr-3"><img src="${item.imageUrl || 'https://placehold.co/150?text=No+Img'}" class="w-10 h-10 rounded-full bg-slate-100 object-cover border border-slate-100 grayscale" onerror="this.src='https://placehold.co/150?text=No+Img'"></div><div class="flex-grow min-w-0"><div class="font-bold text-sm text-slate-500 flex items-center gap-1"><span class="truncate">${item.name}</span><span class="text-[9px] text-slate-400 font-mono">(PW: ${item.password || '????'})</span></div><div class="flex items-center gap-1.5 mt-0.5"><span class="bg-slate-100 text-slate-400 text-[10px] px-1.5 py-0.5 rounded border border-slate-200 font-bold">New</span><span class="text-xs text-slate-400">| 0승 0패</span></div></div><button onclick="openEditModal(${globalIndex})" class="p-2 text-slate-300 hover:text-blue-600 transition"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg></button></div>`; }); }
+
+            // 4. Render Unranked
+            if(unranked.length > 0) {
+                list.innerHTML += `<div class="text-center text-xs text-slate-300 font-bold my-4">- Unranked / Search Results -</div>`;
+                unranked.forEach((item) => {
+                    const globalIndex = rankingsData.indexOf(item);
+                    list.innerHTML += `
+                        <div class="rank-card flex items-center p-3 border rounded-xl mb-2 bg-slate-50 opacity-80 hover:opacity-100">
+                            <div class="w-10 text-center mr-2"><span class="rank-unranked">-</span></div>
+                            <div class="shrink-0 relative mr-3">
+                                <img src="${item.imageUrl || 'https://placehold.co/150?text=No+Img'}" class="w-10 h-10 rounded-full bg-slate-100 object-cover border border-slate-100 grayscale" onerror="this.src='https://placehold.co/150?text=No+Img'">
+                            </div>
+                            <div class="flex-grow min-w-0">
+                                <div class="font-bold text-sm text-slate-500 flex items-center gap-1">
+                                    <span class="truncate">${item.name}</span>
+                                    <span class="text-[9px] text-slate-400 font-mono">(PW: ${item.password || '????'})</span>
+                                </div>
+                                <div class="flex items-center gap-1.5 mt-0.5">
+                                    <span class="bg-slate-100 text-slate-400 text-[10px] px-1.5 py-0.5 rounded border border-slate-200 font-bold">New</span>
+                                    <span class="text-xs text-slate-400">| 0승 0패</span>
+                                </div>
+                            </div>
+                            <button onclick="openEditModal(${globalIndex})" class="p-2 text-slate-300 hover:text-blue-600 transition">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                            </button>
+                        </div>`;
+                });
+            }
             populateMatchSelectors(); 
         }
 
         window.populateMatchSelectors = () => { const s1 = document.getElementById('p1Select'); const s2 = document.getElementById('p2Select'); const sPen = document.getElementById('penaltyTargetSelect'); let opts = '<option value="">선수 선택</option>'; rankingsData.forEach((p, i) => opts += `<option value="${i}">${p.name} (${p.elo})</option>`); s1.innerHTML = opts; s2.innerHTML = opts; if(sPen) sPen.innerHTML = opts; };
-        window.addNewPlayer = () => { const name = prompt("이름:"); if(name) { const randomPin = Math.floor(1000 + Math.random() * 9000).toString(); captureState(); rankingsData.push({ id: crypto.randomUUID(), name, wins:0, losses:0, defenseCount:0, previousRank: rankingsData.length+1, careerHighRank: rankingsData.length+1, elo: 1000, careerHighElo: 1000, lastMatchDate: new Date().toISOString().split('T')[0], password: randomPin }); saveRankings(); renderRankings(); alert(`✅ [${name}] 선수가 등록되었습니다.\n초기 비밀번호: ${randomPin}\n\n선수에게 이 번호를 알려주세요.`); } };
         
-        window.openEditModal = (idx) => { 
-            const p = rankingsData[idx]; 
-            const setVal = (id, val) => { const el = document.getElementById(id); if(el) el.value = val; };
-            setVal('editPlayerId', idx); setVal('editName', p.name); setVal('editOriginalName', p.name); setVal('editDefenses', 0); setVal('editGameId', p.gameId || ''); setVal('editPassword', p.password || '0000'); setVal('editHeight', p.height || ''); setVal('editReach', p.reach || ''); setVal('editStance', p.stance || 'Orthodox'); setVal('editElo', p.elo || 1000); setVal('editWins', p.wins || 0); setVal('editLosses', p.losses || 0);
-            
-            const urlInput = document.getElementById('editImageUrlInput');
-            urlInput.value = p.imageUrl || '';
-            document.getElementById('previewImage').src = p.imageUrl || 'https://placehold.co/150?text=No+Img';
-
-            const trunkColor = p.trunkColor || '#000000';
-            document.getElementById('editTrunkColor').value = trunkColor;
-            document.getElementById('colorHexCode').textContent = trunkColor;
-            document.getElementById('previewTrunks').style.fill = trunkColor;
-
-            const c = document.getElementById('styleTagsContainer'); c.innerHTML = ''; const cT = p.tags || [];
-            STYLE_OPTIONS.forEach(s => { const safeId = `style-${s.replace(/\s+/g, '-')}`; const isChecked = cT.includes(s) ? 'checked' : ''; c.innerHTML += `<div><input type="checkbox" id="${safeId}" value="${s}" class="style-checkbox absolute opacity-0 w-0 h-0" ${isChecked}><label for="${safeId}" class="inline-block px-3 py-1 text-xs font-bold border border-slate-300 rounded-full cursor-pointer text-slate-500 hover:bg-slate-100 transition select-none ${isChecked?'bg-blue-500 text-white border-blue-500':''}">${s}</label></div>`; }); 
-            const modal = document.getElementById('editModal'); if(modal) modal.classList.remove('hidden');
-        };
-
-        // Trunk Color Listener
-        document.getElementById('editTrunkColor').addEventListener('input', (e) => {
-            const color = e.target.value;
-            document.getElementById('colorHexCode').textContent = color;
-            document.getElementById('previewTrunks').style.fill = color;
-        });
-
-        window.updatePreview = (url) => { document.getElementById('previewImage').src = url || 'https://placehold.co/150?text=No+Img'; };
-        window.removeImage = () => { document.getElementById('editImageUrlInput').value = ''; document.getElementById('previewImage').src = 'https://placehold.co/150?text=No+Img'; };
-        
+        // [Fixed] Automatic Name Update in History
         window.savePlayerDetails = async () => { 
             const idInput = document.getElementById('editPlayerId'); if(!idInput) return;
             captureState();
@@ -301,6 +331,7 @@
             const newName = getVal('editName');
             const oldName = p.name;
 
+            // Name Change Logic
             if (oldName !== newName) {
                 if(confirm(`이름을 [${oldName}] -> [${newName}] (으)로 변경하시겠습니까?\n모든 과거 경기 기록의 이름도 함께 변경됩니다.`)) {
                     matchHistoryData.forEach(m => {
@@ -309,18 +340,31 @@
                         if (m.blue === oldName) m.blue = newName;
                     });
                 } else {
-                    return; 
+                    return; // Cancel save
                 }
             }
 
             p.name = newName; 
-            p.defenseCount = 0; p.gameId = getVal('editGameId'); p.password = getVal('editPassword'); p.height = getVal('editHeight'); p.reach = getVal('editReach'); p.stance = getVal('editStance'); p.elo = parseInt(getVal('editElo'))||1000; if(p.elo > (p.careerHighElo || 0)) p.careerHighElo = p.elo; p.wins = parseInt(getVal('editWins'))||0; p.losses = parseInt(getVal('editLosses'))||0; p.imageUrl = getVal('editImageUrlInput').trim(); 
-            p.trunkColor = getVal('editTrunkColor'); 
-            const ct = document.querySelectorAll('.style-checkbox:checked'); p.tags = Array.from(ct).map(cb => cb.value); 
+            p.defenseCount = 0; p.gameId = getVal('editGameId'); p.password = getVal('editPassword'); p.height = getVal('editHeight'); p.reach = getVal('editReach'); p.stance = getVal('editStance'); p.elo = parseInt(getVal('editElo'))||1000; if(p.elo > (p.careerHighElo || 0)) p.careerHighElo = p.elo; p.wins = parseInt(getVal('editWins'))||0; p.losses = parseInt(getVal('editLosses'))||0; p.imageUrl = getVal('editImageUrlInput').trim(); const ct = document.querySelectorAll('.style-checkbox:checked'); p.tags = Array.from(ct).map(cb => cb.value); 
             
             rankingsData.sort((a, b) => b.elo - a.elo); await saveRankings(); document.getElementById('editModal').classList.add('hidden'); renderRankings(); 
         };
 
+        window.addNewPlayer = () => { const name = prompt("이름:"); if(name) { const randomPin = Math.floor(1000 + Math.random() * 9000).toString(); captureState(); rankingsData.push({ id: crypto.randomUUID(), name, wins:0, losses:0, defenseCount:0, previousRank: rankingsData.length+1, careerHighRank: rankingsData.length+1, elo: 1000, careerHighElo: 1000, lastMatchDate: new Date().toISOString().split('T')[0], password: randomPin }); saveRankings(); renderRankings(); alert(`✅ [${name}] 선수가 등록되었습니다.\n초기 비밀번호: ${randomPin}\n\n선수에게 이 번호를 알려주세요.`); } };
+        
+        window.openEditModal = (idx) => { 
+            const p = rankingsData[idx]; 
+            const setVal = (id, val) => { const el = document.getElementById(id); if(el) el.value = val; };
+            setVal('editPlayerId', idx); setVal('editName', p.name); setVal('editOriginalName', p.name); setVal('editDefenses', 0); setVal('editGameId', p.gameId || ''); setVal('editPassword', p.password || '0000'); setVal('editHeight', p.height || ''); setVal('editReach', p.reach || ''); setVal('editStance', p.stance || 'Orthodox'); setVal('editElo', p.elo || 1000); setVal('editWins', p.wins || 0); setVal('editLosses', p.losses || 0);
+            const urlInput = document.getElementById('editImageUrlInput'); urlInput.value = p.imageUrl || ''; document.getElementById('previewImage').src = p.imageUrl || 'https://placehold.co/150?text=No+Img';
+            const c = document.getElementById('styleTagsContainer'); c.innerHTML = ''; const cT = p.tags || [];
+            STYLE_OPTIONS.forEach(s => { const safeId = `style-${s.replace(/\s+/g, '-')}`; const isChecked = cT.includes(s) ? 'checked' : ''; c.innerHTML += `<div><input type="checkbox" id="${safeId}" value="${s}" class="style-checkbox absolute opacity-0 w-0 h-0" ${isChecked}><label for="${safeId}" class="inline-block px-3 py-1 text-xs font-bold border border-slate-300 rounded-full cursor-pointer text-slate-500 hover:bg-slate-100 transition select-none ${isChecked?'bg-blue-500 text-white border-blue-500':''}">${s}</label></div>`; }); 
+            const modal = document.getElementById('editModal'); if(modal) modal.classList.remove('hidden');
+        };
+
+        window.updatePreview = (url) => { document.getElementById('previewImage').src = url || 'https://placehold.co/150?text=No+Img'; };
+        window.removeImage = () => { document.getElementById('editImageUrlInput').value = ''; document.getElementById('previewImage').src = 'https://placehold.co/150?text=No+Img'; };
+        
         window.deletePlayer = async () => {
             if(!confirm("⚠️ 경고: 정말 이 선수를 삭제하시겠습니까?\n이 작업은 복구할 수 없습니다.")) return;
             captureState();
