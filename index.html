@@ -124,7 +124,11 @@
         const firebaseConfig = { apiKey: "AIzaSyDlj68ex-fM0ExRdD-tvCy-UyIneVoPmGk", authDomain: "rfk-ranking.firebaseapp.com", projectId: "rfk-ranking", storageBucket: "rfk-ranking.firebasestorage.app", messagingSenderId: "675366165774", appId: "1:675366165774:web:795d34c56eab630b4dcb5f", measurementId: "G-CXPDZQ8GTL" };
         const app = initializeApp(firebaseConfig); const db = getFirestore(app); const appId = 'ranking-manager-default';
         let rankingsData = []; let matchHistoryData = []; let enrichedMatchHistory = []; let seasonArchives = {}; let activeSeason = ""; let viewSeason = ""; let currentProfileId = null;
-        const STYLE_OPTIONS = ["인파이터", "아웃복서", "슬러거", "카운터", "스워머", "하드펀처", "테크니션", "맷집왕", "변칙"];
+        const STYLE_OPTIONS = [
+    "인파이터", "아웃복서", "슬러거", "하드 펀처", 
+    "바디 스내처", "볼륨 펀처", "스위치 히터", "브롤러", 
+    "카운터 펀처", "복서-펀처", "디펜시브 마스터", "스피드스터", "변칙"
+];
 
         const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'rankings', 'main');
         onSnapshot(docRef, (docSnapshot) => {
@@ -196,3 +200,4 @@
     </script>
 </body>
 </html>
+
