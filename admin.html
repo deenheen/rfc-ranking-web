@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RFC 랭킹 매니저 (v3.25 Copy PW)</title>
+    <title>RFC 랭킹 매니저 (v3.26 Stable)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
@@ -32,7 +32,7 @@
     <div id="loginOverlay" class="fixed inset-0 bg-slate-900/95 z-50 flex items-center justify-center backdrop-blur-sm">
         <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-sm text-center border border-slate-200">
             <div class="text-4xl mb-2">🥊</div>
-            <h2 class="text-2xl font-black text-slate-800 mb-6">RFC Admin v3.25</h2>
+            <h2 class="text-2xl font-black text-slate-800 mb-6">RFC Admin v3.26</h2>
             <input type="email" id="adminEmail" placeholder="admin@rfc.com" class="w-full p-3 border border-slate-300 rounded-lg mb-3 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50 transition">
             <input type="password" id="adminPw" placeholder="Password" class="w-full p-3 border border-slate-300 rounded-lg mb-6 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50 transition">
             <button id="btnLogin" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-lg transition transform active:scale-95 shadow-lg shadow-blue-500/30">시스템 접속</button>
@@ -46,7 +46,7 @@
                 <span id="currentSeasonBadge" class="bg-slate-800 text-white text-xs font-bold px-3 py-1 rounded-full shadow-md">Loading...</span>
                 <span id="saveStatus" class="text-xs font-medium text-emerald-500 transition-opacity opacity-0">✅ 저장됨</span>
             </div>
-            <div class="mt-2 md:mt-0 text-xs text-slate-400 font-medium">Auto-Copy PW List</div>
+            <div class="mt-2 md:mt-0 text-xs text-slate-400 font-medium">System Stabilized</div>
         </header>
 
         <div class="bg-white rounded-t-2xl border-b border-slate-200 px-4 flex gap-6 mb-4 shadow-sm overflow-x-auto">
@@ -99,9 +99,7 @@
                     <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden p-5 space-y-4">
                         <h3 class="font-bold text-slate-700">🛠️ 데이터 도구</h3>
                         <div class="grid grid-cols-2 gap-2"><input type="file" id="importFile" accept=".json" class="hidden"><button onclick="document.getElementById('importFile').click()" class="bg-slate-700 hover:bg-slate-800 text-white font-bold py-3 rounded-lg text-xs">📂 데이터 복원</button><button onclick="backupData()" class="bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-3 rounded-lg text-xs">💾 데이터 백업</button></div>
-                        
                         <button onclick="resetAllPasswords()" class="w-full bg-indigo-50 text-indigo-600 hover:bg-indigo-100 font-bold py-3 rounded-lg text-xs border border-indigo-200 transition">🔑 모든 사용자 비번 재설정 (Random)</button>
-
                         <div class="pt-4 border-t border-slate-100 space-y-2"><h4 class="text-xs font-bold text-red-500">초기화 (주의)</h4><button onclick="resetAllStats()" class="w-full bg-gray-50 text-gray-500 hover:bg-gray-100 font-bold py-2 rounded-lg text-xs border border-gray-200">📊 현재 시즌 전적 초기화</button><button onclick="resetAllElo()" class="w-full bg-gray-50 text-gray-500 hover:bg-gray-100 font-bold py-2 rounded-lg text-xs border border-gray-200">⚡ 현재 시즌 ELO 초기화</button><button onclick="resetEverything()" class="w-full bg-red-50 text-red-600 hover:bg-red-100 font-bold py-3 rounded-lg text-xs border border-red-200 mt-2">🧨 시스템 전체 리셋</button></div>
                     </div>
                 </div>
@@ -127,8 +125,15 @@
             <div class="grid grid-cols-2 gap-3 mb-3"><div><label class="text-xs text-gray-500 block mb-1">이름</label><input type="text" id="editName" class="w-full border p-2 rounded text-sm font-bold"></div><div><label class="text-xs text-gray-500 block mb-1">방어전 횟수 (미사용)</label><input type="number" id="editDefenses" class="w-full border p-2 rounded text-sm bg-gray-100 text-gray-400" disabled></div></div>
             <div class="grid grid-cols-3 gap-2 mb-3"><div><label class="text-xs text-gray-500 block mb-1">Game ID</label><input type="text" id="editGameId" class="w-full border p-2 rounded text-sm" placeholder="ID 입력"></div><div><label class="text-xs text-gray-500 block mb-1 font-bold text-blue-600">비밀번호</label><input type="text" id="editPassword" class="w-full border p-2 rounded text-sm font-mono font-bold bg-blue-50 text-blue-700" placeholder="0000"></div><div><label class="text-xs text-gray-500 block mb-1">ELO (수동)</label><input type="number" id="editElo" class="w-full border p-2 rounded text-sm text-amber-600 font-bold bg-amber-50"></div></div>
             <div class="mb-3 p-3 bg-gray-50 rounded border border-gray-200"><label class="block text-xs font-bold text-gray-600 mb-2">📊 시즌 전적 수동 조절</label><div class="grid grid-cols-2 gap-3"><div><label class="text-xs text-gray-400">승 (Wins)</label><input type="number" id="editWins" class="w-full border p-2 rounded text-sm text-center font-bold text-green-600"></div><div><label class="text-xs text-gray-400">패 (Losses)</label><input type="number" id="editLosses" class="w-full border p-2 rounded text-sm text-center font-bold text-red-600"></div></div></div>
-            <div class="mb-4"><label class="text-xs text-gray-500 block mb-1">프로필 이미지 (URL 주소)</label><div class="flex items-start gap-4"><div class="relative w-16 h-16 shrink-0"><img id="previewImage" src="" class="w-full h-full rounded-2xl object-cover border border-gray-200 bg-gray-50" onerror="this.src='https://placehold.co/150?text=No+Img'"><button onclick="removeImage()" class="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-0.5 shadow-sm hover:bg-red-600" title="지우기"><svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" /></svg></button></div><div class="flex-grow"><input type="text" id="editImageUrlInput" placeholder="예: https://imgur.com/..." class="w-full border p-2 rounded text-sm bg-slate-50 focus:bg-white transition" oninput="updatePreview(this.value)"><p class="text-[10px] text-gray-400 mt-1.5 leading-snug">* <strong>사용법:</strong> 디스코드나 카톡에 사진을 올린 뒤, 우클릭하여 <strong>'이미지 주소 복사'</strong> 후 붙여넣으세요.</p></div></div></div>
             
+            <div class="mb-4">
+                <label class="text-xs text-gray-500 block mb-1">프로필 이미지 (URL 주소)</label>
+                <div class="flex items-start gap-4">
+                    <div class="relative w-16 h-16 shrink-0"><img id="previewImage" src="" class="w-full h-full rounded-2xl object-cover border border-gray-200 bg-gray-50" onerror="this.src='https://placehold.co/150?text=No+Img'"><button onclick="removeImage()" class="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-0.5 shadow-sm hover:bg-red-600" title="지우기"><svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" /></svg></button></div>
+                    <div class="flex-grow"><input type="text" id="editImageUrlInput" placeholder="예: https://imgur.com/..." class="w-full border p-2 rounded text-sm bg-slate-50 focus:bg-white transition" oninput="updatePreview(this.value)"><p class="text-[10px] text-gray-400 mt-1.5 leading-snug">* <strong>사용법:</strong> 디스코드나 카톡에 사진을 올린 뒤, 우클릭하여 <strong>'이미지 주소 복사'</strong> 후 붙여넣으세요.</p></div>
+                </div>
+            </div>
+
             <div class="mb-4">
                 <label class="text-xs text-gray-500 block mb-1">바지 색상 (Trunk Color)</label>
                 <div class="flex items-center gap-3 bg-slate-50 p-2 rounded-lg border border-slate-200">
@@ -179,43 +184,23 @@
                     if (data.ruleHtml) ruleHtml = data.ruleHtml; 
                     else if (!ruleHtml) ruleHtml = DEFAULT_RULE_HTML; 
 
-                    updateSeasonUI(); renderMemos();
-                    document.getElementById('ruleHtmlInput').value = ruleHtml;
-                    rankingsData.forEach((p, i) => { if(p.defenseCount === undefined) p.defenseCount = 0; if(p.previousRank === undefined) p.previousRank = i + 1; if(p.careerHighRank === undefined) p.careerHighRank = i + 1; if(p.elo === undefined) p.elo = 1000; if(p.careerHighElo === undefined) p.careerHighElo = p.elo; });
+                    updateSeasonUI(); renderMemos(); document.getElementById('ruleHtmlInput').value = ruleHtml;
+                    rankingsData.forEach((p, i) => { if(p.defenseCount === undefined) p.defenseCount = 0; if(p.previousRank === undefined) p.previousRank = i + 1; if(p.careerHighRank === undefined) p.careerHighRank = i + 1; if(p.elo === undefined) p.elo = 1000; if(p.careerHighElo === undefined) p.careerHighElo = p.elo; if(p.wins === undefined) p.wins = 0; if(p.losses === undefined) p.losses = 0; });
                     renderRankings(); populateMatchSelectors(); renderSeasonList(); checkSeasonInactive();
                 }
             });
         }
 
-        // [New] Reset All Passwords with Auto-Copy
         window.resetAllPasswords = async () => {
             if(!confirm("⚠️ 경고: 모든 선수의 비밀번호를 랜덤 4자리 숫자로 재설정하시겠습니까?\n이 작업은 되돌릴 수 없습니다.")) return;
             captureState();
-
             let pwListText = "📋 [RFC 전체 선수 비밀번호 목록] (" + new Date().toLocaleDateString() + ")\n--------------------------------\n";
-
-            rankingsData.forEach(p => {
-                const newPin = Math.floor(1000 + Math.random() * 9000).toString();
-                p.password = newPin;
-                pwListText += `[${p.name}] : ${newPin}\n`;
-            });
-
-            try {
-                await navigator.clipboard.writeText(pwListText);
-                alert("✅ 재설정 완료! 비밀번호 목록이 [클립보드]에 복사되었습니다.\n\n메모장이나 엑셀에 '붙여넣기(Ctrl+V)' 하세요.");
-            } catch (err) {
-                console.error(err);
-                alert("✅ 재설정 완료! (클립보드 복사 실패: 브라우저 권한을 확인하세요)");
-            }
-
-            await saveRankings();
-            renderRankings();
+            rankingsData.forEach(p => { const newPin = Math.floor(1000 + Math.random() * 9000).toString(); p.password = newPin; pwListText += `[${p.name}] : ${newPin}\n`; });
+            try { await navigator.clipboard.writeText(pwListText); alert("✅ 재설정 완료! 비밀번호 목록이 [클립보드]에 복사되었습니다.\n\n메모장이나 엑셀에 '붙여넣기(Ctrl+V)' 하세요."); } catch (err) { console.error(err); alert("✅ 재설정 완료! (클립보드 복사 실패)"); }
+            await saveRankings(); renderRankings();
         };
 
-        function captureState() {
-            const currentState = { rankings: JSON.parse(JSON.stringify(rankingsData)), matchHistory: JSON.parse(JSON.stringify(matchHistoryData)), seasonArchives: JSON.parse(JSON.stringify(seasonArchives)), activeSeason: activeSeason };
-            undoStack.push(currentState); if (undoStack.length > MAX_UNDO) undoStack.shift(); updateUndoUI();
-        }
+        function captureState() { const currentState = { rankings: JSON.parse(JSON.stringify(rankingsData)), matchHistory: JSON.parse(JSON.stringify(matchHistoryData)), seasonArchives: JSON.parse(JSON.stringify(seasonArchives)), activeSeason: activeSeason }; undoStack.push(currentState); if (undoStack.length > MAX_UNDO) undoStack.shift(); updateUndoUI(); }
         window.executeUndo = async () => { if (undoStack.length === 0) return; const prevState = undoStack.pop(); rankingsData = prevState.rankings; matchHistoryData = prevState.matchHistory; seasonArchives = prevState.seasonArchives; activeSeason = prevState.activeSeason; await saveRankings(true); renderRankings(); updateUndoUI(); alert("이전 상태로 되돌렸습니다."); };
         function updateUndoUI() { const btn = document.getElementById('undoBtn'); const cnt = document.getElementById('undoCount'); if (undoStack.length > 0) { btn.classList.remove('hidden'); btn.classList.add('pop-in'); btn.disabled = false; cnt.textContent = undoStack.length; } else { btn.classList.add('hidden'); } }
         
@@ -244,34 +229,11 @@
         window.finishAndStartNewSeason = () => { const n = document.getElementById('newSeasonNameInput').value.trim(); if(!n)return alert("이름 입력"); if(n===activeSeason||seasonArchives[n])return alert("중복 이름"); if(!confirm(`[${activeSeason}] 종료 후 [${n}] 시작?`))return; captureState(); seasonArchives[activeSeason]={rankings:JSON.parse(JSON.stringify(rankingsData))}; activeSeason=n; rankingsData.forEach(p => { p.previousRank=p.rank||rankingsData.indexOf(p)+1; p.wins=0; p.losses=0; p.draws=0; p.defenseCount=0; p.elo=1000; }); saveRankings(); alert("시작됨"); };
 
         function getTierBonus(matchCount) { if (matchCount < 3) return { winMult: 1.0, lossMult: 1.0, tier: '🥉Bronze' }; else if (matchCount < 7) return { winMult: 1.1, lossMult: 0.9, tier: '🥈Silver' }; else return { winMult: 1.2, lossMult: 0.8, tier: '🥇Gold' }; }
-        function calculateHybridEloChange(p1Elo, p2Elo, isWin, p1Stats) { 
-            const matchCount = (p1Stats.wins || 0) + (p1Stats.losses || 0); 
-            const K = 60; 
-            const expected = 1 / (1 + Math.pow(10, (p2Elo - p1Elo) / 400)); 
-            const { winMult, lossMult, tier } = getTierBonus(matchCount); 
-            let finalChange = 0; let breakdown = ""; 
-            if (isWin) { let baseGain = K * (1 - expected); finalChange = (baseGain * winMult) + 5; breakdown = `${tier}승(x${winMult}) + 5`; } 
-            else { let baseLoss = K * (0 - expected); finalChange = (baseLoss * lossMult) + 5; breakdown = `${tier}패(x${lossMult}) + 5`; } 
-            return { change: Math.round(finalChange), msg: breakdown }; 
-        }
+        function calculateHybridEloChange(p1Elo, p2Elo, isWin, p1Stats) { const matchCount = (p1Stats.wins || 0) + (p1Stats.losses || 0); const K = 60; const expected = 1 / (1 + Math.pow(10, (p2Elo - p1Elo) / 400)); const { winMult, lossMult, tier } = getTierBonus(matchCount); let finalChange = 0; let breakdown = ""; if (isWin) { let baseGain = K * (1 - expected); finalChange = (baseGain * winMult) + 5; breakdown = `${tier}승(x${winMult}) + 5`; } else { let baseLoss = K * (0 - expected); finalChange = (baseLoss * lossMult) + 5; breakdown = `${tier}패(x${lossMult}) + 5`; } return { change: Math.round(finalChange), msg: breakdown }; }
 
         window.applyMatch = () => { const p1Idx = parseInt(document.getElementById('p1Select').value); const p2Idx = parseInt(document.getElementById('p2Select').value); const winnerVal = document.querySelector('input[name="winner"]:checked')?.value; if (!winnerVal || isNaN(p1Idx) || isNaN(p2Idx)) return alert("선택 오류"); if (p1Idx === p2Idx) return alert("동일 선수"); const p1 = rankingsData[p1Idx]; const p2 = rankingsData[p2Idx]; const isBlueWin = winnerVal === 'blue'; const winner = isBlueWin ? p1 : p2; const loser = isBlueWin ? p2 : p1; captureState(); const winCalc = calculateHybridEloChange(winner.elo, loser.elo, true, winner); const loseCalc = calculateHybridEloChange(loser.elo, winner.elo, false, loser); winner.elo += winCalc.change; loser.elo += loseCalc.change; if (winner.elo > (winner.careerHighElo || 0)) winner.careerHighElo = winner.elo; if (loser.elo > (loser.careerHighElo || 0)) loser.careerHighElo = loser.elo; let type = 'ranking'; winner.wins++; loser.losses++; const today = new Date().toISOString().split('T')[0]; winner.lastMatchDate = today; loser.lastMatchDate = today; rankingsData.sort((a, b) => b.elo - a.elo); matchHistoryData.unshift({ date: today, winner: isBlueWin ? p1.name : p2.name, loser: isBlueWin ? p2.name : p1.name, type, season: activeSeason, blue: p1.name }); saveRankings(); renderRankings(); alert(`반영 완료!\n${winner.name}: +${winCalc.change}\n${loser.name}: ${loseCalc.change}`); };
-        
-        function updateMatchPreview() { 
-            const p1Val = document.getElementById('p1Select').value; const p2Val = document.getElementById('p2Select').value; 
-            const box1 = document.getElementById('p1ColorBox'); const box2 = document.getElementById('p2ColorBox');
-            
-            if (p1Val !== "") box1.style.backgroundColor = rankingsData[parseInt(p1Val)].trunkColor || '#000000'; else box1.style.backgroundColor = 'white';
-            if (p2Val !== "") box2.style.backgroundColor = rankingsData[parseInt(p2Val)].trunkColor || '#000000'; else box2.style.backgroundColor = 'white';
-
-            if (p1Val === "" || p2Val === "" || p1Val === p2Val) { document.getElementById('matchPreview').classList.add('hidden'); return; } 
-            document.getElementById('matchPreview').classList.remove('hidden'); 
-            const p1 = rankingsData[parseInt(p1Val)]; const p2 = rankingsData[parseInt(p2Val)]; 
-            const blueWin = calculateHybridEloChange(p1.elo, p2.elo, true, p1); const redLose = calculateHybridEloChange(p2.elo, p1.elo, false, p2); const redWin = calculateHybridEloChange(p2.elo, p1.elo, true, p2); const blueLose = calculateHybridEloChange(p1.elo, p2.elo, false, p1); 
-            document.getElementById('previewContent').innerHTML = `<div class="font-bold text-blue-600">🔵 Blue승: +${blueWin.change} / 🔴 Red패: ${redLose.change}</div><div class="font-bold text-red-600 mt-1">🔴 Red승: +${redWin.change} / 🔵 Blue패: ${blueLose.change}</div>`; 
-        }
+        function updateMatchPreview() { const p1Val = document.getElementById('p1Select').value; const p2Val = document.getElementById('p2Select').value; const box1 = document.getElementById('p1ColorBox'); const box2 = document.getElementById('p2ColorBox'); if (p1Val !== "") box1.style.backgroundColor = rankingsData[parseInt(p1Val)].trunkColor || '#000000'; else box1.style.backgroundColor = 'white'; if (p2Val !== "") box2.style.backgroundColor = rankingsData[parseInt(p2Val)].trunkColor || '#000000'; else box2.style.backgroundColor = 'white'; if (p1Val === "" || p2Val === "" || p1Val === p2Val) { document.getElementById('matchPreview').classList.add('hidden'); return; } document.getElementById('matchPreview').classList.remove('hidden'); const p1 = rankingsData[parseInt(p1Val)]; const p2 = rankingsData[parseInt(p2Val)]; const blueWin = calculateHybridEloChange(p1.elo, p2.elo, true, p1); const redLose = calculateHybridEloChange(p2.elo, p1.elo, false, p2); const redWin = calculateHybridEloChange(p2.elo, p1.elo, true, p2); const blueLose = calculateHybridEloChange(p1.elo, p2.elo, false, p1); document.getElementById('previewContent').innerHTML = `<div class="font-bold text-blue-600">🔵 Blue승: +${blueWin.change} / 🔴 Red패: ${redLose.change}</div><div class="font-bold text-red-600 mt-1">🔴 Red승: +${redWin.change} / 🔵 Blue패: ${blueLose.change}</div>`; }
         document.getElementById('p1Select').addEventListener('change', updateMatchPreview); document.getElementById('p2Select').addEventListener('change', updateMatchPreview);
-        
         window.resetAllElo = () => { if(!confirm("ELO 1000 초기화?")) return; captureState(); rankingsData.forEach(p => p.elo = 1000); saveRankings(); renderRankings(); };
         window.resetAllStats = () => { if(!confirm("⚠️ 주의: 현재 시즌의 [승/패 숫자]와 [모든 경기 기록]을 초기화하시겠습니까?\n(최근 전적 표시도 사라집니다)")) return; captureState(); rankingsData.forEach(p => { p.wins = 0; p.losses = 0; }); matchHistoryData = matchHistoryData.filter(m => m.season !== activeSeason); saveRankings(); renderRankings(); alert("현재 시즌 전적과 기록이 모두 초기화되었습니다."); };
         window.resetEverything = () => { if(!confirm("🚨 전체 리셋?")) return; matchHistoryData = []; seasonArchives = {}; activeSeason = "시즌 1"; rankingsData.forEach(p => { p.wins=0; p.losses=0; p.defenseCount=0; p.elo=1000; p.careerHighElo=1000; }); saveRankings(); location.reload(); };
@@ -280,74 +242,21 @@
         function checkSeasonInactive() { const list = document.getElementById('seasonInactiveList'); list.innerHTML = ''; const m = matchHistoryData.filter(m => m.season === activeSeason); const an = new Set(); m.forEach(m => { an.add(m.winner); an.add(m.loser); }); const inact = rankingsData.filter(p => !an.has(p.name)); document.getElementById('seasonInactiveCount').textContent = inact.length + "명"; inact.forEach(p => { list.innerHTML += `<li>${p.name}</li>`; }); }
         window.toggleInactiveList = () => document.getElementById('seasonInactiveList').classList.toggle('hidden');
         
-        // [Modified] Render Rankings (Split Ranked/Unranked)
         function renderRankings() { 
             const list = document.getElementById('rankingList'); list.innerHTML = ''; 
-            
-            // 1. Filter by Search Query
             const filteredData = rankingsData.filter(p => p.name.toLowerCase().includes(searchQuery));
-
-            // 2. Separate Ranked and Unranked
-            const ranked = filteredData.filter(p => (p.wins + p.losses) > 0).sort((a, b) => (b.elo || 1000) - (a.elo || 1000));
-            const unranked = filteredData.filter(p => (p.wins + p.losses) === 0).sort((a, b) => (b.elo || 1000) - (a.elo || 1000));
+            const ranked = filteredData.filter(p => ((p.wins || 0) + (p.losses || 0)) > 0).sort((a, b) => (b.elo || 1000) - (a.elo || 1000));
+            const unranked = filteredData.filter(p => ((p.wins || 0) + (p.losses || 0)) === 0).sort((a, b) => (b.elo || 1000) - (a.elo || 1000));
             
-            // 3. Render Ranked
             ranked.forEach((item, index) => { 
-                const globalIndex = rankingsData.indexOf(item); 
-                const diff = (item.previousRank || (index + 1)) - (index + 1); 
+                const globalIndex = rankingsData.indexOf(item); const diff = (item.previousRank || (index + 1)) - (index + 1); 
                 let ch = diff > 0 ? `<span class="rank-up">▲${diff}</span>` : (diff < 0 ? `<span class="rank-down">▼${Math.abs(diff)}</span>` : '<span class="rank-keep">-</span>'); 
                 let rankClass = index === 0 ? "rank-num-1" : index === 1 ? "rank-num-2" : index === 2 ? "rank-num-3" : "rank-num-normal";
-
-                list.innerHTML += `
-                    <div class="rank-card flex items-center p-3 border rounded-xl mb-2 bg-white hover:shadow-md">
-                        <div class="w-10 text-center mr-2"><span class="${rankClass}">${index+1}</span><div class="text-[10px]">${ch}</div></div>
-                        <div class="shrink-0 relative mr-3">
-                            <img src="${item.imageUrl || 'https://placehold.co/150?text=No+Img'}" class="w-10 h-10 rounded-full bg-slate-100 object-cover border border-slate-100" onerror="this.src='https://placehold.co/150?text=No+Img'">
-                            ${index === 0 ? `<div class="absolute -top-1 -right-1 text-sm">👑</div>` : ''}
-                        </div>
-                        <div class="flex-grow min-w-0">
-                            <div class="font-bold text-sm text-slate-800 flex items-center gap-1">
-                                <span class="truncate">${item.name}</span>
-                                <span class="text-[9px] text-slate-400 font-mono">(PW: ${item.password || '????'})</span>
-                            </div>
-                            <div class="flex items-center gap-1.5 mt-0.5">
-                                <span class="bg-amber-100 text-amber-800 text-[10px] px-1.5 py-0.5 rounded border border-amber-200 font-bold">⚡${item.elo}</span>
-                                <span class="text-xs text-slate-400">| ${item.wins}승 ${item.losses}패</span>
-                            </div>
-                        </div>
-                        <button onclick="openEditModal(${globalIndex})" class="p-2 text-slate-300 hover:text-blue-600 transition">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
-                        </button>
-                    </div>`; 
+                const tColor = item.trunkColor || '#000000';
+                const trunkIcon = `<svg class="w-4 h-4 shrink-0 drop-shadow-sm" viewBox="0 0 24 24" fill="${tColor}" xmlns="http://www.w3.org/2000/svg"><path d="M20 2H4C2.9 2 2 2.9 2 4V8C2 8.55 2.45 9 3 9H4V19C4 20.66 5.34 22 7 22H8C8.55 22 9 21.55 9 21V13H15V21C15 21.55 15.45 22 16 22H17C18.66 22 20 20.66 20 19V9H21C21.55 9 22 8.55 22 8V4C22 2.9 21.1 2 20 2ZM6 4H18V7H6V4Z" stroke="rgba(0,0,0,0.1)" stroke-width="1"/></svg>`;
+                list.innerHTML += `<div class="rank-card flex items-center p-3 border rounded-xl mb-2 bg-white hover:shadow-md"><div class="w-10 text-center mr-2"><span class="${rankClass}">${index+1}</span><div class="text-[10px]">${ch}</div></div><div class="shrink-0 relative mr-3"><img src="${item.imageUrl || 'https://placehold.co/150?text=No+Img'}" class="w-10 h-10 rounded-full bg-slate-100 object-cover border border-slate-100" onerror="this.src='https://placehold.co/150?text=No+Img'">${index === 0 ? `<div class="absolute -top-1 -right-1 text-sm">👑</div>` : ''}</div><div class="flex-grow min-w-0"><div class="font-bold text-sm text-slate-800 flex items-center gap-1"><span class="truncate">${item.name}</span><span class="text-[9px] text-slate-400 font-mono">(PW: ${item.password || '????'})</span> ${trunkIcon}</div><div class="flex items-center gap-1.5 mt-0.5"><span class="bg-amber-100 text-amber-800 text-[10px] px-1.5 py-0.5 rounded border border-amber-200 font-bold">⚡${item.elo}</span><span class="text-xs text-slate-400">| ${item.wins}승 ${item.losses}패</span></div></div><button onclick="openEditModal(${globalIndex})" class="p-2 text-slate-300 hover:text-blue-600 transition"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg></button></div>`; 
             }); 
-
-            // 4. Render Unranked
-            if(unranked.length > 0) {
-                list.innerHTML += `<div class="text-center text-xs text-slate-300 font-bold my-4">- Unranked / Search Results -</div>`;
-                unranked.forEach((item) => {
-                    const globalIndex = rankingsData.indexOf(item);
-                    list.innerHTML += `
-                        <div class="rank-card flex items-center p-3 border rounded-xl mb-2 bg-slate-50 opacity-80 hover:opacity-100">
-                            <div class="w-10 text-center mr-2"><span class="rank-unranked">-</span></div>
-                            <div class="shrink-0 relative mr-3">
-                                <img src="${item.imageUrl || 'https://placehold.co/150?text=No+Img'}" class="w-10 h-10 rounded-full bg-slate-100 object-cover border border-slate-100 grayscale" onerror="this.src='https://placehold.co/150?text=No+Img'">
-                            </div>
-                            <div class="flex-grow min-w-0">
-                                <div class="font-bold text-sm text-slate-500 flex items-center gap-1">
-                                    <span class="truncate">${item.name}</span>
-                                    <span class="text-[9px] text-slate-400 font-mono">(PW: ${item.password || '????'})</span>
-                                </div>
-                                <div class="flex items-center gap-1.5 mt-0.5">
-                                    <span class="bg-slate-100 text-slate-400 text-[10px] px-1.5 py-0.5 rounded border border-slate-200 font-bold">New</span>
-                                    <span class="text-xs text-slate-400">| 0승 0패</span>
-                                </div>
-                            </div>
-                            <button onclick="openEditModal(${globalIndex})" class="p-2 text-slate-300 hover:text-blue-600 transition">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
-                            </button>
-                        </div>`;
-                });
-            }
+            if(unranked.length > 0) { list.innerHTML += `<div class="text-center text-xs text-slate-300 font-bold my-4">- Unranked / Search Results -</div>`; unranked.forEach((item) => { const globalIndex = rankingsData.indexOf(item); list.innerHTML += `<div class="rank-card flex items-center p-3 border rounded-xl mb-2 bg-slate-50 opacity-80 hover:opacity-100"><div class="w-10 text-center mr-2"><span class="rank-unranked">-</span></div><div class="shrink-0 relative mr-3"><img src="${item.imageUrl || 'https://placehold.co/150?text=No+Img'}" class="w-10 h-10 rounded-full bg-slate-100 object-cover border border-slate-100 grayscale" onerror="this.src='https://placehold.co/150?text=No+Img'"></div><div class="flex-grow min-w-0"><div class="font-bold text-sm text-slate-500 flex items-center gap-1"><span class="truncate">${item.name}</span><span class="text-[9px] text-slate-400 font-mono">(PW: ${item.password || '????'})</span></div><div class="flex items-center gap-1.5 mt-0.5"><span class="bg-slate-100 text-slate-400 text-[10px] px-1.5 py-0.5 rounded border border-slate-200 font-bold">New</span><span class="text-xs text-slate-400">| 0승 0패</span></div></div><button onclick="openEditModal(${globalIndex})" class="p-2 text-slate-300 hover:text-blue-600 transition"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg></button></div>`; }); }
             populateMatchSelectors(); 
         }
 
@@ -359,12 +268,10 @@
             const setVal = (id, val) => { const el = document.getElementById(id); if(el) el.value = val; };
             setVal('editPlayerId', idx); setVal('editName', p.name); setVal('editOriginalName', p.name); setVal('editDefenses', 0); setVal('editGameId', p.gameId || ''); setVal('editPassword', p.password || '0000'); setVal('editHeight', p.height || ''); setVal('editReach', p.reach || ''); setVal('editStance', p.stance || 'Orthodox'); setVal('editElo', p.elo || 1000); setVal('editWins', p.wins || 0); setVal('editLosses', p.losses || 0);
             
-            // Image URL Logic
             const urlInput = document.getElementById('editImageUrlInput');
             urlInput.value = p.imageUrl || '';
             document.getElementById('previewImage').src = p.imageUrl || 'https://placehold.co/150?text=No+Img';
 
-            // [New] Trunk Color Load (Admin)
             const trunkColor = p.trunkColor || '#000000';
             document.getElementById('editTrunkColor').value = trunkColor;
             document.getElementById('colorHexCode').textContent = trunkColor;
@@ -375,7 +282,7 @@
             const modal = document.getElementById('editModal'); if(modal) modal.classList.remove('hidden');
         };
 
-        // [New] Trunk Color Listener (Admin)
+        // Trunk Color Listener
         document.getElementById('editTrunkColor').addEventListener('input', (e) => {
             const color = e.target.value;
             document.getElementById('colorHexCode').textContent = color;
@@ -408,7 +315,7 @@
 
             p.name = newName; 
             p.defenseCount = 0; p.gameId = getVal('editGameId'); p.password = getVal('editPassword'); p.height = getVal('editHeight'); p.reach = getVal('editReach'); p.stance = getVal('editStance'); p.elo = parseInt(getVal('editElo'))||1000; if(p.elo > (p.careerHighElo || 0)) p.careerHighElo = p.elo; p.wins = parseInt(getVal('editWins'))||0; p.losses = parseInt(getVal('editLosses'))||0; p.imageUrl = getVal('editImageUrlInput').trim(); 
-            p.trunkColor = getVal('editTrunkColor'); // Save Color
+            p.trunkColor = getVal('editTrunkColor'); 
             const ct = document.querySelectorAll('.style-checkbox:checked'); p.tags = Array.from(ct).map(cb => cb.value); 
             
             rankingsData.sort((a, b) => b.elo - a.elo); await saveRankings(); document.getElementById('editModal').classList.add('hidden'); renderRankings(); 
