@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RFC 랭킹전 (v3.23 Link Profile)</title>
+    <title>RFC 랭킹전 (v3.23 Security Patched)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;700;800;900&display=swap" rel="stylesheet">
     <style>
@@ -47,7 +47,7 @@
         <div id="tournamentSection" class="hidden fade-in"><div id="bracketContainer" class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 overflow-x-auto min-h-[300px] flex items-center justify-center text-slate-400 text-sm">진행 중인 토너먼트가 없습니다.</div></div>
     </main>
 
-    <footer class="text-center py-4 mt-4"><a href="admin.html" class="text-[10px] text-slate-300 hover:text-slate-500 transition-colors font-bold no-underline">Admin Access</a></footer>
+    <footer class="text-center py-4 mt-4"><a href="admin.html" class="text-[10px] text-slate-300 hover:text-slate-500 transition-colors font-bold no-underline">Admin Access (Secured)</a></footer>
 
     <div id="profileModal" class="fixed inset-0 z-50 hidden" role="dialog" aria-modal="true">
         <div class="absolute inset-0 bg-slate-900/80 backdrop-blur-sm transition-opacity" onclick="closeProfile()"></div>
@@ -137,7 +137,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, onSnapshot, runTransaction } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = { apiKey: "AIzaSyDlj68ex-fM0ExRdD-tvCy-UyIneVoPmGk", authDomain: "rfk-ranking.firebaseapp.com", projectId: "rfk-ranking", storageBucket: "rfk-ranking.firebasestorage.app", messagingSenderId: "675366165774", appId: "1:675366165774:web:795d34c56eab630b4dcb5f", measurementId: "G-CXPDZQ8GTL" };
         const app = initializeApp(firebaseConfig); const db = getFirestore(app); const appId = 'ranking-manager-default';
@@ -145,6 +145,15 @@
         const STYLE_OPTIONS = ["인파이터", "아웃복서", "슬러거", "하드 펀처", "바디 스내처", "볼륨 펀처", "스위치 히터", "브롤러", "카운터 펀처", "복서-펀처", "슬릭", "샤프슈터", "패스트 핸드"];
 
         const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'rankings', 'main');
+        
+        // [Security] SHA-256 Hashing for Client Side Verification
+        async function hashPin(pin) {
+            const msgBuffer = new TextEncoder().encode(pin);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
         onSnapshot(docRef, (docSnapshot) => {
             if (docSnapshot.exists()) {
                 const data = docSnapshot.data(); rankingsData = data.rankings || []; matchHistoryData = data.matchHistory || []; activeSeason = data.activeSeason || "시즌 1"; seasonArchives = data.seasonArchives || {};
@@ -198,7 +207,6 @@
         window.openProfile = (id) => { currentProfileId = id; const p = rankingsData.find(x => x.id === id); if (!p) return; document.getElementById('pModalName').textContent = p.name; document.getElementById('pModalCrown').classList.toggle('hidden', rankingsData.indexOf(p) !== 0); document.getElementById('pModalGameId').textContent = `ID: ${p.gameId || '-'}`; document.getElementById('pModalImg').src = p.imageUrl || "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23cbd5e1' stroke-width='2'%3E%3Ccircle cx='12' cy='8' r='5'/%3E%3Cpath d='M20 21a8 8 0 0 0-16 0'/%3E%3C/svg%3E"; const filterEl = document.getElementById('pModalSeason'); filterEl.innerHTML = '<option value="all">전체 기록 (All Time)</option><option value="current">현재 시즌 (Current)</option>'; Object.keys(seasonArchives).sort().reverse().forEach(s => { filterEl.innerHTML += `<option value="${s}">${s}</option>`; }); filterEl.value = 'current'; filterEl.onchange = (e) => updateProfileStats(id, e.target.value); const tier = getTier(p.wins, p.losses); const tierEl = document.getElementById('pModalTierBadge'); tierEl.textContent = tier.name; tierEl.className = `text-[10px] text-white font-bold px-2 py-0.5 rounded shadow-sm ${tier.color}`; document.getElementById('pModalHeight').textContent = p.height ? p.height + 'cm' : '-'; document.getElementById('pModalReach').textContent = p.reach ? p.reach + 'cm' : '-'; document.getElementById('pModalStance').textContent = p.stance || '-'; const tagsContainer = document.getElementById('pModalTags'); tagsContainer.innerHTML = ''; (p.tags || []).forEach(tag => { tagsContainer.innerHTML += `<span class="text-[10px] font-bold text-slate-500 bg-slate-100 px-3 py-1 rounded-full border border-slate-200">#${tag}</span>`; }); updateProfileStats(id, 'current'); document.getElementById('profileModal').classList.remove('hidden'); };
         window.closeProfile = () => { document.getElementById('profileModal').classList.add('hidden'); }
         
-        // [Modified] Link Profile in Match History
         window.updateProfileStats = (id, filter) => { 
             const p = rankingsData.find(x => x.id === id); 
             let matches = enrichedMatchHistory.filter(m => (m.winner === p.name || m.loser === p.name) && m.type !== 'draw'); 
@@ -216,7 +224,6 @@
                 const oppStats = m.snapshot[oppName] || { w:0, l:0, h:[] }; const oppRecordStr = `${oppStats.w}승 ${oppStats.l}패`; 
                 let oppDots = ''; (oppStats.h || []).forEach(res => { if (res === 'W') oppDots += `<div class="w-1 h-1 rounded-full bg-emerald-400"></div>`; else oppDots += `<div class="w-1 h-1 rounded-full bg-rose-400"></div>`; }); 
                 
-                // Find Opponent Profile ID
                 const oppProfile = rankingsData.find(u => u.name === oppName);
                 const oppLink = oppProfile ? `onclick="openProfile('${oppProfile.id}')"` : '';
                 const oppCursor = oppProfile ? 'cursor-pointer hover:underline hover:text-blue-600' : '';
@@ -248,7 +255,29 @@
 
         window.requestEdit = () => { if (!currentProfileId) return; editTargetId = currentProfileId; document.getElementById('inputPin').value = ''; document.getElementById('pinModal').classList.remove('hidden'); document.getElementById('inputPin').focus(); };
         window.closePinModal = () => document.getElementById('pinModal').classList.add('hidden');
-        window.checkPin = () => { const input = document.getElementById('inputPin').value; const p = rankingsData.find(x => x.id === editTargetId); const userPin = p.password || "0000"; if (input === userPin) { closePinModal(); openUserEditModal(p); } else { alert("비밀번호가 일치하지 않습니다."); document.getElementById('inputPin').value = ''; } };
+        
+        // [Security] Enhanced PIN Check (Plain vs Hash)
+        window.checkPin = async () => { 
+            const input = document.getElementById('inputPin').value; 
+            const p = rankingsData.find(x => x.id === editTargetId); 
+            const userPin = p.password || "0000"; 
+            
+            let isMatch = false;
+            if (userPin.length === 4) {
+                // Legacy support for plain text PINs
+                if (input === userPin) isMatch = true;
+            } else {
+                // Check Hash
+                const inputHash = await hashPin(input);
+                if (inputHash === userPin) isMatch = true;
+            }
+
+            if (isMatch) { 
+                closePinModal(); openUserEditModal(p); 
+            } else { 
+                alert("비밀번호가 일치하지 않습니다."); document.getElementById('inputPin').value = ''; 
+            } 
+        };
 
         function openUserEditModal(p) {
             document.getElementById('userEditHeight').value = p.height || ''; document.getElementById('userEditReach').value = p.reach || ''; document.getElementById('userEditStance').value = p.stance || 'Orthodox'; document.getElementById('userEditGameId').value = p.gameId || ''; document.getElementById('userEditPin').value = ''; 
@@ -263,16 +292,58 @@
         window.closeUserEdit = () => document.getElementById('userEditModal').classList.add('hidden');
         window.updateUserPreview = (url) => { document.getElementById('userEditPreview').src = url || 'https://placehold.co/150?text=No+Img'; };
 
+        // [Security] Transaction based save for User Edit
         window.saveUserProfile = async () => {
-            const p = rankingsData.find(x => x.id === editTargetId); if (!p) return;
-            p.imageUrl = document.getElementById('userImageUrlInput').value.trim(); p.trunkColor = document.getElementById('userEditTrunkColor').value;
-            p.height = document.getElementById('userEditHeight').value; p.reach = document.getElementById('userEditReach').value; p.stance = document.getElementById('userEditStance').value; p.gameId = document.getElementById('userEditGameId').value;
-            const newPin = document.getElementById('userEditPin').value; if (newPin && newPin.length === 4) p.password = newPin;
-            const checkedTags = document.querySelectorAll('#userStyleTags .style-checkbox:checked'); p.tags = Array.from(checkedTags).map(cb => cb.value).slice(0, 3);
-            await setDoc(docRef, { rankings: rankingsData, matchHistory: matchHistoryData, seasonArchives: seasonArchives, activeSeason: activeSeason }, { merge: false });
-            renderRankings(); if (currentProfileId === editTargetId) openProfile(currentProfileId);
-            closeUserEdit();
-            alert("정보가 수정되었습니다.");
+            if (!editTargetId) return;
+            const newHeight = document.getElementById('userEditHeight').value.replace(/</g, "&lt;"); // [Security] Basic Sanitization
+            const newReach = document.getElementById('userEditReach').value.replace(/</g, "&lt;");
+            const newStance = document.getElementById('userEditStance').value;
+            const newGameId = document.getElementById('userEditGameId').value.replace(/</g, "&lt;");
+            const newImageUrl = document.getElementById('userImageUrlInput').value.trim().replace(/</g, "&lt;");
+            const newTrunkColor = document.getElementById('userEditTrunkColor').value;
+            const inputPin = document.getElementById('userEditPin').value;
+            
+            const checkedTags = document.querySelectorAll('#userStyleTags .style-checkbox:checked'); 
+            const newTags = Array.from(checkedTags).map(cb => cb.value).slice(0, 3);
+
+            let newPassword = null;
+            if (inputPin && inputPin.length === 4) {
+                newPassword = await hashPin(inputPin); // Hash new pin
+            }
+
+            try {
+                await runTransaction(db, async (transaction) => {
+                    const sfDoc = await transaction.get(docRef);
+                    if (!sfDoc.exists()) throw "Doc missing";
+                    
+                    const data = sfDoc.data();
+                    const rankings = data.rankings || [];
+                    
+                    // Find index in the LATEST data (not the stale local data)
+                    const idx = rankings.findIndex(r => r.id === editTargetId);
+                    if (idx === -1) throw "User not found";
+
+                    // Update only specific fields
+                    rankings[idx].height = newHeight;
+                    rankings[idx].reach = newReach;
+                    rankings[idx].stance = newStance;
+                    rankings[idx].gameId = newGameId;
+                    rankings[idx].imageUrl = newImageUrl;
+                    rankings[idx].trunkColor = newTrunkColor;
+                    rankings[idx].tags = newTags;
+                    if (newPassword) rankings[idx].password = newPassword;
+
+                    // Write back the FULL array with the single updated item
+                    transaction.update(docRef, { rankings: rankings });
+                });
+                
+                alert("정보가 수정되었습니다.");
+                closeUserEdit();
+                if (currentProfileId === editTargetId) openProfile(currentProfileId); // Refresh UI
+            } catch (e) {
+                console.error(e);
+                alert("저장 중 오류가 발생했습니다 (다른 사람이 수정 중일 수 있습니다). 다시 시도해주세요.");
+            }
         };
     </script>
 </body>
