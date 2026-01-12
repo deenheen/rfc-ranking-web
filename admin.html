@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RFC 랭킹 매니저 (v3.25 PW Update)</title>
+    <title>RFC 랭킹 매니저 (v3.26 Trunk Color)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
@@ -46,7 +46,7 @@
                 <span id="currentSeasonBadge" class="bg-slate-800 text-white text-xs font-bold px-3 py-1 rounded-full shadow-md">Loading...</span>
                 <span id="saveStatus" class="text-xs font-medium text-emerald-500 transition-opacity opacity-0">✅ 저장됨 (Secure)</span>
             </div>
-            <div class="mt-2 md:mt-0 text-xs text-slate-400 font-medium">v3.25 Individual PW Reset</div>
+            <div class="mt-2 md:mt-0 text-xs text-slate-400 font-medium">v3.26 Trunk Color Update</div>
         </header>
 
         <div class="bg-white rounded-t-2xl border-b border-slate-200 px-4 flex gap-6 mb-4 shadow-sm overflow-x-auto">
@@ -174,7 +174,20 @@
                 </div>
             </div>
 
-            <div class="grid grid-cols-3 gap-3 mb-3"><div><label class="text-xs text-gray-500 block mb-1">키 (cm)</label><input type="text" id="editHeight" class="w-full border p-2 rounded text-sm"></div><div><label class="text-xs text-gray-500 block mb-1">리치 (cm)</label><input type="text" id="editReach" class="w-full border p-2 rounded text-sm"></div><div><label class="text-xs text-gray-500 block mb-1">스탠스</label><select id="editStance" class="w-full border p-2 rounded text-sm bg-white"><option value="Orthodox">Orthodox</option><option value="Southpaw">Southpaw</option><option value="Switch">Switch</option></select></div></div>
+            <div class="grid grid-cols-4 gap-3 mb-3">
+                <div class="col-span-1"><label class="text-xs text-gray-500 block mb-1">키 (cm)</label><input type="text" id="editHeight" class="w-full border p-2 rounded text-sm"></div>
+                <div class="col-span-1"><label class="text-xs text-gray-500 block mb-1">리치 (cm)</label><input type="text" id="editReach" class="w-full border p-2 rounded text-sm"></div>
+                <div class="col-span-1"><label class="text-xs text-gray-500 block mb-1">스탠스</label><select id="editStance" class="w-full border p-2 rounded text-sm bg-white"><option value="Orthodox">Orthodox</option><option value="Southpaw">Southpaw</option><option value="Switch">Switch</option></select></div>
+                
+                <div class="col-span-1">
+                    <label class="text-xs text-gray-500 block mb-1">바지 색상</label>
+                    <div class="flex items-center gap-2 border p-1 rounded bg-white">
+                        <input type="color" id="editTrunkColor" class="h-7 w-8 border-none p-0 bg-transparent cursor-pointer" value="#000000">
+                        <span id="trunkColorDisplay" class="text-[10px] font-mono text-gray-400">#000000</span>
+                    </div>
+                </div>
+            </div>
+            
             <div class="mb-6 p-3 bg-slate-50 rounded border border-slate-200"><label class="block text-xs font-bold text-slate-600 mb-2">🥊 스타일 태그</label><div id="styleTagsContainer" class="flex flex-wrap gap-2"></div></div>
             
             <div class="flex justify-between items-center">
@@ -215,6 +228,11 @@
         onAuthStateChanged(auth, (user) => { if (user) { document.getElementById('loginOverlay').classList.add('hidden'); document.getElementById('mainContent').classList.remove('hidden'); loadData(); } });
 
         document.getElementById('searchInput').addEventListener('input', (e) => { searchQuery = e.target.value.toLowerCase(); renderRankings(); });
+        
+        // Color Picker Event Listener
+        document.getElementById('editTrunkColor').addEventListener('input', (e) => {
+            document.getElementById('trunkColorDisplay').textContent = e.target.value;
+        });
 
         function loadData() {
             const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'rankings', 'main');
@@ -348,6 +366,9 @@
                 else if(index === 1) rankClass = "rank-num-2";
                 else if(index === 2) rankClass = "rank-num-3";
                 
+                // Trunk Color Logic
+                const trunkColor = item.trunkColor || '#000000';
+
                 list.innerHTML += `
                     <div class="rank-card flex items-center p-3 border rounded-xl mb-2 bg-white hover:shadow-md">
                         <div class="w-10 text-center mr-2"><span class="${rankClass}">${index+1}</span><div class="text-[10px]">${ch}</div></div>
@@ -357,6 +378,7 @@
                         </div>
                         <div class="flex-grow min-w-0">
                             <div class="font-bold text-sm text-slate-800 flex items-center gap-1">
+                                <span class="w-2.5 h-2.5 rounded-sm inline-block border border-slate-300/50 mr-0.5 align-middle" style="background-color: ${trunkColor};" title="Trunk Color"></span>
                                 <span class="truncate">${item.name}</span>
                             </div>
                             <div class="flex items-center gap-1.5 mt-0.5">
@@ -373,6 +395,7 @@
                 list.innerHTML += `<div class="text-center text-xs text-slate-300 font-bold my-4">- Unranked / Search Results -</div>`;
                 unranked.forEach((item) => {
                     const globalIndex = rankingsData.indexOf(item);
+                    const trunkColor = item.trunkColor || '#000000';
                     list.innerHTML += `
                         <div class="rank-card flex items-center p-3 border rounded-xl mb-2 bg-slate-50 opacity-80 hover:opacity-100">
                             <div class="w-10 text-center mr-2"><span class="rank-unranked">-</span></div>
@@ -381,6 +404,7 @@
                             </div>
                             <div class="flex-grow min-w-0">
                                 <div class="font-bold text-sm text-slate-500 flex items-center gap-1">
+                                    <span class="w-2.5 h-2.5 rounded-sm inline-block border border-slate-300/50 mr-0.5 align-middle grayscale" style="background-color: ${trunkColor};"></span>
                                     <span class="truncate">${item.name}</span>
                                 </div>
                                 <div class="flex items-center gap-1.5 mt-0.5">
@@ -430,7 +454,10 @@
                 }
             }
 
-            p.height = getVal('editHeight'); p.reach = getVal('editReach'); p.stance = getVal('editStance'); p.elo = parseInt(getVal('editElo'))||1000; if(p.elo > (p.careerHighElo || 0)) p.careerHighElo = p.elo; p.wins = parseInt(getVal('editWins'))||0; p.losses = parseInt(getVal('editLosses'))||0; p.imageUrl = getVal('editImageUrlInput').trim(); const ct = document.querySelectorAll('.style-checkbox:checked'); p.tags = Array.from(ct).map(cb => cb.value); 
+            p.height = getVal('editHeight'); p.reach = getVal('editReach'); p.stance = getVal('editStance'); 
+            p.trunkColor = getVal('editTrunkColor'); // Save Trunk Color
+            
+            p.elo = parseInt(getVal('editElo'))||1000; if(p.elo > (p.careerHighElo || 0)) p.careerHighElo = p.elo; p.wins = parseInt(getVal('editWins'))||0; p.losses = parseInt(getVal('editLosses'))||0; p.imageUrl = getVal('editImageUrlInput').trim(); const ct = document.querySelectorAll('.style-checkbox:checked'); p.tags = Array.from(ct).map(cb => cb.value); 
             
             rankingsData.sort((a, b) => b.elo - a.elo); await saveRankings(); document.getElementById('editModal').classList.add('hidden'); renderRankings(); 
         };
@@ -441,7 +468,7 @@
                 const randomPin = Math.floor(1000 + Math.random() * 9000).toString(); 
                 const hashedPin = await hashPin(randomPin); // [Security] Hash immediately
                 captureState(); 
-                rankingsData.push({ id: crypto.randomUUID(), name, wins:0, losses:0, defenseCount:0, previousRank: rankingsData.length+1, careerHighRank: rankingsData.length+1, elo: 1000, careerHighElo: 1000, lastMatchDate: new Date().toISOString().split('T')[0], password: hashedPin }); 
+                rankingsData.push({ id: crypto.randomUUID(), name, wins:0, losses:0, defenseCount:0, previousRank: rankingsData.length+1, careerHighRank: rankingsData.length+1, elo: 1000, careerHighElo: 1000, lastMatchDate: new Date().toISOString().split('T')[0], password: hashedPin, trunkColor: '#000000' }); 
                 saveRankings(); renderRankings(); 
                 alert(`✅ [${name}] 선수가 등록되었습니다.\n초기 비밀번호: ${randomPin}\n(저장은 암호화되어 됩니다)\n\n선수에게 이 번호를 알려주세요.`); 
             } 
@@ -453,6 +480,12 @@
             setVal('editPlayerId', idx); setVal('editName', p.name); setVal('editOriginalName', p.name); setVal('editDefenses', 0); setVal('editGameId', p.gameId || ''); 
             setVal('editPassword', p.password || ''); 
             setVal('editHeight', p.height || ''); setVal('editReach', p.reach || ''); setVal('editStance', p.stance || 'Orthodox'); setVal('editElo', p.elo || 1000); setVal('editWins', p.wins || 0); setVal('editLosses', p.losses || 0);
+            
+            // Trunk Color Init
+            const tc = p.trunkColor || '#000000';
+            setVal('editTrunkColor', tc);
+            document.getElementById('trunkColorDisplay').textContent = tc;
+
             const urlInput = document.getElementById('editImageUrlInput'); urlInput.value = p.imageUrl || ''; document.getElementById('previewImage').src = p.imageUrl || 'https://placehold.co/150?text=No+Img';
             const c = document.getElementById('styleTagsContainer'); c.innerHTML = ''; const cT = p.tags || [];
             STYLE_OPTIONS.forEach(s => { const safeId = `style-${s.replace(/\s+/g, '-')}`; const isChecked = cT.includes(s) ? 'checked' : ''; c.innerHTML += `<div><input type="checkbox" id="${safeId}" value="${s}" class="style-checkbox absolute opacity-0 w-0 h-0" ${isChecked}><label for="${safeId}" class="inline-block px-3 py-1 text-xs font-bold border border-slate-300 rounded-full cursor-pointer text-slate-500 hover:bg-slate-100 transition select-none ${isChecked?'bg-blue-500 text-white border-blue-500':''}">${s}</label></div>`; }); 
