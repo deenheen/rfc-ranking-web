@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RFC 랭킹 매니저 (v3.23 Security Patched)</title>
+    <title>RFC 랭킹 매니저 (v3.24 Password Reset Tool)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
@@ -46,7 +46,7 @@
                 <span id="currentSeasonBadge" class="bg-slate-800 text-white text-xs font-bold px-3 py-1 rounded-full shadow-md">Loading...</span>
                 <span id="saveStatus" class="text-xs font-medium text-emerald-500 transition-opacity opacity-0">✅ 저장됨 (Secure)</span>
             </div>
-            <div class="mt-2 md:mt-0 text-xs text-slate-400 font-medium">v3.23 Security Patched</div>
+            <div class="mt-2 md:mt-0 text-xs text-slate-400 font-medium">v3.24 Password Reset Tool</div>
         </header>
 
         <div class="bg-white rounded-t-2xl border-b border-slate-200 px-4 flex gap-6 mb-4 shadow-sm overflow-x-auto">
@@ -99,7 +99,15 @@
                     <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden p-5 space-y-4">
                         <h3 class="font-bold text-slate-700">🛠️ 데이터 도구</h3>
                         <div class="grid grid-cols-2 gap-2"><input type="file" id="importFile" accept=".json" class="hidden"><button onclick="document.getElementById('importFile').click()" class="bg-slate-700 hover:bg-slate-800 text-white font-bold py-3 rounded-lg text-xs">📂 데이터 복원</button><button onclick="backupData()" class="bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-3 rounded-lg text-xs">💾 데이터 백업</button></div>
-                        <div class="pt-4 border-t border-slate-100 space-y-2"><h4 class="text-xs font-bold text-red-500">초기화 (주의)</h4><button onclick="resetAllStats()" class="w-full bg-gray-50 text-gray-500 hover:bg-gray-100 font-bold py-2 rounded-lg text-xs border border-gray-200">📊 현재 시즌 전적 초기화</button><button onclick="resetAllElo()" class="w-full bg-gray-50 text-gray-500 hover:bg-gray-100 font-bold py-2 rounded-lg text-xs border border-gray-200">⚡ 현재 시즌 ELO 초기화</button><button onclick="resetEverything()" class="w-full bg-red-50 text-red-600 hover:bg-red-100 font-bold py-3 rounded-lg text-xs border border-red-200 mt-2">🧨 시스템 전체 리셋</button></div>
+                        <div class="pt-4 border-t border-slate-100 space-y-2">
+                            <h4 class="text-xs font-bold text-red-500">초기화 (주의)</h4>
+                            <button onclick="resetAllStats()" class="w-full bg-gray-50 text-gray-500 hover:bg-gray-100 font-bold py-2 rounded-lg text-xs border border-gray-200">📊 현재 시즌 전적 초기화</button>
+                            <button onclick="resetAllElo()" class="w-full bg-gray-50 text-gray-500 hover:bg-gray-100 font-bold py-2 rounded-lg text-xs border border-gray-200">⚡ 현재 시즌 ELO 초기화</button>
+                            
+                            <button onclick="resetAllPasswords()" class="w-full bg-orange-50 text-orange-600 hover:bg-orange-100 font-bold py-3 rounded-lg text-xs border border-orange-200 mt-2">🔑 전체 비밀번호 재발급 (명단 복사)</button>
+                            
+                            <button onclick="resetEverything()" class="w-full bg-red-50 text-red-600 hover:bg-red-100 font-bold py-3 rounded-lg text-xs border border-red-200 mt-2">🧨 시스템 전체 리셋</button>
+                        </div>
                     </div>
                 </div>
 
@@ -223,7 +231,6 @@
             const statusEl = document.getElementById('saveStatus'); 
             const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'rankings', 'main'); 
             try { 
-                // [Security] Using runTransaction to prevent overwriting user edits if admin saves at same time
                 await runTransaction(db, async (transaction) => {
                     const sfDoc = await transaction.get(docRef);
                     if (!sfDoc.exists()) throw "Document does not exist!";
@@ -269,6 +276,36 @@
         window.resetAllElo = () => { if(!confirm("ELO 1000 초기화?")) return; captureState(); rankingsData.forEach(p => p.elo = 1000); saveRankings(); renderRankings(); };
         window.resetAllStats = () => { if(!confirm("⚠️ 주의: 현재 시즌의 [승/패 숫자]와 [모든 경기 기록]을 초기화하시겠습니까?\n(최근 전적 표시도 사라집니다)")) return; captureState(); rankingsData.forEach(p => { p.wins = 0; p.losses = 0; }); matchHistoryData = matchHistoryData.filter(m => m.season !== activeSeason); saveRankings(); renderRankings(); alert("현재 시즌 전적과 기록이 모두 초기화되었습니다."); };
         window.resetEverything = () => { if(!confirm("🚨 전체 리셋?")) return; matchHistoryData = []; seasonArchives = {}; activeSeason = "시즌 1"; rankingsData.forEach(p => { p.wins=0; p.losses=0; p.defenseCount=0; p.elo=1000; p.careerHighElo=1000; }); saveRankings(); location.reload(); };
+        
+        // [New Function] Reset All Passwords
+        window.resetAllPasswords = async () => {
+            if (!confirm("⚠️ 정말 모든 선수의 비밀번호를 재발급하시겠습니까?\n\n1. 모든 선수의 비밀번호가 랜덤한 4자리 숫자로 변경됩니다.\n2. 변경된 명단(이름: 번호)이 관리자의 클립보드에 자동 복사됩니다.\n3. 단톡방 등에 바로 붙여넣기 할 수 있습니다.")) return;
+
+            captureState();
+            
+            let reportList = "📢 [RFC] 비밀번호 전체 초기화 명단\n(개인 정보이므로 본인 것만 확인하세요)\n\n";
+            
+            // Use Promise.all to wait for all hashing to complete
+            const updatePromises = rankingsData.map(async (p) => {
+                const plainPin = Math.floor(1000 + Math.random() * 9000).toString();
+                reportList += `${p.name}: ${plainPin}\n`;
+                // Store Hashed PIN in DB
+                p.password = await hashPin(plainPin);
+            });
+
+            await Promise.all(updatePromises);
+            
+            await saveRankings();
+            
+            try {
+                await navigator.clipboard.writeText(reportList);
+                alert("✅ 전체 비밀번호가 재발급되었습니다.\n\n명단이 클립보드에 복사되었습니다.\n단톡방에 '붙여넣기' 하세요.");
+            } catch (err) {
+                console.error('Clipboard failed', err);
+                alert("재발급은 완료되었으나 클립보드 복사에 실패했습니다. (브라우저 권한 문제)");
+            }
+        };
+
         window.updateRankBaseline = () => { if(confirm("변동폭 리셋?")) { rankingsData.forEach((p, i) => p.previousRank = i + 1); saveRankings(); renderRankings(); } };
         window.applyManualPenalty = () => { const idx = document.getElementById('penaltyTargetSelect').value; if (idx === "") return alert("선수를 선택해주세요."); const p = rankingsData[idx]; if (!confirm(`[${p.name}] 선수에게 패널티(-30점)를 부여합니까?\n현재 점수: ${p.elo}`)) return; captureState(); p.elo -= 30; rankingsData.sort((a, b) => b.elo - a.elo); saveRankings(); renderRankings(); alert(`[${p.name}] -30점 차감 완료.\n현재 점수: ${p.elo}`); };
         function checkSeasonInactive() { const list = document.getElementById('seasonInactiveList'); list.innerHTML = ''; const m = matchHistoryData.filter(m => m.season === activeSeason); const an = new Set(); m.forEach(m => { an.add(m.winner); an.add(m.loser); }); const inact = rankingsData.filter(p => !an.has(p.name)); document.getElementById('seasonInactiveCount').textContent = inact.length + "명"; inact.forEach(p => { list.innerHTML += `<li>${p.name}</li>`; }); }
