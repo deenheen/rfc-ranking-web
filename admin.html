@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RFC 랭킹 매니저 (v3.14 Profile View)</title>
+    <title>RFC 랭킹 매니저 (v3.23 Name Fix)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
@@ -16,11 +16,11 @@
         ::-webkit-scrollbar { width: 8px; } ::-webkit-scrollbar-track { background: #f1f1f1; } ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; } ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
         .pop-in { animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         @keyframes popIn { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-        /* 랭킹 숫자 스타일 (관리자용) */
         .rank-num-1 { color: #f59e0b; font-size: 1.2rem; text-shadow: 0 1px 2px rgba(245, 158, 11, 0.2); }
         .rank-num-2 { color: #94a3b8; font-size: 1.1rem; }
         .rank-num-3 { color: #ad8a56; font-size: 1.0rem; }
         .rank-num-normal { color: #64748b; font-size: 1.0rem; font-weight: 800; }
+        .rank-unranked { color: #cbd5e1; font-size: 1.0rem; font-weight: 800; }
     </style>
 </head>
 <body class="text-slate-800 relative min-h-screen">
@@ -32,7 +32,7 @@
     <div id="loginOverlay" class="fixed inset-0 bg-slate-900/95 z-50 flex items-center justify-center backdrop-blur-sm">
         <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-sm text-center border border-slate-200">
             <div class="text-4xl mb-2">🥊</div>
-            <h2 class="text-2xl font-black text-slate-800 mb-6">RFC Admin v3.14</h2>
+            <h2 class="text-2xl font-black text-slate-800 mb-6">RFC Admin v3.23</h2>
             <input type="email" id="adminEmail" placeholder="admin@rfc.com" class="w-full p-3 border border-slate-300 rounded-lg mb-3 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50 transition">
             <input type="password" id="adminPw" placeholder="Password" class="w-full p-3 border border-slate-300 rounded-lg mb-6 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50 transition">
             <button id="btnLogin" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-lg transition transform active:scale-95 shadow-lg shadow-blue-500/30">시스템 접속</button>
@@ -46,7 +46,7 @@
                 <span id="currentSeasonBadge" class="bg-slate-800 text-white text-xs font-bold px-3 py-1 rounded-full shadow-md">Loading...</span>
                 <span id="saveStatus" class="text-xs font-medium text-emerald-500 transition-opacity opacity-0">✅ 저장됨</span>
             </div>
-            <div class="mt-2 md:mt-0 text-xs text-slate-400 font-medium">Profile Image List View</div>
+            <div class="mt-2 md:mt-0 text-xs text-slate-400 font-medium">Auto-Rename History Logic</div>
         </header>
 
         <div class="bg-white rounded-t-2xl border-b border-slate-200 px-4 flex gap-6 mb-4 shadow-sm overflow-x-auto">
@@ -58,7 +58,6 @@
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 flex-grow">
             <div class="lg:col-span-4 space-y-6">
-                
                 <div id="mainSection" class="tab-content">
                     <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden mb-6">
                         <div class="bg-slate-50 p-4 border-b border-slate-100 flex justify-between items-center"><h3 class="font-bold text-slate-700">⚔️ 경기 결과 입력</h3></div>
@@ -129,7 +128,11 @@
             </div>
 
             <div class="lg:col-span-8 bg-white rounded-2xl shadow-sm border border-slate-100 flex flex-col h-[calc(100vh-140px)]">
-                <div class="bg-slate-50 p-4 border-b border-slate-100 flex justify-between items-center rounded-t-2xl"><div><h3 class="font-bold text-slate-700">🔥 실시간 랭킹</h3><p class="text-[10px] text-slate-400 font-medium mt-0.5">현재 활성 시즌: <span class="currentSeasonName text-blue-600 font-bold"></span></p></div><div class="flex gap-2"><button onclick="window.open('index.html')" class="bg-white border border-slate-200 text-slate-600 text-xs font-bold py-2 px-3 rounded-lg hover:bg-slate-50">🌐 사이트 보기</button><button onclick="saveRankings()" class="bg-indigo-600 text-white text-xs font-bold py-2 px-3 rounded-lg shadow hover:bg-indigo-700">💾 저장</button></div></div>
+                <div class="bg-slate-50 p-4 border-b border-slate-100 flex justify-between items-center rounded-t-2xl">
+                    <div><h3 class="font-bold text-slate-700">🔥 실시간 랭킹</h3><p class="text-[10px] text-slate-400 font-medium mt-0.5">현재 활성 시즌: <span class="currentSeasonName text-blue-600 font-bold"></span></p></div>
+                    <div class="flex-grow mx-4"><input type="text" id="searchInput" placeholder="🔎 선수 검색..." class="w-full text-xs border border-slate-200 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition"></div>
+                    <div class="flex gap-2"><button onclick="window.open('index.html')" class="bg-white border border-slate-200 text-slate-600 text-xs font-bold py-2 px-3 rounded-lg hover:bg-slate-50">🌐 사이트 보기</button><button onclick="saveRankings()" class="bg-indigo-600 text-white text-xs font-bold py-2 px-3 rounded-lg shadow hover:bg-indigo-700">💾 저장</button></div>
+                </div>
                 <div id="rankingList" class="flex-grow overflow-y-auto p-2 space-y-1.5 bg-slate-50/50"></div>
             </div>
         </div>
@@ -173,80 +176,41 @@
         const app = initializeApp(firebaseConfig); const db = getFirestore(app); const auth = getAuth(app); const appId = 'ranking-manager-default';
         
         let rankingsData = []; let matchHistoryData = []; let seasonArchives = {}; let activeSeason = "시즌 1"; let adminMemos = []; let ruleHtml = "";
-        
-        let undoStack = [];
-        const MAX_UNDO = 10;
+        let undoStack = []; const MAX_UNDO = 10;
+        let searchQuery = "";
 
         const STYLE_OPTIONS = ["인파이터", "아웃복서", "슬러거", "하드 펀처", "바디 스내처", "볼륨 펀처", "스위치 히터", "브롤러", "카운터 펀처", "복서-펀처", "슬릭", "샤프슈터", "패스트 핸드"];
-        const DEFAULT_RULE_HTML = `<div class="bg-blue-50 p-4 rounded-xl border border-blue-100"><h3 class="font-bold text-blue-700 mb-2 text-base">1. 점수 계산 공식</h3><ol class="list-decimal pl-4 space-y-2 text-xs"><li><strong>기본 원리:</strong> 상대와의 점수 차이에 따라 획득/차감 점수가 달라집니다. (ELO 시스템)</li><li><strong>티어 배율 적용:</strong> 전적(판수)에 따라 승리/패배 배율이 다르게 적용됩니다.</li><li><strong>🔥 참여 보너스:</strong> 활발한 참여를 위해 결과에 무조건 <span class="text-red-500 font-bold">+10점</span>을 더해줍니다.</li></ol></div><div><h3 class="font-bold text-slate-800 mb-2">2. 숙련도(판수)별 혜택</h3><ul class="list-disc pl-4 space-y-1 text-xs"><li><span class="font-bold text-amber-700">🥉 브론즈 (0~4전):</span> 기본 점수 (x1.0)</li><li><span class="font-bold text-slate-500">🥈 실버 (5~8전):</span> 승리 시 <span class="text-blue-600">1.1배</span> / 패배 시 <span class="text-red-500">0.9배</span></li><li><span class="font-bold text-amber-500">🥇 골드 (9전 이상):</span> 승리 시 <span class="text-blue-600">1.2배</span> / 패배 시 <span class="text-red-500">0.8배</span></li></ul></div><div class="grid grid-cols-2 gap-3"><div class="p-3 bg-slate-50 rounded-xl border border-slate-100"><span class="font-bold text-xs block mb-1">🎁 참여 장려</span><span class="text-[11px] leading-tight block">승패와 상관없이 기본 <span class="text-blue-600 font-bold">+10점</span>을 추가로 지급합니다.</span></div><div class="p-3 bg-orange-50 rounded-xl border border-orange-100"><span class="font-bold text-xs text-orange-700 block mb-1">📉 불참 패널티</span><span class="text-[11px] leading-tight block">랭킹전 <span class="font-bold">n회 이상 불참 시</span> 관리자 권한으로 <span class="text-red-600 font-bold">-30점</span> 차감됩니다.</span></div></div>`;
+        const DEFAULT_RULE_HTML = `<div class="bg-blue-50 p-4 rounded-xl border border-blue-100"><h3 class="font-bold text-blue-700 mb-2 text-base">1. 점수 계산 공식</h3><ol class="list-decimal pl-4 space-y-2 text-xs"><li><strong>기본 원리:</strong> 상대와의 점수 차이에 따라 획득/차감 점수가 달라집니다. (ELO 시스템)</li><li><strong>티어 배율 적용:</strong> 전적(판수)에 따라 승리/패배 배율이 다르게 적용됩니다.</li><li><strong>🔥 참여 보너스:</strong> 활발한 참여를 위해 결과에 무조건 <span class="text-red-500 font-bold">+5점</span>을 더해줍니다.</li></ol></div><div><h3 class="font-bold text-slate-800 mb-2">2. 숙련도(판수)별 혜택</h3><ul class="list-disc pl-4 space-y-1 text-xs"><li><span class="font-bold text-amber-700">🥉 브론즈 (0~2전):</span> 기본 점수 (x1.0)</li><li><span class="font-bold text-slate-500">🥈 실버 (3~6전):</span> 승리 시 <span class="text-blue-600">1.1배</span> / 패배 시 <span class="text-red-500">0.9배</span></li><li><span class="font-bold text-amber-500">🥇 골드 (7전 이상):</span> 승리 시 <span class="text-blue-600">1.2배</span> / 패배 시 <span class="text-red-500">0.8배</span></li></ul></div><div class="grid grid-cols-2 gap-3"><div class="p-3 bg-slate-50 rounded-xl border border-slate-100"><span class="font-bold text-xs block mb-1">🎁 참여 장려</span><span class="text-[11px] leading-tight block">승패와 상관없이 기본 <span class="text-blue-600 font-bold">+5점</span>을 추가로 지급합니다.</span></div><div class="p-3 bg-orange-50 rounded-xl border border-orange-100"><span class="font-bold text-xs text-orange-700 block mb-1">📉 불참 패널티</span><span class="text-[11px] leading-tight block">랭킹전 <span class="font-bold">n회 이상 불참 시</span> 관리자 권한으로 <span class="text-red-600 font-bold">-30점</span> 차감됩니다.</span></div></div>`;
 
         document.getElementById('btnLogin').addEventListener('click', () => { const email = document.getElementById('adminEmail').value; const pw = document.getElementById('adminPw').value; signInWithEmailAndPassword(auth, email, pw).catch((e) => alert("로그인 실패: " + e.message)); });
         onAuthStateChanged(auth, (user) => { if (user) { document.getElementById('loginOverlay').classList.add('hidden'); document.getElementById('mainContent').classList.remove('hidden'); loadData(); } });
+
+        document.getElementById('searchInput').addEventListener('input', (e) => { searchQuery = e.target.value.toLowerCase(); renderRankings(); });
 
         function loadData() {
             const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'rankings', 'main');
             onSnapshot(docRef, (doc) => {
                 if (doc.exists()) {
                     const data = doc.data(); rankingsData = data.rankings || []; matchHistoryData = data.matchHistory || []; seasonArchives = data.seasonArchives || {}; activeSeason = data.activeSeason || "시즌 1"; adminMemos = data.adminMemos || []; ruleHtml = data.ruleHtml || DEFAULT_RULE_HTML;
-                    updateSeasonUI(); renderMemos();
-                    document.getElementById('ruleHtmlInput').value = ruleHtml;
+                    updateSeasonUI(); renderMemos(); document.getElementById('ruleHtmlInput').value = ruleHtml;
                     rankingsData.forEach((p, i) => { if(p.defenseCount === undefined) p.defenseCount = 0; if(p.previousRank === undefined) p.previousRank = i + 1; if(p.careerHighRank === undefined) p.careerHighRank = i + 1; if(p.elo === undefined) p.elo = 1000; if(p.careerHighElo === undefined) p.careerHighElo = p.elo; });
-                    rankingsData.sort((a, b) => b.elo - a.elo); renderRankings(); populateMatchSelectors(); renderSeasonList(); checkSeasonInactive();
+                    renderRankings(); populateMatchSelectors(); renderSeasonList(); checkSeasonInactive();
                 }
             });
         }
 
         function captureState() {
-            const currentState = {
-                rankings: JSON.parse(JSON.stringify(rankingsData)),
-                matchHistory: JSON.parse(JSON.stringify(matchHistoryData)),
-                seasonArchives: JSON.parse(JSON.stringify(seasonArchives)),
-                activeSeason: activeSeason
-            };
-            undoStack.push(currentState);
-            if (undoStack.length > MAX_UNDO) undoStack.shift();
-            updateUndoUI();
+            const currentState = { rankings: JSON.parse(JSON.stringify(rankingsData)), matchHistory: JSON.parse(JSON.stringify(matchHistoryData)), seasonArchives: JSON.parse(JSON.stringify(seasonArchives)), activeSeason: activeSeason };
+            undoStack.push(currentState); if (undoStack.length > MAX_UNDO) undoStack.shift(); updateUndoUI();
         }
-
-        window.executeUndo = async () => {
-            if (undoStack.length === 0) return;
-            const prevState = undoStack.pop();
-            rankingsData = prevState.rankings;
-            matchHistoryData = prevState.matchHistory; 
-            seasonArchives = prevState.seasonArchives;
-            activeSeason = prevState.activeSeason;
-            await saveRankings(true); 
-            renderRankings(); updateUndoUI();
-            alert("이전 상태로 되돌렸습니다.");
-        };
-
-        function updateUndoUI() {
-            const btn = document.getElementById('undoBtn');
-            const cnt = document.getElementById('undoCount');
-            if (undoStack.length > 0) {
-                btn.classList.remove('hidden'); btn.classList.add('pop-in');
-                btn.disabled = false; cnt.textContent = undoStack.length;
-            } else {
-                btn.classList.add('hidden');
-            }
-        }
-
-        window.saveRankings = async function(isUndo = false) {
-            const statusEl = document.getElementById('saveStatus'); const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'rankings', 'main');
-            try { 
-                const payload = { rankings: rankingsData, matchHistory: matchHistoryData, seasonArchives: seasonArchives, activeSeason: activeSeason, date: new Date().toISOString() };
-                if(!isUndo) { payload.adminMemos = adminMemos; payload.ruleHtml = ruleHtml; }
-                await setDoc(docRef, payload, { merge: true }); 
-                statusEl.style.opacity = 1; setTimeout(() => statusEl.style.opacity = 0, 2000); 
-            } catch (e) { alert("저장 오류: " + e.message); }
-        }
-
+        window.executeUndo = async () => { if (undoStack.length === 0) return; const prevState = undoStack.pop(); rankingsData = prevState.rankings; matchHistoryData = prevState.matchHistory; seasonArchives = prevState.seasonArchives; activeSeason = prevState.activeSeason; await saveRankings(true); renderRankings(); updateUndoUI(); alert("이전 상태로 되돌렸습니다."); };
+        function updateUndoUI() { const btn = document.getElementById('undoBtn'); const cnt = document.getElementById('undoCount'); if (undoStack.length > 0) { btn.classList.remove('hidden'); btn.classList.add('pop-in'); btn.disabled = false; cnt.textContent = undoStack.length; } else { btn.classList.add('hidden'); } }
+        window.saveRankings = async function(isUndo = false) { const statusEl = document.getElementById('saveStatus'); const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'rankings', 'main'); try { const payload = { rankings: rankingsData, matchHistory: matchHistoryData, seasonArchives: seasonArchives, activeSeason: activeSeason, date: new Date().toISOString() }; if(!isUndo) { payload.adminMemos = adminMemos; payload.ruleHtml = ruleHtml; } await setDoc(docRef, payload, { merge: true }); statusEl.style.opacity = 1; setTimeout(() => statusEl.style.opacity = 0, 2000); } catch (e) { alert("저장 오류: " + e.message); } }
         window.saveRules = () => { ruleHtml = document.getElementById('ruleHtmlInput').value; saveRankings(); alert("규칙 디자인이 저장되었습니다."); };
         window.loadDefaultRuleHtml = () => { if(confirm("기본 예쁜 디자인으로 되돌리시겠습니까?")) { document.getElementById('ruleHtmlInput').value = DEFAULT_RULE_HTML; } };
         window.addMemo = () => { const input = document.getElementById('newMemoInput'); const content = input.value.trim(); if (!content) return; adminMemos.unshift({ id: Date.now(), content: content, date: new Date().toLocaleString() }); input.value = ''; saveRankings(); renderMemos(); };
         window.deleteMemo = (id) => { if(!confirm("삭제?")) return; adminMemos = adminMemos.filter(m => m.id !== id); saveRankings(); renderMemos(); };
         function renderMemos() { const container = document.getElementById('memoListContainer'); if(adminMemos.length === 0) { container.innerHTML = '<div class="text-center text-xs text-gray-400 py-4">작성된 메모가 없습니다.</div>'; return; } container.innerHTML = ''; adminMemos.forEach(m => { const el = document.createElement('div'); el.className = 'bg-white border border-slate-200 rounded p-2 text-sm shadow-sm flex justify-between items-start group'; el.innerHTML = `<div><div class="text-[10px] text-slate-400 font-medium mb-0.5">${m.date}</div><div class="text-slate-700 whitespace-pre-wrap">${m.content}</div></div><button onclick="deleteMemo(${m.id})" class="text-slate-300 hover:text-red-500 text-xs px-1 opacity-0 group-hover:opacity-100 transition">✕</button>`; container.appendChild(el); }); }
-
         window.switchTab = (tab) => { document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden')); document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active')); document.getElementById(tab + 'Section').classList.remove('hidden'); document.getElementById('tab' + tab.charAt(0).toUpperCase() + tab.slice(1)).classList.add('active'); };
         function updateSeasonUI() { document.getElementById('currentSeasonBadge').textContent = activeSeason; document.querySelectorAll('.currentSeasonName').forEach(el => el.textContent = activeSeason); const num = parseInt(activeSeason.replace(/[^0-9]/g, '')) || 0; document.getElementById('newSeasonNameInput').value = `시즌 ${num + 1}`; }
         function renderSeasonList() { const container = document.getElementById('seasonListContainer'); container.innerHTML = ''; const seasons = [activeSeason, ...Object.keys(seasonArchives).sort().reverse().filter(s => s !== activeSeason)]; seasons.forEach(sName => { const isActive = sName === activeSeason; const div = document.createElement('div'); div.className = `flex justify-between items-center p-3 rounded-lg border ${isActive ? 'bg-blue-50 border-blue-300' : 'bg-white border-slate-200'}`; div.innerHTML = `<div class="flex items-center gap-2"><span class="${isActive ? 'text-blue-700 font-bold' : 'text-slate-600'} text-sm">${sName}</span>${isActive ? '<span class="text-[10px] bg-blue-600 text-white px-1.5 py-0.5 rounded">Active</span>' : ''}</div><div class="flex gap-1">${!isActive ? `<button onclick="switchActiveSeason('${sName}')" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 px-2 py-1 rounded border border-slate-200">선택</button>` : ''}<button onclick="renameSeason('${sName}')" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-500 px-2 py-1 rounded border border-slate-200">이름변경</button>${!isActive ? `<button onclick="deleteSeason('${sName}')" class="text-xs bg-red-50 hover:bg-red-100 text-red-500 px-2 py-1 rounded border border-red-100">삭제</button>` : ''}</div>`; container.appendChild(div); }); }
@@ -255,34 +219,45 @@
         window.renameSeason = (old) => { const n = prompt("새 이름:", old); if(!n||n===old)return; if(n===activeSeason||seasonArchives[n])return alert("중복 이름"); if(old===activeSeason)activeSeason=n; else { seasonArchives[n]=seasonArchives[old]; delete seasonArchives[old]; } matchHistoryData.forEach(m => { if(m.season===old) m.season=n; }); saveRankings(); };
         window.finishAndStartNewSeason = () => { const n = document.getElementById('newSeasonNameInput').value.trim(); if(!n)return alert("이름 입력"); if(n===activeSeason||seasonArchives[n])return alert("중복 이름"); if(!confirm(`[${activeSeason}] 종료 후 [${n}] 시작?`))return; captureState(); seasonArchives[activeSeason]={rankings:JSON.parse(JSON.stringify(rankingsData))}; activeSeason=n; rankingsData.forEach(p => { p.previousRank=p.rank||rankingsData.indexOf(p)+1; p.wins=0; p.losses=0; p.draws=0; p.defenseCount=0; p.elo=1000; }); saveRankings(); alert("시작됨"); };
 
-        function getTierBonus(matchCount) { if (matchCount < 5) return { winMult: 1.0, lossMult: 1.0, tier: '🥉Bronze' }; else if (matchCount < 9) return { winMult: 1.1, lossMult: 0.9, tier: '🥈Silver' }; else return { winMult: 1.2, lossMult: 0.8, tier: '🥇Gold' }; }
-        function calculateHybridEloChange(p1Elo, p2Elo, isWin, p1Stats) { const matchCount = (p1Stats.wins || 0) + (p1Stats.losses || 0); const K = 60; const expected = 1 / (1 + Math.pow(10, (p2Elo - p1Elo) / 400)); const { winMult, lossMult, tier } = getTierBonus(matchCount); let finalChange = 0; let breakdown = ""; if (isWin) { let baseGain = K * (1 - expected); finalChange = (baseGain * winMult) + 10; breakdown = `${tier}승(x${winMult}) + 10`; } else { let baseLoss = K * (0 - expected); finalChange = (baseLoss * lossMult) + 10; breakdown = `${tier}패(x${lossMult}) + 10`; } return { change: Math.round(finalChange), msg: breakdown }; }
+        function getTierBonus(matchCount) { if (matchCount < 3) return { winMult: 1.0, lossMult: 1.0, tier: '🥉Bronze' }; else if (matchCount < 7) return { winMult: 1.1, lossMult: 0.9, tier: '🥈Silver' }; else return { winMult: 1.2, lossMult: 0.8, tier: '🥇Gold' }; }
+        function calculateHybridEloChange(p1Elo, p2Elo, isWin, p1Stats) { 
+            const matchCount = (p1Stats.wins || 0) + (p1Stats.losses || 0); 
+            const K = 60; 
+            const expected = 1 / (1 + Math.pow(10, (p2Elo - p1Elo) / 400)); 
+            const { winMult, lossMult, tier } = getTierBonus(matchCount); 
+            let finalChange = 0; let breakdown = ""; 
+            if (isWin) { let baseGain = K * (1 - expected); finalChange = (baseGain * winMult) + 5; breakdown = `${tier}승(x${winMult}) + 5`; } 
+            else { let baseLoss = K * (0 - expected); finalChange = (baseLoss * lossMult) + 5; breakdown = `${tier}패(x${lossMult}) + 5`; } 
+            return { change: Math.round(finalChange), msg: breakdown }; 
+        }
 
-        window.applyMatch = () => { const p1Idx = parseInt(document.getElementById('p1Select').value); const p2Idx = parseInt(document.getElementById('p2Select').value); const winnerVal = document.querySelector('input[name="winner"]:checked')?.value; if (!winnerVal || isNaN(p1Idx) || isNaN(p2Idx)) return alert("선택 오류"); if (p1Idx === p2Idx) return alert("동일 선수"); const p1 = rankingsData[p1Idx]; const p2 = rankingsData[p2Idx]; const isBlueWin = winnerVal === 'blue'; const winner = isBlueWin ? p1 : p2; const loser = isBlueWin ? p2 : p1; 
-        captureState();
-        const winCalc = calculateHybridEloChange(winner.elo, loser.elo, true, winner); const loseCalc = calculateHybridEloChange(loser.elo, winner.elo, false, loser); winner.elo += winCalc.change; loser.elo += loseCalc.change; if (winner.elo > (winner.careerHighElo || 0)) winner.careerHighElo = winner.elo; if (loser.elo > (loser.careerHighElo || 0)) loser.careerHighElo = loser.elo; let type = 'ranking'; winner.wins++; loser.losses++; const today = new Date().toISOString().split('T')[0]; winner.lastMatchDate = today; loser.lastMatchDate = today; rankingsData.sort((a, b) => b.elo - a.elo); matchHistoryData.unshift({ date: today, winner: isBlueWin ? p1.name : p2.name, loser: isBlueWin ? p2.name : p1.name, type, season: activeSeason, blue: p1.name }); saveRankings(); renderRankings(); alert(`반영 완료!\n${winner.name}: +${winCalc.change}\n${loser.name}: ${loseCalc.change}`); };
+        window.applyMatch = () => { const p1Idx = parseInt(document.getElementById('p1Select').value); const p2Idx = parseInt(document.getElementById('p2Select').value); const winnerVal = document.querySelector('input[name="winner"]:checked')?.value; if (!winnerVal || isNaN(p1Idx) || isNaN(p2Idx)) return alert("선택 오류"); if (p1Idx === p2Idx) return alert("동일 선수"); const p1 = rankingsData[p1Idx]; const p2 = rankingsData[p2Idx]; const isBlueWin = winnerVal === 'blue'; const winner = isBlueWin ? p1 : p2; const loser = isBlueWin ? p2 : p1; captureState(); const winCalc = calculateHybridEloChange(winner.elo, loser.elo, true, winner); const loseCalc = calculateHybridEloChange(loser.elo, winner.elo, false, loser); winner.elo += winCalc.change; loser.elo += loseCalc.change; if (winner.elo > (winner.careerHighElo || 0)) winner.careerHighElo = winner.elo; if (loser.elo > (loser.careerHighElo || 0)) loser.careerHighElo = loser.elo; let type = 'ranking'; winner.wins++; loser.losses++; const today = new Date().toISOString().split('T')[0]; winner.lastMatchDate = today; loser.lastMatchDate = today; rankingsData.sort((a, b) => b.elo - a.elo); matchHistoryData.unshift({ date: today, winner: isBlueWin ? p1.name : p2.name, loser: isBlueWin ? p2.name : p1.name, type, season: activeSeason, blue: p1.name }); saveRankings(); renderRankings(); alert(`반영 완료!\n${winner.name}: +${winCalc.change}\n${loser.name}: ${loseCalc.change}`); };
         function updateMatchPreview() { const p1Val = document.getElementById('p1Select').value; const p2Val = document.getElementById('p2Select').value; if (p1Val === "" || p2Val === "" || p1Val === p2Val) { document.getElementById('matchPreview').classList.add('hidden'); return; } document.getElementById('matchPreview').classList.remove('hidden'); const p1 = rankingsData[parseInt(p1Val)]; const p2 = rankingsData[parseInt(p2Val)]; const blueWin = calculateHybridEloChange(p1.elo, p2.elo, true, p1); const redLose = calculateHybridEloChange(p2.elo, p1.elo, false, p2); const redWin = calculateHybridEloChange(p2.elo, p1.elo, true, p2); const blueLose = calculateHybridEloChange(p1.elo, p2.elo, false, p1); document.getElementById('previewContent').innerHTML = `<div class="font-bold text-blue-600">🔵 Blue승: +${blueWin.change} / 🔴 Red패: ${redLose.change}</div><div class="font-bold text-red-600 mt-1">🔴 Red승: +${redWin.change} / 🔵 Blue패: ${blueLose.change}</div>`; }
         document.getElementById('p1Select').addEventListener('change', updateMatchPreview); document.getElementById('p2Select').addEventListener('change', updateMatchPreview);
         window.resetAllElo = () => { if(!confirm("ELO 1000 초기화?")) return; captureState(); rankingsData.forEach(p => p.elo = 1000); saveRankings(); renderRankings(); };
-        
-        window.resetAllStats = () => { 
-            if(!confirm("⚠️ 주의: 현재 시즌의 [승/패 숫자]와 [모든 경기 기록]을 초기화하시겠습니까?\n(최근 전적 표시도 사라집니다)")) return; 
-            captureState(); 
-            rankingsData.forEach(p => { p.wins = 0; p.losses = 0; }); 
-            matchHistoryData = matchHistoryData.filter(m => m.season !== activeSeason);
-            saveRankings(); renderRankings(); alert("현재 시즌 전적과 기록이 모두 초기화되었습니다.");
-        };
-
+        window.resetAllStats = () => { if(!confirm("⚠️ 주의: 현재 시즌의 [승/패 숫자]와 [모든 경기 기록]을 초기화하시겠습니까?\n(최근 전적 표시도 사라집니다)")) return; captureState(); rankingsData.forEach(p => { p.wins = 0; p.losses = 0; }); matchHistoryData = matchHistoryData.filter(m => m.season !== activeSeason); saveRankings(); renderRankings(); alert("현재 시즌 전적과 기록이 모두 초기화되었습니다."); };
         window.resetEverything = () => { if(!confirm("🚨 전체 리셋?")) return; matchHistoryData = []; seasonArchives = {}; activeSeason = "시즌 1"; rankingsData.forEach(p => { p.wins=0; p.losses=0; p.defenseCount=0; p.elo=1000; p.careerHighElo=1000; }); saveRankings(); location.reload(); };
         window.updateRankBaseline = () => { if(confirm("변동폭 리셋?")) { rankingsData.forEach((p, i) => p.previousRank = i + 1); saveRankings(); renderRankings(); } };
         window.applyManualPenalty = () => { const idx = document.getElementById('penaltyTargetSelect').value; if (idx === "") return alert("선수를 선택해주세요."); const p = rankingsData[idx]; if (!confirm(`[${p.name}] 선수에게 패널티(-30점)를 부여합니까?\n현재 점수: ${p.elo}`)) return; captureState(); p.elo -= 30; rankingsData.sort((a, b) => b.elo - a.elo); saveRankings(); renderRankings(); alert(`[${p.name}] -30점 차감 완료.\n현재 점수: ${p.elo}`); };
         function checkSeasonInactive() { const list = document.getElementById('seasonInactiveList'); list.innerHTML = ''; const m = matchHistoryData.filter(m => m.season === activeSeason); const an = new Set(); m.forEach(m => { an.add(m.winner); an.add(m.loser); }); const inact = rankingsData.filter(p => !an.has(p.name)); document.getElementById('seasonInactiveCount').textContent = inact.length + "명"; inact.forEach(p => { list.innerHTML += `<li>${p.name}</li>`; }); }
         window.toggleInactiveList = () => document.getElementById('seasonInactiveList').classList.toggle('hidden');
         
-        // [Fixed] Render Rankings with Profile Image (Like User Site)
+        // [Fixed] Render Rankings with Search Filter + Unranked Separation
         function renderRankings() { 
             const list = document.getElementById('rankingList'); list.innerHTML = ''; 
-            rankingsData.forEach((item, index) => { 
+            
+            // 1. Filter by Search Query
+            const filteredData = rankingsData.filter(p => p.name.toLowerCase().includes(searchQuery));
+
+            // 2. Separate Ranked and Unranked
+            const ranked = filteredData.filter(p => (p.wins + p.losses) > 0).sort((a, b) => (b.elo || 1000) - (a.elo || 1000));
+            const unranked = filteredData.filter(p => (p.wins + p.losses) === 0).sort((a, b) => (b.elo || 1000) - (a.elo || 1000));
+            
+            // 3. Render Ranked
+            ranked.forEach((item, index) => { 
+                // Note: Rank number is based on *filtered* list index for simplicity in view, but technically rank should be global.
+                // However, for admin search view, showing relative order is fine.
+                const globalIndex = rankingsData.indexOf(item); // Use global index for edit modal
                 const diff = (item.previousRank || (index + 1)) - (index + 1); 
                 let ch = diff > 0 ? `<span class="rank-up">▲${diff}</span>` : (diff < 0 ? `<span class="rank-down">▼${Math.abs(diff)}</span>` : '<span class="rank-keep">-</span>'); 
                 
@@ -293,74 +268,103 @@
 
                 list.innerHTML += `
                     <div class="rank-card flex items-center p-3 border rounded-xl mb-2 bg-white hover:shadow-md">
-                        <div class="w-10 text-center mr-2">
-                            <span class="${rankClass}">${index+1}</span>
-                            <div class="text-[10px]">${ch}</div>
-                        </div>
-                        
+                        <div class="w-10 text-center mr-2"><span class="${rankClass}">${index+1}</span><div class="text-[10px]">${ch}</div></div>
                         <div class="shrink-0 relative mr-3">
                             <img src="${item.imageUrl || 'https://placehold.co/150?text=No+Img'}" class="w-10 h-10 rounded-full bg-slate-100 object-cover border border-slate-100" onerror="this.src='https://placehold.co/150?text=No+Img'">
                             ${index === 0 ? `<div class="absolute -top-1 -right-1 text-sm">👑</div>` : ''}
                         </div>
-
                         <div class="flex-grow min-w-0">
                             <div class="font-bold text-sm text-slate-800 flex items-center gap-1">
                                 <span class="truncate">${item.name}</span>
+                                <span class="text-[9px] text-slate-400 font-mono">(PW: ${item.password || '????'})</span>
                             </div>
                             <div class="flex items-center gap-1.5 mt-0.5">
                                 <span class="bg-amber-100 text-amber-800 text-[10px] px-1.5 py-0.5 rounded border border-amber-200 font-bold">⚡${item.elo}</span>
                                 <span class="text-xs text-slate-400">| ${item.wins}승 ${item.losses}패</span>
                             </div>
                         </div>
-                        <button onclick="openEditModal(${index})" class="p-2 text-slate-300 hover:text-blue-600 transition">
+                        <button onclick="openEditModal(${globalIndex})" class="p-2 text-slate-300 hover:text-blue-600 transition">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
                         </button>
                     </div>`; 
             }); 
+
+            // 4. Render Unranked
+            if(unranked.length > 0) {
+                list.innerHTML += `<div class="text-center text-xs text-slate-300 font-bold my-4">- Unranked / Search Results -</div>`;
+                unranked.forEach((item) => {
+                    const globalIndex = rankingsData.indexOf(item);
+                    list.innerHTML += `
+                        <div class="rank-card flex items-center p-3 border rounded-xl mb-2 bg-slate-50 opacity-80 hover:opacity-100">
+                            <div class="w-10 text-center mr-2"><span class="rank-unranked">-</span></div>
+                            <div class="shrink-0 relative mr-3">
+                                <img src="${item.imageUrl || 'https://placehold.co/150?text=No+Img'}" class="w-10 h-10 rounded-full bg-slate-100 object-cover border border-slate-100 grayscale" onerror="this.src='https://placehold.co/150?text=No+Img'">
+                            </div>
+                            <div class="flex-grow min-w-0">
+                                <div class="font-bold text-sm text-slate-500 flex items-center gap-1">
+                                    <span class="truncate">${item.name}</span>
+                                    <span class="text-[9px] text-slate-400 font-mono">(PW: ${item.password || '????'})</span>
+                                </div>
+                                <div class="flex items-center gap-1.5 mt-0.5">
+                                    <span class="bg-slate-100 text-slate-400 text-[10px] px-1.5 py-0.5 rounded border border-slate-200 font-bold">New</span>
+                                    <span class="text-xs text-slate-400">| 0승 0패</span>
+                                </div>
+                            </div>
+                            <button onclick="openEditModal(${globalIndex})" class="p-2 text-slate-300 hover:text-blue-600 transition">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                            </button>
+                        </div>`;
+                });
+            }
             populateMatchSelectors(); 
         }
 
-        window.populateMatchSelectors = () => { const s1 = document.getElementById('p1Select'); const s2 = document.getElementById('p2Select'); const sPen = document.getElementById('penaltyTargetSelect'); let opts = '<option value="">선수 선택</option>'; rankingsData.forEach((p, i) => opts += `<option value="${i}">${i+1}위 ${p.name} (${p.elo})</option>`); s1.innerHTML = opts; s2.innerHTML = opts; if(sPen) sPen.innerHTML = opts; };
-        window.addNewPlayer = () => { const name = prompt("이름:"); if(name) { captureState(); rankingsData.push({ id: crypto.randomUUID(), name, wins:0, losses:0, defenseCount:0, previousRank: rankingsData.length+1, careerHighRank: rankingsData.length+1, elo: 1000, careerHighElo: 1000, lastMatchDate: new Date().toISOString().split('T')[0] }); saveRankings(); renderRankings(); } };
+        window.populateMatchSelectors = () => { const s1 = document.getElementById('p1Select'); const s2 = document.getElementById('p2Select'); const sPen = document.getElementById('penaltyTargetSelect'); let opts = '<option value="">선수 선택</option>'; rankingsData.forEach((p, i) => opts += `<option value="${i}">${p.name} (${p.elo})</option>`); s1.innerHTML = opts; s2.innerHTML = opts; if(sPen) sPen.innerHTML = opts; };
+        
+        // [Fixed] Automatic Name Update in History
+        window.savePlayerDetails = async () => { 
+            const idInput = document.getElementById('editPlayerId'); if(!idInput) return;
+            captureState();
+            const idx = idInput.value; const p = rankingsData[idx]; 
+            const getVal = (id) => document.getElementById(id) ? document.getElementById(id).value : '';
+
+            const newName = getVal('editName');
+            const oldName = p.name;
+
+            // Name Change Logic
+            if (oldName !== newName) {
+                if(confirm(`이름을 [${oldName}] -> [${newName}] (으)로 변경하시겠습니까?\n모든 과거 경기 기록의 이름도 함께 변경됩니다.`)) {
+                    matchHistoryData.forEach(m => {
+                        if (m.winner === oldName) m.winner = newName;
+                        if (m.loser === oldName) m.loser = newName;
+                        if (m.blue === oldName) m.blue = newName;
+                    });
+                } else {
+                    return; // Cancel save
+                }
+            }
+
+            p.name = newName; 
+            p.defenseCount = 0; p.gameId = getVal('editGameId'); p.password = getVal('editPassword'); p.height = getVal('editHeight'); p.reach = getVal('editReach'); p.stance = getVal('editStance'); p.elo = parseInt(getVal('editElo'))||1000; if(p.elo > (p.careerHighElo || 0)) p.careerHighElo = p.elo; p.wins = parseInt(getVal('editWins'))||0; p.losses = parseInt(getVal('editLosses'))||0; p.imageUrl = getVal('editImageUrlInput').trim(); const ct = document.querySelectorAll('.style-checkbox:checked'); p.tags = Array.from(ct).map(cb => cb.value); 
+            
+            rankingsData.sort((a, b) => b.elo - a.elo); await saveRankings(); document.getElementById('editModal').classList.add('hidden'); renderRankings(); 
+        };
+
+        window.addNewPlayer = () => { const name = prompt("이름:"); if(name) { const randomPin = Math.floor(1000 + Math.random() * 9000).toString(); captureState(); rankingsData.push({ id: crypto.randomUUID(), name, wins:0, losses:0, defenseCount:0, previousRank: rankingsData.length+1, careerHighRank: rankingsData.length+1, elo: 1000, careerHighElo: 1000, lastMatchDate: new Date().toISOString().split('T')[0], password: randomPin }); saveRankings(); renderRankings(); alert(`✅ [${name}] 선수가 등록되었습니다.\n초기 비밀번호: ${randomPin}\n\n선수에게 이 번호를 알려주세요.`); } };
         
         window.openEditModal = (idx) => { 
             const p = rankingsData[idx]; 
             const setVal = (id, val) => { const el = document.getElementById(id); if(el) el.value = val; };
             setVal('editPlayerId', idx); setVal('editName', p.name); setVal('editOriginalName', p.name); setVal('editDefenses', 0); setVal('editGameId', p.gameId || ''); setVal('editPassword', p.password || '0000'); setVal('editHeight', p.height || ''); setVal('editReach', p.reach || ''); setVal('editStance', p.stance || 'Orthodox'); setVal('editElo', p.elo || 1000); setVal('editWins', p.wins || 0); setVal('editLosses', p.losses || 0);
-            
-            const urlInput = document.getElementById('editImageUrlInput');
-            urlInput.value = p.imageUrl || '';
-            document.getElementById('previewImage').src = p.imageUrl || 'https://placehold.co/150?text=No+Img';
-
-            // [Fixed] Tag Rendering
-            const c = document.getElementById('styleTagsContainer'); 
-            c.innerHTML = ''; 
-            const cT = p.tags || [];
-            STYLE_OPTIONS.forEach(s => { 
-                const safeId = `style-${s.replace(/\s+/g, '-')}`; 
-                const isChecked = cT.includes(s) ? 'checked' : '';
-                c.innerHTML += `
-                    <div>
-                        <input type="checkbox" id="${safeId}" value="${s}" class="style-checkbox absolute opacity-0 w-0 h-0" ${isChecked}>
-                        <label for="${safeId}" class="inline-block px-3 py-1 text-xs font-bold border border-slate-300 rounded-full cursor-pointer text-slate-500 hover:bg-slate-100 transition select-none">${s}</label>
-                    </div>`; 
-            }); 
+            const urlInput = document.getElementById('editImageUrlInput'); urlInput.value = p.imageUrl || ''; document.getElementById('previewImage').src = p.imageUrl || 'https://placehold.co/150?text=No+Img';
+            const c = document.getElementById('styleTagsContainer'); c.innerHTML = ''; const cT = p.tags || [];
+            STYLE_OPTIONS.forEach(s => { const safeId = `style-${s.replace(/\s+/g, '-')}`; const isChecked = cT.includes(s) ? 'checked' : ''; c.innerHTML += `<div><input type="checkbox" id="${safeId}" value="${s}" class="style-checkbox absolute opacity-0 w-0 h-0" ${isChecked}><label for="${safeId}" class="inline-block px-3 py-1 text-xs font-bold border border-slate-300 rounded-full cursor-pointer text-slate-500 hover:bg-slate-100 transition select-none ${isChecked?'bg-blue-500 text-white border-blue-500':''}">${s}</label></div>`; }); 
             const modal = document.getElementById('editModal'); if(modal) modal.classList.remove('hidden');
         };
 
         window.updatePreview = (url) => { document.getElementById('previewImage').src = url || 'https://placehold.co/150?text=No+Img'; };
         window.removeImage = () => { document.getElementById('editImageUrlInput').value = ''; document.getElementById('previewImage').src = 'https://placehold.co/150?text=No+Img'; };
         
-        window.savePlayerDetails = async () => { 
-            const idInput = document.getElementById('editPlayerId'); if(!idInput) return;
-            captureState();
-            const idx = idInput.value; const p = rankingsData[idx]; 
-            const getVal = (id) => document.getElementById(id) ? document.getElementById(id).value : '';
-            p.imageUrl = getVal('editImageUrlInput').trim(); 
-            p.name = getVal('editName'); p.defenseCount = 0; p.gameId = getVal('editGameId'); p.password = getVal('editPassword'); p.height = getVal('editHeight'); p.reach = getVal('editReach'); p.stance = getVal('editStance'); p.elo = parseInt(getVal('editElo'))||1000; if(p.elo > (p.careerHighElo || 0)) p.careerHighElo = p.elo; p.wins = parseInt(getVal('editWins'))||0; p.losses = parseInt(getVal('editLosses'))||0; const ct = document.querySelectorAll('.style-checkbox:checked'); p.tags = Array.from(ct).map(cb => cb.value); 
-            rankingsData.sort((a, b) => b.elo - a.elo); await saveRankings(); document.getElementById('editModal').classList.add('hidden'); renderRankings(); 
-        };
-
         window.deletePlayer = async () => {
             if(!confirm("⚠️ 경고: 정말 이 선수를 삭제하시겠습니까?\n이 작업은 복구할 수 없습니다.")) return;
             captureState();
